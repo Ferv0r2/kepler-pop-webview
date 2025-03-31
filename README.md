@@ -4,6 +4,10 @@ Kepler Pop is a space-themed puzzle game where players evolve plants, harness th
 
 Built using React Native and TypeScript, Kepler Pop is designed for Android devices.
 
+## 📸 Preview
+
+<img src="./public/preview/preview.gif" alt="Kepler Pop Preview" width="300" />
+
 ## 🚀 Features
 
 - **Dynamic Puzzle Gameplay**: Match plant cells to evolve them into higher stages.
