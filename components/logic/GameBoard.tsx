@@ -94,16 +94,22 @@ export const GameBoard = () => {
 
     if (selectedItem === null) {
       setSelectedItem({ row, col });
-    } else {
-      const isAdjacent =
-        (Math.abs(selectedItem.row - row) === 1 && selectedItem.col === col) ||
-        (Math.abs(selectedItem.col - col) === 1 && selectedItem.row === row);
+      return;
+    }
 
-      if (isAdjacent) {
-        swapItems(selectedItem.row, selectedItem.col, row, col);
-      } else {
-        setSelectedItem({ row, col });
-      }
+    if (selectedItem.row === row && selectedItem.col === col) {
+      setSelectedItem(null);
+      return;
+    }
+
+    const isAdjacent =
+      (Math.abs(selectedItem.row - row) === 1 && selectedItem.col === col) ||
+      (Math.abs(selectedItem.col - col) === 1 && selectedItem.row === row);
+
+    if (isAdjacent) {
+      swapItems(selectedItem.row, selectedItem.col, row, col);
+    } else {
+      setSelectedItem({ row, col });
     }
   };
 
