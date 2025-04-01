@@ -5,52 +5,46 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Zap, Sparkles, Star, Diamond, Gem } from "lucide-react";
 import confetti from "canvas-confetti";
-import { v4 as uuidv4 } from "uuid";
 import { GridItem, ItemType, GameState } from "@/types/GameTypes";
 import { ANIMATION_DURATION, GRID_SIZE } from "@/constants/basic-config";
+import { useMatchgame } from "@/hooks/useMatchGame";
+import { v4 as uuidv4 } from "uuid";
 
 // 아이템 색상 및 아이콘 매핑
-const itemConfig: Record<ItemType, { color: string; bgColor: string; icon: React.ElementType }> = {
-  1: { color: "text-red-500", bgColor: "bg-gradient-to-br from-red-400 to-red-600", icon: Heart },
-  2: { color: "text-blue-500", bgColor: "bg-gradient-to-br from-blue-400 to-blue-600", icon: Zap },
-  3: { color: "text-green-500", bgColor: "bg-gradient-to-br from-green-400 to-green-600", icon: Sparkles },
-  4: { color: "text-yellow-500", bgColor: "bg-gradient-to-br from-yellow-400 to-yellow-600", icon: Star },
-  5: { color: "text-purple-500", bgColor: "bg-gradient-to-br from-purple-400 to-purple-600", icon: Diamond },
-  6: { color: "text-pink-500", bgColor: "bg-gradient-to-br from-pink-400 to-pink-600", icon: Gem },
-};
-
-// 랜덤 아이템 생성 함수
-const getRandomItemType = (): ItemType => {
-  return (Math.floor(Math.random() * 6) + 1) as ItemType;
-};
-
-// 초기 그리드 생성 함수 (매치가 없는 상태로 시작)
-const createInitialGrid = (): GridItem[][] => {
-  const grid: GridItem[][] = [];
-
-  for (let row = 0; row < GRID_SIZE; row++) {
-    const newRow: GridItem[] = [];
-    for (let col = 0; col < GRID_SIZE; col++) {
-      let itemType: ItemType;
-      do {
-        itemType = getRandomItemType();
-      } while (
-        // 가로 매치 체크
-        (col >= 2 && newRow[col - 1]?.type === itemType && newRow[col - 2]?.type === itemType) ||
-        // 세로 매치 체크
-        (row >= 2 && grid[row - 1][col]?.type === itemType && grid[row - 2][col]?.type === itemType)
-      );
-      newRow.push({
-        id: `${row}-${col}-${uuidv4()}`,
-        type: itemType,
-        isMatched: false,
-        isNew: false,
-      });
-    }
-    grid.push(newRow);
-  }
-
-  return grid;
+const itemConfig: Record<
+  ItemType,
+  { color: string; bgColor: string; icon: React.ElementType }
+> = {
+  1: {
+    color: "text-red-500",
+    bgColor: "bg-gradient-to-br from-red-400 to-red-600",
+    icon: Heart,
+  },
+  2: {
+    color: "text-blue-500",
+    bgColor: "bg-gradient-to-br from-blue-400 to-blue-600",
+    icon: Zap,
+  },
+  3: {
+    color: "text-green-500",
+    bgColor: "bg-gradient-to-br from-green-400 to-green-600",
+    icon: Sparkles,
+  },
+  4: {
+    color: "text-yellow-500",
+    bgColor: "bg-gradient-to-br from-yellow-400 to-yellow-600",
+    icon: Star,
+  },
+  5: {
+    color: "text-purple-500",
+    bgColor: "bg-gradient-to-br from-purple-400 to-purple-600",
+    icon: Diamond,
+  },
+  6: {
+    color: "text-pink-500",
+    bgColor: "bg-gradient-to-br from-pink-400 to-pink-600",
+    icon: Gem,
+  },
 };
 
 // 파티클 효과 생성 함수
@@ -69,8 +63,12 @@ const createParticles = (x: number, y: number, color: string) => {
 };
 
 export const GameBoard = () => {
+  const { getRandomItemType, createInitialGrid } = useMatchgame();
   const [grid, setGrid] = useState<GridItem[][]>([]);
-  const [selectedItem, setSelectedItem] = useState<{ row: number; col: number } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{
+    row: number;
+    col: number;
+  } | null>(null);
   const [gameState, setGameState] = useState<GameState>({
     score: 0,
     moves: 20,
@@ -79,7 +77,11 @@ export const GameBoard = () => {
     isGameOver: false,
     combo: 0,
   });
-  const [showScorePopup, setShowScorePopup] = useState<{ score: number; x: number; y: number } | null>(null);
+  const [showScorePopup, setShowScorePopup] = useState<{
+    score: number;
+    x: number;
+    y: number;
+  } | null>(null);
 
   useEffect(() => {
     setGrid(createInitialGrid());
@@ -87,7 +89,8 @@ export const GameBoard = () => {
 
   // 아이템 선택 핸들러
   const handleItemClick = (row: number, col: number) => {
-    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver) return;
+    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver)
+      return;
 
     if (selectedItem === null) {
       setSelectedItem({ row, col });
@@ -106,12 +109,17 @@ export const GameBoard = () => {
 
   // 깊은 복사를 위한 함수
   const deepCopyGrid = (grid: GridItem[][]): GridItem[][] => {
-    return grid.map(row => row.map(item => ({ ...item })));
+    return grid.map((row) => row.map((item) => ({ ...item })));
   };
 
   // 아이템 스왑 함수
-  const swapItems = async (row1: number, col1: number, row2: number, col2: number) => {
-    setGameState(prev => ({ ...prev, isSwapping: true }));
+  const swapItems = async (
+    row1: number,
+    col1: number,
+    row2: number,
+    col2: number
+  ) => {
+    setGameState((prev) => ({ ...prev, isSwapping: true }));
     let newGrid = deepCopyGrid(grid);
 
     // 스왑 실행
@@ -122,7 +130,7 @@ export const GameBoard = () => {
     setGrid(newGrid);
     setSelectedItem(null);
 
-    await new Promise(resolve => setTimeout(resolve, ANIMATION_DURATION));
+    await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
 
     const matches = findMatches(newGrid);
 
@@ -136,7 +144,7 @@ export const GameBoard = () => {
       newGrid[row2][col2] = temp2;
       setGrid(newGrid);
       // 매치가 없더라도 이동은 소모되도록 처리
-      setGameState(prev => ({
+      setGameState((prev) => ({
         ...prev,
         moves: prev.moves - 1,
         isSwapping: false,
@@ -146,16 +154,24 @@ export const GameBoard = () => {
   };
 
   // 매치 찾기 함수
-  const findMatches = (currentGrid: GridItem[][]): { row: number; col: number }[] => {
+  const findMatches = (
+    currentGrid: GridItem[][]
+  ): { row: number; col: number }[] => {
     const matches: { row: number; col: number }[] = [];
 
     // 가로 매치 확인
     for (let row = 0; row < GRID_SIZE; row++) {
       for (let col = 0; col < GRID_SIZE - 2; col++) {
         const type = currentGrid[row][col].type;
-        if (type === currentGrid[row][col + 1].type && type === currentGrid[row][col + 2].type) {
+        if (
+          type === currentGrid[row][col + 1].type &&
+          type === currentGrid[row][col + 2].type
+        ) {
           let matchLength = 3;
-          while (col + matchLength < GRID_SIZE && currentGrid[row][col + matchLength].type === type) {
+          while (
+            col + matchLength < GRID_SIZE &&
+            currentGrid[row][col + matchLength].type === type
+          ) {
             matchLength++;
           }
           for (let i = 0; i < matchLength; i++) {
@@ -170,9 +186,15 @@ export const GameBoard = () => {
     for (let col = 0; col < GRID_SIZE; col++) {
       for (let row = 0; row < GRID_SIZE - 2; row++) {
         const type = currentGrid[row][col].type;
-        if (type === currentGrid[row + 1][col].type && type === currentGrid[row + 2][col].type) {
+        if (
+          type === currentGrid[row + 1][col].type &&
+          type === currentGrid[row + 2][col].type
+        ) {
           let matchLength = 3;
-          while (row + matchLength < GRID_SIZE && currentGrid[row + matchLength][col].type === type) {
+          while (
+            row + matchLength < GRID_SIZE &&
+            currentGrid[row + matchLength][col].type === type
+          ) {
             matchLength++;
           }
           for (let i = 0; i < matchLength; i++) {
@@ -187,11 +209,14 @@ export const GameBoard = () => {
   };
 
   // 매치 처리 함수
-  const processMatches = async (matches: { row: number; col: number }[], currentGrid: GridItem[][]) => {
+  const processMatches = async (
+    matches: { row: number; col: number }[],
+    currentGrid: GridItem[][]
+  ) => {
     const combo = gameState.combo + 1;
     const matchScore = matches.length * 10 * combo;
 
-    setGameState(prev => ({
+    setGameState((prev) => ({
       ...prev,
       isChecking: true,
       score: prev.score + matchScore,
@@ -200,8 +225,10 @@ export const GameBoard = () => {
     }));
 
     if (matches.length > 0) {
-      const centerRow = matches.reduce((sum, m) => sum + m.row, 0) / matches.length;
-      const centerCol = matches.reduce((sum, m) => sum + m.col, 0) / matches.length;
+      const centerRow =
+        matches.reduce((sum, m) => sum + m.row, 0) / matches.length;
+      const centerCol =
+        matches.reduce((sum, m) => sum + m.col, 0) / matches.length;
 
       setShowScorePopup({
         score: matchScore,
@@ -211,7 +238,9 @@ export const GameBoard = () => {
 
       const x = (centerCol + 0.5) / GRID_SIZE;
       const y = (centerRow + 0.5) / GRID_SIZE;
-      const color = itemConfig[currentGrid[matches[0].row][matches[0].col].type].color.replace("text-", "");
+      const color = itemConfig[
+        currentGrid[matches[0].row][matches[0].col].type
+      ].color.replace("text-", "");
       createParticles(x, y, color);
 
       setTimeout(() => {
@@ -226,18 +255,20 @@ export const GameBoard = () => {
     });
 
     setGrid(newGrid);
-    await new Promise(resolve => setTimeout(resolve, ANIMATION_DURATION));
+    await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
 
     // 매치된 아이템 제거 및 타일 드롭 처리 (개선된 알고리즘)
     newGrid = removeMatchedItems(newGrid);
     setGrid(newGrid);
-    await new Promise(resolve => setTimeout(resolve, ANIMATION_DURATION * 1.5));
+    await new Promise((resolve) =>
+      setTimeout(resolve, ANIMATION_DURATION * 1.5)
+    );
 
     const newMatches = findMatches(newGrid);
     if (newMatches.length > 0) {
       processMatches(newMatches, newGrid);
     } else {
-      setGameState(prev => ({
+      setGameState((prev) => ({
         ...prev,
         isSwapping: false,
         isChecking: false,
@@ -258,7 +289,7 @@ export const GameBoard = () => {
     }
   };
 
-  // 매치된 아이템 제거 및 타일 드롭 함수 (개선된 버전)
+  // 매치된 아이템 제거 및 타일 드롭 함수
   const removeMatchedItems = (currentGrid: GridItem[][]): GridItem[][] => {
     const newGrid = deepCopyGrid(currentGrid);
 
@@ -275,7 +306,7 @@ export const GameBoard = () => {
       const newTiles: GridItem[] = [];
       for (let i = 0; i < missingTiles; i++) {
         newTiles.push({
-          id: `${i}-${col}-${Date.now()}-${Math.random()}`,
+          id: `${i}-${col}-${uuidv4()}`,
           type: getRandomItemType(),
           isMatched: false,
           isNew: true,
@@ -393,9 +424,16 @@ export const GameBoard = () => {
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.3, duration: 0.5 }}
                 >
-                  최종 점수: <span className="font-bold text-yellow-300">{gameState.score}</span>
+                  최종 점수:{" "}
+                  <span className="font-bold text-yellow-300">
+                    {gameState.score}
+                  </span>
                 </motion.p>
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.4, type: "spring" }}>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.4, type: "spring" }}
+                >
                   <Button
                     onClick={restartGame}
                     className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg hover:shadow-xl transition-all duration-300"
@@ -423,25 +461,43 @@ export const GameBoard = () => {
                 animate={{
                   scale: item.isMatched
                     ? 0
-                    : selectedItem?.row === rowIndex && selectedItem?.col === colIndex
+                    : selectedItem?.row === rowIndex &&
+                      selectedItem?.col === colIndex
                     ? 1.1
                     : 1,
                   opacity: item.isMatched ? 0 : 1,
                   y: 0,
                   rotate:
-                    selectedItem?.row === rowIndex && selectedItem?.col === colIndex ? [0, 5, 0, -5, 0] : 0,
+                    selectedItem?.row === rowIndex &&
+                    selectedItem?.col === colIndex
+                      ? [0, 5, 0, -5, 0]
+                      : 0,
                 }}
                 transition={{
-                  scale: { duration: item.isNew ? 0.3 : 0.2, type: item.isNew ? "spring" : "tween", stiffness: 200, damping: 15 },
+                  scale: {
+                    duration: item.isNew ? 0.3 : 0.2,
+                    type: item.isNew ? "spring" : "tween",
+                    stiffness: 200,
+                    damping: 15,
+                  },
                   opacity: { duration: item.isNew ? 0.3 : 0.2 },
                   y: { duration: item.isNew ? 0.3 : 0.2 },
-                  rotate: { duration: 1, type: "tween", repeat: selectedItem?.row === rowIndex && selectedItem?.col === colIndex ? Number.POSITIVE_INFINITY : 0 },
+                  rotate: {
+                    duration: 1,
+                    type: "tween",
+                    repeat:
+                      selectedItem?.row === rowIndex &&
+                      selectedItem?.col === colIndex
+                        ? Number.POSITIVE_INFINITY
+                        : 0,
+                  },
                 }}
                 className={`
                   w-10 h-10 sm:w-12 sm:h-12 rounded-full 
                   ${itemConfig[item.type].bgColor}
                   ${
-                    selectedItem?.row === rowIndex && selectedItem?.col === colIndex
+                    selectedItem?.row === rowIndex &&
+                    selectedItem?.col === colIndex
                       ? "ring-4 ring-white shadow-[0_0_10px_rgba(255,255,255,0.7)]"
                       : "shadow-md hover:shadow-lg"
                   }
@@ -457,17 +513,26 @@ export const GameBoard = () => {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/20" />
                 <motion.div
                   animate={{
-                    rotate: selectedItem?.row === rowIndex && selectedItem?.col === colIndex ? 360 : 0,
+                    rotate:
+                      selectedItem?.row === rowIndex &&
+                      selectedItem?.col === colIndex
+                        ? 360
+                        : 0,
                   }}
                   transition={{
                     duration: 1,
                     type: "tween",
-                    repeat: selectedItem?.row === rowIndex && selectedItem?.col === colIndex ? Number.POSITIVE_INFINITY : 0,
+                    repeat:
+                      selectedItem?.row === rowIndex &&
+                      selectedItem?.col === colIndex
+                        ? Number.POSITIVE_INFINITY
+                        : 0,
                   }}
                   className="relative z-10"
                 >
                   {createElement(itemConfig[item.type].icon, {
-                    className: "w-6 h-6 sm:w-7 sm:h-7 text-white drop-shadow-md",
+                    className:
+                      "w-6 h-6 sm:w-7 sm:h-7 text-white drop-shadow-md",
                     strokeWidth: 2.5,
                   })}
                 </motion.div>
