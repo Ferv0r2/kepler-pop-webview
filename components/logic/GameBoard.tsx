@@ -135,7 +135,7 @@ export const GameBoard = () => {
     const matches = findMatches(newGrid);
 
     if (matches.length > 0) {
-      processMatches(matches, newGrid);
+      processMatches(matches, newGrid, true);
     } else {
       // 매치가 없으면 스왑 원상복구
       newGrid = deepCopyGrid(newGrid);
@@ -211,7 +211,8 @@ export const GameBoard = () => {
   // 매치 처리 함수
   const processMatches = async (
     matches: { row: number; col: number }[],
-    currentGrid: GridItem[][]
+    currentGrid: GridItem[][],
+    isFirstMatch: boolean = false
   ) => {
     const combo = gameState.combo + 1;
     const matchScore = matches.length * 10 * combo;
@@ -220,7 +221,7 @@ export const GameBoard = () => {
       ...prev,
       isChecking: true,
       score: prev.score + matchScore,
-      moves: prev.moves - 1,
+      moves: isFirstMatch ? prev.moves - 1 : prev.moves,
       combo: combo,
     }));
 
@@ -257,7 +258,7 @@ export const GameBoard = () => {
     setGrid(newGrid);
     await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
 
-    // 매치된 아이템 제거 및 타일 드롭 처리 (개선된 알고리즘)
+    // 매치된 아이템 제거 및 타일 드롭 처리
     newGrid = removeMatchedItems(newGrid);
     setGrid(newGrid);
     await new Promise((resolve) =>
@@ -266,7 +267,7 @@ export const GameBoard = () => {
 
     const newMatches = findMatches(newGrid);
     if (newMatches.length > 0) {
-      processMatches(newMatches, newGrid);
+      processMatches(newMatches, newGrid, false);
     } else {
       setGameState((prev) => ({
         ...prev,
