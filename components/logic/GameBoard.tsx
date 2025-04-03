@@ -7,9 +7,12 @@ import { createElement, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Button } from '@/components/ui/button';
-import { ANIMATION_DURATION, GRID_SIZE } from '@/constants/basic-config';
+import { ANIMATION_DURATION, GRID_SIZE, SCORE } from '@/constants/game-config';
+import { useGameItem } from '@/hooks/useGameItem';
 import { useMatchgame } from '@/hooks/useMatchGame';
-import { GridItem, ItemType, GameState } from '@/types/GameTypes';
+import type { GridItem, ItemType, GameState, GameItemType } from '@/types/GameTypes';
+import { createParticles } from '@/utils/animation-helper';
+import { deepCopyGrid } from '@/utils/game-helper';
 
 // 아이템 색상 및 아이콘 매핑
 const itemConfig: Record<ItemType, { color: string; bgColor: string; icon: React.ElementType }> = {
@@ -45,25 +48,11 @@ const itemConfig: Record<ItemType, { color: string; bgColor: string; icon: React
   },
 };
 
-// 파티클 효과 생성 함수
-const createParticles = (x: number, y: number, color: string) => {
-  confetti({
-    particleCount: 30,
-    spread: 80,
-    origin: { x, y },
-    colors: [color],
-    disableForReducedMotion: true,
-    gravity: 0.8,
-    scalar: 0.8,
-    shapes: ['circle', 'square'],
-    zIndex: 100,
-  });
-};
-
 export const GameBoard = () => {
   const { getRandomItemType, createInitialGrid } = useMatchgame();
+  const { items, selectedItem, selectItem } = useGameItem();
   const [grid, setGrid] = useState<GridItem[][]>([]);
-  const [selectedItem, setSelectedItem] = useState<{
+  const [selectedTile, setSelectedTile] = useState<{
     row: number;
     col: number;
   } | null>(null);
@@ -83,36 +72,31 @@ export const GameBoard = () => {
 
   useEffect(() => {
     setGrid(createInitialGrid());
-  }, [createInitialGrid]);
+  }, []);
 
   // 아이템 선택 핸들러
   const handleItemClick = (row: number, col: number) => {
     if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver) return;
 
-    if (selectedItem === null) {
-      setSelectedItem({ row, col });
+    if (selectedTile === null) {
+      setSelectedTile({ row, col });
       return;
     }
 
-    if (selectedItem.row === row && selectedItem.col === col) {
-      setSelectedItem(null);
+    if (selectedTile.row === row && selectedTile.col === col) {
+      setSelectedTile(null);
       return;
     }
 
     const isAdjacent =
-      (Math.abs(selectedItem.row - row) === 1 && selectedItem.col === col) ||
-      (Math.abs(selectedItem.col - col) === 1 && selectedItem.row === row);
+      (Math.abs(selectedTile.row - row) === 1 && selectedTile.col === col) ||
+      (Math.abs(selectedTile.col - col) === 1 && selectedTile.row === row);
 
     if (isAdjacent) {
-      swapItems(selectedItem.row, selectedItem.col, row, col);
+      swapItems(selectedTile.row, selectedTile.col, row, col);
     } else {
-      setSelectedItem({ row, col });
+      setSelectedTile({ row, col });
     }
-  };
-
-  // 깊은 복사를 위한 함수
-  const deepCopyGrid = (grid: GridItem[][]): GridItem[][] => {
-    return grid.map((row) => row.map((item) => ({ ...item })));
   };
 
   // 아이템 스왑 함수
@@ -126,7 +110,7 @@ export const GameBoard = () => {
     newGrid[row2][col2] = temp;
 
     setGrid(newGrid);
-    setSelectedItem(null);
+    setSelectedTile(null);
 
     await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
 
@@ -199,14 +183,14 @@ export const GameBoard = () => {
     isFirstMatch: boolean = false,
   ) => {
     const combo = gameState.combo + 1;
-    const matchScore = matches.length * 10 * combo;
+    const matchScore = matches.length * SCORE * combo;
 
     setGameState((prev) => ({
       ...prev,
       isChecking: true,
       score: prev.score + matchScore,
       moves: isFirstMatch ? prev.moves - 1 : prev.moves,
-      combo: combo,
+      combo,
     }));
 
     if (matches.length > 0) {
@@ -304,7 +288,7 @@ export const GameBoard = () => {
   // 게임 재시작 함수
   const restartGame = () => {
     setGrid(createInitialGrid());
-    setSelectedItem(null);
+    setSelectedTile(null);
     setGameState({
       score: 0,
       moves: 20,
@@ -314,6 +298,14 @@ export const GameBoard = () => {
       combo: 0,
     });
     setShowScorePopup(null);
+  };
+
+  const handleGameItemSelect = (itemId: GameItemType) => {
+    if (selectedItem === itemId) {
+      selectItem(null);
+      return;
+    }
+    selectItem(itemId);
   };
 
   return (
@@ -433,12 +425,12 @@ export const GameBoard = () => {
                 animate={{
                   scale: item.isMatched
                     ? 0
-                    : selectedItem?.row === rowIndex && selectedItem?.col === colIndex
+                    : selectedTile?.row === rowIndex && selectedTile?.col === colIndex
                       ? 1.1
                       : 1,
                   opacity: item.isMatched ? 0 : 1,
                   y: 0,
-                  rotate: selectedItem?.row === rowIndex && selectedItem?.col === colIndex ? [0, 5, 0, -5, 0] : 0,
+                  rotate: selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? [0, 5, 0, -5, 0] : 0,
                 }}
                 transition={{
                   scale: {
@@ -453,14 +445,14 @@ export const GameBoard = () => {
                     duration: 1,
                     type: 'tween',
                     repeat:
-                      selectedItem?.row === rowIndex && selectedItem?.col === colIndex ? Number.POSITIVE_INFINITY : 0,
+                      selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? Number.POSITIVE_INFINITY : 0,
                   },
                 }}
                 className={`
                   w-10 h-10 sm:w-12 sm:h-12 rounded-full 
                   ${itemConfig[item.type].bgColor}
                   ${
-                    selectedItem?.row === rowIndex && selectedItem?.col === colIndex
+                    selectedTile?.row === rowIndex && selectedTile?.col === colIndex
                       ? 'ring-4 ring-white shadow-[0_0_10px_rgba(255,255,255,0.7)]'
                       : 'shadow-md hover:shadow-lg'
                   }
@@ -476,13 +468,13 @@ export const GameBoard = () => {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/20" />
                 <motion.div
                   animate={{
-                    rotate: selectedItem?.row === rowIndex && selectedItem?.col === colIndex ? 360 : 0,
+                    rotate: selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? 360 : 0,
                   }}
                   transition={{
                     duration: 1,
                     type: 'tween',
                     repeat:
-                      selectedItem?.row === rowIndex && selectedItem?.col === colIndex ? Number.POSITIVE_INFINITY : 0,
+                      selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? Number.POSITIVE_INFINITY : 0,
                   }}
                   className="relative z-10"
                 >
@@ -514,6 +506,37 @@ export const GameBoard = () => {
             )}
           </AnimatePresence>
         </div>
+        <motion.div
+          className="mt-6 flex justify-center gap-3"
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3, type: 'spring' }}
+        >
+          {items.map(({ id, count, icon, name }) => (
+            <motion.div
+              key={id}
+              className={`
+        relative flex flex-col flex-1 text-center items-center p-3 rounded-lg cursor-pointer
+        ${
+          selectedItem === id
+            ? 'bg-gradient-to-r from-indigo-500 to-purple-600 ring-2 ring-white shadow-lg'
+            : 'bg-indigo-800 hover:bg-indigo-700'
+        }
+        ${count === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+        transition-all duration-200
+      `}
+              onClick={() => count > 0 && handleGameItemSelect(id as GameItemType)}
+              whileHover={{ scale: count > 0 ? 1.05 : 1 }}
+              whileTap={{ scale: count > 0 ? 0.95 : 1 }}
+            >
+              <div className="text-3xl mb-2">{createElement(icon, { className: 'w-8 h-8 text-white' })}</div>
+              <div className="text-sm font-bold text-white">{name}</div>
+              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                {count}
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       </motion.div>
     </div>
   );

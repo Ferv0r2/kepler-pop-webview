@@ -1,16 +1,27 @@
-export type ItemType = 1 | 2 | 3 | 4 | 5 | 6
+import { ElementType } from 'react';
+
+export type ItemType = 1 | 2 | 3 | 4 | 5 | 6;
 export type GridItem = {
-  id: string
-  type: ItemType
-  isMatched: boolean
-  isNew: boolean
-}
+  id: string;
+  type: ItemType;
+  isMatched: boolean;
+  isNew: boolean;
+};
 
 export type GameState = {
-  score: number
-  moves: number
-  isSwapping: boolean
-  isChecking: boolean
-  isGameOver: boolean
-  combo: number
-}
+  score: number;
+  moves: number;
+  isSwapping: boolean;
+  isChecking: boolean;
+  isGameOver: boolean;
+  combo: number;
+};
+
+export type GameItem = {
+  id: string;
+  name: string;
+  count: number;
+  icon: ElementType;
+};
+
+export type GameItemType = 'shovel' | 'mole' | 'bomb';

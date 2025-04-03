@@ -1,6 +1,6 @@
-import { v4 as uuidv4 } from "uuid";
-import { GRID_SIZE } from "@/constants/basic-config";
-import { GridItem, ItemType } from "@/types/GameTypes";
+import { v4 as uuidv4 } from 'uuid';
+import { GRID_SIZE } from '@/constants/game-config';
+import { GridItem, ItemType } from '@/types/GameTypes';
 
 export const useMatchgame = () => {
   // 랜덤 아이템 생성 함수
@@ -20,13 +20,9 @@ export const useMatchgame = () => {
           itemType = getRandomItemType();
         } while (
           // 가로 매치 체크
-          (col >= 2 &&
-            newRow[col - 1]?.type === itemType &&
-            newRow[col - 2]?.type === itemType) ||
+          (col >= 2 && newRow[col - 1]?.type === itemType && newRow[col - 2]?.type === itemType) ||
           // 세로 매치 체크
-          (row >= 2 &&
-            grid[row - 1][col]?.type === itemType &&
-            grid[row - 2][col]?.type === itemType)
+          (row >= 2 && grid[row - 1][col]?.type === itemType && grid[row - 2][col]?.type === itemType)
         );
         newRow.push({
           id: `${row}-${col}-${uuidv4()}`,
