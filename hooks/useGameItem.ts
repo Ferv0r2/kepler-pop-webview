@@ -7,24 +7,25 @@ import { DIRECTIONS } from '@/constants/game-config';
 import type { GameItem, GameItemType, GridItem } from '@/types/GameTypes';
 import { deepCopyGrid } from '@/utils/game-helper';
 
-// Define the return type for the hook
 export interface UseGameItemReturn {
-  items: GameItem[];
-  selectedItem: GameItemType | null;
-  selectItem: (itemId: GameItemType | null) => void;
-  useItem: (itemId: GameItemType, callback: () => void) => boolean;
+  gameItems: GameItem[];
+  selectedGameItem: GameItemType | null;
+  selectGameItem: (itemId: GameItemType | null) => void;
+  executeItem: (itemId: GameItemType, callback: () => void) => boolean;
   addItem: (itemId: GameItemType, amount?: number) => void;
   // Function to remove a single tile
   removeTile: (grid: GridItem[][], row: number, col: number) => GridItem[][];
   // Function to remove a random row
   removeRow: (grid: GridItem[][], row: number) => GridItem[][];
+  // Function to remove a col
+  removeCol: (grid: GridItem[][], col: number) => GridItem[][];
   // Function to remove adjacent tiles
   removeAdjacentTiles: (grid: GridItem[][], row: number, col: number) => GridItem[][];
 }
 
 export const useGameItem = (): UseGameItemReturn => {
   // Initial items with counts
-  const [items, setItems] = useState<GameItem[]>([
+  const [gameItems, setGameItems] = useState<GameItem[]>([
     {
       id: 'shovel',
       name: '모종삽',
@@ -45,19 +46,17 @@ export const useGameItem = (): UseGameItemReturn => {
     },
   ]);
 
-  const [selectedItem, setSelectedItem] = useState<GameItemType | null>(null);
+  const [selectedGameItem, setSelectedGameItem] = useState<GameItemType | null>(null);
 
-  // Select an item
-  const selectItem = (itemId: GameItemType | null) => {
-    setSelectedItem(itemId);
+  const selectGameItem = (itemId: GameItemType | null) => {
+    setSelectedGameItem(itemId);
   };
 
-  // Use an item and decrease its count
-  const useItem = (itemId: GameItemType, callback: () => void): boolean => {
-    const itemIndex = items.findIndex((item) => item.id === itemId);
-    if (itemIndex === -1 || items[itemIndex].count <= 0) return false;
+  const executeItem = (itemId: GameItemType, callback: () => void): boolean => {
+    const itemIndex = gameItems.findIndex((item) => item.id === itemId);
+    if (itemIndex === -1 || gameItems[itemIndex].count <= 0) return false;
 
-    setItems((prevItems) => {
+    setGameItems((prevItems) => {
       const newItems = [...prevItems];
       newItems[itemIndex] = {
         ...newItems[itemIndex],
@@ -67,13 +66,12 @@ export const useGameItem = (): UseGameItemReturn => {
     });
 
     callback();
-    setSelectedItem(null);
+    setSelectedGameItem(null);
     return true;
   };
 
-  // Add items (for future use, like rewards)
   const addItem = (itemId: GameItemType, amount = 1) => {
-    setItems((prevItems) => {
+    setGameItems((prevItems) => {
       const itemIndex = prevItems.findIndex((item) => item.id === itemId);
       if (itemIndex === -1) return prevItems;
 
@@ -93,7 +91,6 @@ export const useGameItem = (): UseGameItemReturn => {
     return newGrid;
   };
 
-  // Remove a row
   const removeRow = (grid: GridItem[][], row: number): GridItem[][] => {
     const newGrid = deepCopyGrid(grid);
     for (let col = 0; col < newGrid[row].length; col++) {
@@ -102,13 +99,18 @@ export const useGameItem = (): UseGameItemReturn => {
     return newGrid;
   };
 
-  // Remove adjacent tiles
+  const removeCol = (grid: GridItem[][], col: number): GridItem[][] => {
+    const newGrid = deepCopyGrid(grid);
+    for (let row = 0; row < newGrid.length; row++) {
+      newGrid[row][col].isMatched = true;
+    }
+    return newGrid;
+  };
+
   const removeAdjacentTiles = (grid: GridItem[][], row: number, col: number): GridItem[][] => {
     const newGrid = deepCopyGrid(grid);
-    // Mark the center tile
     newGrid[row][col].isMatched = true;
 
-    // Mark adjacent tiles
     for (const [dx, dy] of DIRECTIONS) {
       const newRow = row + dx;
       const newCol = col + dy;
@@ -121,13 +123,14 @@ export const useGameItem = (): UseGameItemReturn => {
   };
 
   return {
-    items,
-    selectedItem,
-    selectItem,
-    useItem,
+    gameItems,
+    selectedGameItem,
+    selectGameItem,
+    executeItem,
     addItem,
     removeTile,
     removeRow,
+    removeCol,
     removeAdjacentTiles,
   };
 };

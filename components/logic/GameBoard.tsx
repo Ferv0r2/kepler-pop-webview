@@ -14,8 +14,7 @@ import type { GridItem, ItemType, GameState, GameItemType } from '@/types/GameTy
 import { createParticles } from '@/utils/animation-helper';
 import { deepCopyGrid } from '@/utils/game-helper';
 
-// 아이템 색상 및 아이콘 매핑
-const itemConfig: Record<ItemType, { color: string; bgColor: string; icon: React.ElementType }> = {
+const tileConfig: Record<ItemType, { color: string; bgColor: string; icon: React.ElementType }> = {
   1: {
     color: 'text-red-500',
     bgColor: 'bg-gradient-to-br from-red-400 to-red-600',
@@ -50,7 +49,16 @@ const itemConfig: Record<ItemType, { color: string; bgColor: string; icon: React
 
 export const GameBoard = () => {
   const { getRandomItemType, createInitialGrid } = useMatchGame();
-  const { items, selectedItem, selectItem } = useGameItem();
+  const {
+    gameItems,
+    selectedGameItem,
+    selectGameItem,
+    executeItem,
+    removeTile,
+    removeRow,
+    removeCol,
+    removeAdjacentTiles,
+  } = useGameItem();
   const [grid, setGrid] = useState<GridItem[][]>([]);
   const [selectedTile, setSelectedTile] = useState<{
     row: number;
@@ -74,9 +82,30 @@ export const GameBoard = () => {
     setGrid(createInitialGrid());
   }, []);
 
-  // 아이템 선택 핸들러
-  const handleItemClick = (row: number, col: number) => {
+  const itemEffects: Record<GameItemType, (row: number, col: number) => GridItem[][]> = {
+    shovel: (row, col) => {
+      return removeTile(grid, row, col);
+    },
+    mole: (row, col) => {
+      const randomDirection = Math.random() < 0.5 ? 'row' : 'col';
+      if (randomDirection === 'row') {
+        return removeRow(grid, row);
+      } else {
+        return removeCol(grid, col);
+      }
+    },
+    bomb: (row, col) => {
+      return removeAdjacentTiles(grid, row, col);
+    },
+  };
+
+  const handleTileClick = (row: number, col: number) => {
     if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver) return;
+
+    if (selectedGameItem) {
+      activeSelectedGameItem(row, col);
+      return;
+    }
 
     if (selectedTile === null) {
       setSelectedTile({ row, col });
@@ -93,14 +122,13 @@ export const GameBoard = () => {
       (Math.abs(selectedTile.col - col) === 1 && selectedTile.row === row);
 
     if (isAdjacent) {
-      swapItems(selectedTile.row, selectedTile.col, row, col);
+      swapTiles(selectedTile.row, selectedTile.col, row, col);
     } else {
       setSelectedTile({ row, col });
     }
   };
 
-  // 아이템 스왑 함수
-  const swapItems = async (row1: number, col1: number, row2: number, col2: number) => {
+  const swapTiles = async (row1: number, col1: number, row2: number, col2: number) => {
     setGameState((prev) => ({ ...prev, isSwapping: true }));
     let newGrid = deepCopyGrid(grid);
 
@@ -205,7 +233,7 @@ export const GameBoard = () => {
 
       const x = (centerCol + 0.5) / GRID_SIZE;
       const y = (centerRow + 0.5) / GRID_SIZE;
-      const color = itemConfig[currentGrid[matches[0].row][matches[0].col].type].color.replace('text-', '');
+      const color = tileConfig[currentGrid[matches[0].row][matches[0].col].type].color.replace('text-', '');
       createParticles(x, y, color);
 
       setTimeout(() => {
@@ -223,7 +251,7 @@ export const GameBoard = () => {
     await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
 
     // 매치된 아이템 제거 및 타일 드롭 처리
-    newGrid = removeMatchedItems(newGrid);
+    newGrid = removeMatchedTiles(newGrid);
     setGrid(newGrid);
     await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION * 1.5));
 
@@ -252,8 +280,8 @@ export const GameBoard = () => {
     }
   };
 
-  // 매치된 아이템 제거 및 타일 드롭 함수
-  const removeMatchedItems = (currentGrid: GridItem[][]): GridItem[][] => {
+  // 매치된 타일 제거 및 드롭 함수
+  const removeMatchedTiles = (currentGrid: GridItem[][]): GridItem[][] => {
     const newGrid = deepCopyGrid(currentGrid);
 
     for (let col = 0; col < GRID_SIZE; col++) {
@@ -285,7 +313,6 @@ export const GameBoard = () => {
     return newGrid;
   };
 
-  // 게임 재시작 함수
   const restartGame = () => {
     setGrid(createInitialGrid());
     setSelectedTile(null);
@@ -301,11 +328,50 @@ export const GameBoard = () => {
   };
 
   const handleGameItemSelect = (itemId: GameItemType) => {
-    if (selectedItem === itemId) {
-      selectItem(null);
+    if (selectedTile) {
+      selectGameItem(null);
       return;
     }
-    selectItem(itemId);
+
+    if (selectedGameItem === itemId) {
+      selectGameItem(null);
+      return;
+    }
+    selectGameItem(itemId);
+  };
+
+  const activeSelectedGameItem = async (row: number, col: number) => {
+    if (!selectedGameItem) return;
+
+    const updatedGrid = itemEffects[selectedGameItem](row, col);
+    executeItem(selectedGameItem, () => {
+      selectGameItem(null);
+    });
+
+    setGrid(updatedGrid);
+
+    // 아이템 효과 애니메이션 시간만큼 대기
+    await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
+
+    // 매치된 타일 제거 및 빈 공간 채우기
+    const afterRemovalGrid = removeMatchedTiles(updatedGrid);
+    setGrid(afterRemovalGrid);
+
+    // 새로운 타일 드롭 애니메이션을 위한 대기
+    await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION * 1.5));
+
+    // 매치 검사 및 처리
+    const matches = findMatches(afterRemovalGrid);
+    if (matches.length > 0) {
+      processMatches(matches, afterRemovalGrid, true);
+    } else {
+      setGameState((prev) => ({
+        ...prev,
+        isSwapping: false,
+        isChecking: false,
+        combo: 0,
+      }));
+    }
   };
 
   return (
@@ -450,7 +516,7 @@ export const GameBoard = () => {
                 }}
                 className={`
                   w-10 h-10 sm:w-12 sm:h-12 rounded-full 
-                  ${itemConfig[item.type].bgColor}
+                  ${tileConfig[item.type].bgColor}
                   ${
                     selectedTile?.row === rowIndex && selectedTile?.col === colIndex
                       ? 'ring-4 ring-white shadow-[0_0_10px_rgba(255,255,255,0.7)]'
@@ -461,7 +527,7 @@ export const GameBoard = () => {
                   transition-shadow duration-200
                   relative overflow-hidden
                 `}
-                onClick={() => handleItemClick(rowIndex, colIndex)}
+                onClick={() => handleTileClick(rowIndex, colIndex)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -478,7 +544,7 @@ export const GameBoard = () => {
                   }}
                   className="relative z-10"
                 >
-                  {createElement(itemConfig[item.type].icon, {
+                  {createElement(tileConfig[item.type].icon, {
                     className: 'w-6 h-6 sm:w-7 sm:h-7 text-white drop-shadow-md',
                     strokeWidth: 2.5,
                   })}
@@ -512,18 +578,18 @@ export const GameBoard = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3, type: 'spring' }}
         >
-          {items.map(({ id, count, icon, name }) => (
+          {gameItems.map(({ id, count, icon, name }) => (
             <motion.div
               key={id}
               className={`
         relative flex flex-col flex-1 text-center items-center p-3 rounded-lg cursor-pointer
         ${
-          selectedItem === id
-            ? 'bg-gradient-to-r from-indigo-500 to-purple-600 ring-2 ring-white shadow-lg'
-            : 'bg-indigo-800 hover:bg-indigo-700'
+          selectedGameItem === id
+            ? 'from-indigo-500 to-purple-600 ring-2 ring-white shadow-lg'
+            : 'from-indigo-700 to-purple-800'
         }
         ${count === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-        transition-all duration-200
+        bg-gradient-to-br drop-shadow-md transition-all duration-200
       `}
               onClick={() => count > 0 && handleGameItemSelect(id as GameItemType)}
               whileHover={{ scale: count > 0 ? 1.05 : 1 }}
