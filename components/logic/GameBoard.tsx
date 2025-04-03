@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { ANIMATION_DURATION, GRID_SIZE, SCORE } from '@/constants/game-config';
 import { useGameItem } from '@/hooks/useGameItem';
-import { useMatchgame } from '@/hooks/useMatchGame';
+import { useMatchGame } from '@/hooks/useMatchGame';
 import type { GridItem, ItemType, GameState, GameItemType } from '@/types/GameTypes';
 import { createParticles } from '@/utils/animation-helper';
 import { deepCopyGrid } from '@/utils/game-helper';
@@ -49,7 +49,7 @@ const itemConfig: Record<ItemType, { color: string; bgColor: string; icon: React
 };
 
 export const GameBoard = () => {
-  const { getRandomItemType, createInitialGrid } = useMatchgame();
+  const { getRandomItemType, createInitialGrid } = useMatchGame();
   const { items, selectedItem, selectItem } = useGameItem();
   const [grid, setGrid] = useState<GridItem[][]>([]);
   const [selectedTile, setSelectedTile] = useState<{

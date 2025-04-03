@@ -1,10 +1,11 @@
 'use client';
 
+import { Aperture, Bomb, Shovel } from 'lucide-react';
 import { useState } from 'react';
+
+import { DIRECTIONS } from '@/constants/game-config';
 import type { GameItem, GameItemType, GridItem } from '@/types/GameTypes';
 import { deepCopyGrid } from '@/utils/game-helper';
-import { DIRECTIONS } from '@/constants/game-config';
-import { Aperture, Bomb, Shovel } from 'lucide-react';
 
 // Define the return type for the hook
 export interface UseGameItemReturn {
