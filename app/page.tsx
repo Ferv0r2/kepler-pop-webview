@@ -1,5 +1,5 @@
-import { GameBoard } from '@/components/logic/GameBoard';
+import { MainView } from '@/screens/MainView';
 
 export default function Home() {
-  return <GameBoard />;
+  return <MainView />;
 }

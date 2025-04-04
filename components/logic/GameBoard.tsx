@@ -2,10 +2,12 @@
 
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Zap, Sparkles, Star, Diamond, Gem } from 'lucide-react';
+import { Heart, Zap, Sparkles, Star, Diamond, Gem, ArrowLeft, Settings, Home, X, RefreshCw } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { createElement, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
+import { ConfirmationModal } from '@/components/logic/ConfirmationModal';
 import { Button } from '@/components/ui/button';
 import { ANIMATION_DURATION, GRID_SIZE, SCORE } from '@/constants/game-config';
 import { useGameItem } from '@/hooks/useGameItem';
@@ -48,6 +50,7 @@ const tileConfig: Record<ItemType, { color: string; bgColor: string; icon: React
 };
 
 export const GameBoard = () => {
+  const router = useRouter();
   const { getRandomItemType, createInitialGrid } = useMatchGame();
   const {
     gameItems,
@@ -77,6 +80,8 @@ export const GameBoard = () => {
     x: number;
     y: number;
   } | null>(null);
+  const [showBackConfirmation, setShowBackConfirmation] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 
   useEffect(() => {
     setGrid(createInitialGrid());
@@ -374,62 +379,104 @@ export const GameBoard = () => {
     }
   };
 
+  const handleBackClick = () => {
+    // 게임 진행 중에만 확인 모달 표시, 이미 게임 오버면 바로 이동
+    if (gameState.isGameOver) {
+      router.push('/');
+    }
+    setShowBackConfirmation(true);
+  };
+
+  const handleConfirmGoBack = () => {
+    setShowBackConfirmation(false);
+    router.push('/');
+  };
+
+  const handleSettingsClick = () => {
+    setShowSettingsMenu(!showSettingsMenu);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-indigo-900 via-purple-800 to-violet-900 p-4">
-      <div className="text-center mb-6">
+      <motion.div
+        className="w-full max-w-lg flex justify-between items-center mb-4"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleBackClick}
+          className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-full"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </Button>
+
         <motion.h1
-          className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 mb-2"
+          className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, type: 'spring' }}
         >
           Kepler Pop
         </motion.h1>
-        <div className="flex justify-center gap-8 mt-8">
-          <motion.div
-            className="text-white bg-indigo-700/50 px-4 py-2 rounded-full shadow-lg"
-            initial={{ x: -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleSettingsClick}
+          className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-full"
+        >
+          <Settings className="h-6 w-6" />
+        </Button>
+      </motion.div>
+
+      <div className="flex justify-center gap-8 my-4">
+        <motion.div
+          className="text-white bg-indigo-700/50 px-4 py-2 rounded-full shadow-lg"
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <span className="font-bold">점수:</span>{' '}
+          <motion.span
+            key={gameState.score}
+            initial={{ scale: 1.5 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.3 }}
           >
-            <span className="font-bold">점수:</span>{' '}
-            <motion.span
-              key={gameState.score}
-              initial={{ scale: 1.5 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              {gameState.score}
-            </motion.span>
-          </motion.div>
-          <motion.div
-            className="text-white bg-purple-700/50 px-4 py-2 rounded-full shadow-lg"
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+            {gameState.score}
+          </motion.span>
+        </motion.div>
+        <motion.div
+          className="text-white bg-purple-700/50 px-4 py-2 rounded-full shadow-lg"
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <span className="font-bold">남은 이동:</span>{' '}
+          <motion.span
+            key={gameState.moves}
+            initial={{ scale: 1.5 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.3 }}
           >
-            <span className="font-bold">남은 이동:</span>{' '}
-            <motion.span
-              key={gameState.moves}
-              initial={{ scale: 1.5 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              {gameState.moves}
-            </motion.span>
-          </motion.div>
-        </div>
-        {gameState.combo > 1 && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            className="mt-2 text-yellow-300 font-bold text-xl"
-          >
-            {gameState.combo}x 콤보!
-          </motion.div>
-        )}
+            {gameState.moves}
+          </motion.span>
+        </motion.div>
       </div>
+
+      {gameState.combo > 1 && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          className="mt-2 text-yellow-300 font-bold text-xl"
+        >
+          {gameState.combo}x 콤보!
+        </motion.div>
+      )}
 
       <motion.div
         className="relative bg-indigo-800/30 p-3 rounded-xl border-2 border-indigo-600/50 shadow-[0_0_15px_rgba(79,70,229,0.4)]"
@@ -440,37 +487,95 @@ export const GameBoard = () => {
         <AnimatePresence>
           {gameState.isGameOver && (
             <motion.div
-              className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-xl z-20 backdrop-blur-sm"
-              initial={{ scale: 0, opacity: 0, rotate: -10 }}
-              animate={{ scale: 1, opacity: 1, rotate: 0 }}
-              exit={{ scale: 0, opacity: 0, rotate: 10 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              className="absolute inset-0 flex items-center justify-center bg-black/70 rounded-xl z-20 backdrop-blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
             >
-              <motion.div className="text-center p-8 bg-gradient-to-b from-indigo-900 to-purple-900 rounded-xl border-2 border-indigo-500 shadow-[0_0_30px_rgba(99,102,241,0.5)]">
-                <motion.h2
-                  className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 mb-4"
-                  initial={{ y: -20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
-                >
-                  게임 종료!
-                </motion.h2>
-                <motion.p
-                  className="text-2xl text-white mb-6"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.5 }}
-                >
-                  최종 점수: <span className="font-bold text-yellow-300">{gameState.score}</span>
-                </motion.p>
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.4, type: 'spring' }}>
-                  <Button
-                    onClick={restartGame}
-                    className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              <motion.div
+                className="relative w-5/6 max-w-md"
+                initial={{ scale: 0.8, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.8, y: 20 }}
+                transition={{ type: 'spring', damping: 25, delay: 0.1 }}
+              >
+                {/* 배경 이펙트 */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-2xl opacity-70 blur-md animate-pulse" />
+
+                {/* 메인 컨테이너 */}
+                <div className="relative bg-gradient-to-b from-indigo-900/95 to-purple-900/95 rounded-2xl p-8 border border-indigo-400/30 shadow-[0_0_30px_rgba(139,92,246,0.5)]">
+                  {/* 별 장식 요소들 */}
+                  <div className="absolute -top-10 -right-10 text-yellow-300 text-4xl animate-pulse opacity-70">✨</div>
+                  <div
+                    className="absolute -bottom-6 -left-6 text-pink-300 text-3xl animate-pulse opacity-70"
+                    style={{ animationDelay: '0.5s' }}
                   >
-                    다시 시작
-                  </Button>
-                </motion.div>
+                    ✨
+                  </div>
+
+                  {/* 헤더 */}
+                  <motion.div
+                    className="flex justify-center mb-6"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                  >
+                    <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
+                      게임 종료!
+                    </h2>
+                  </motion.div>
+
+                  <motion.div
+                    className="text-center mb-6 bg-indigo-800/40 p-4 rounded-xl"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                  >
+                    <p className="text-lg text-white/80 mb-1">최종 점수</p>
+                    <motion.div
+                      className="text-3xl font-bold text-yellow-300"
+                      initial={{ scale: 0.8 }}
+                      animate={{ scale: [0.8, 1.2, 1] }}
+                      transition={{ delay: 0.6, duration: 0.7, times: [0, 0.6, 1] }}
+                    >
+                      {gameState.score.toLocaleString()}
+                    </motion.div>
+                  </motion.div>
+
+                  <motion.div
+                    className="flex justify-center mb-6"
+                    initial={{ scale: 0, rotate: 180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.7, type: 'spring', stiffness: 200 }}
+                  >
+                    <div className="text-6xl text-yellow-400">🏆</div>
+                  </motion.div>
+
+                  <motion.div
+                    className="flex flex-col gap-3"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.8, duration: 0.5 }}
+                  >
+                    <Button
+                      onClick={restartGame}
+                      className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      <RefreshCw className="w-5 h-5 mr-2" />
+                      다시 도전하기
+                    </Button>
+
+                    <Button
+                      onClick={() => router.push('/')}
+                      variant="outline"
+                      className="border-indigo-500/50 text-white hover:bg-indigo-800/30 rounded-xl py-3"
+                    >
+                      <Home className="w-5 h-5 mr-2" />
+                      메인으로 돌아가기
+                    </Button>
+                  </motion.div>
+                </div>
               </motion.div>
             </motion.div>
           )}
@@ -604,6 +709,109 @@ export const GameBoard = () => {
           ))}
         </motion.div>
       </motion.div>
+
+      <ConfirmationModal
+        isOpen={showBackConfirmation}
+        title="게임 종료"
+        message={
+          <div className="space-y-3">
+            <p className="text-white">게임을 종료하시겠습니까?</p>
+            <div className="flex items-start gap-2 bg-yellow-400/10 p-2 rounded-lg">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <p className="text-yellow-300 text-sm font-medium">
+                진행 상황은 저장되지 않으며, 사용한 물방울은 돌려받을 수 없습니다.
+              </p>
+            </div>
+          </div>
+        }
+        confirmText="나가기"
+        cancelText="계속하기"
+        onConfirm={handleConfirmGoBack}
+        onCancel={() => setShowBackConfirmation(false)}
+      />
+
+      <AnimatePresence>
+        {showSettingsMenu && (
+          <motion.div
+            className="fixed inset-0 z-40 flex items-center justify-center backdrop-blur-lg bg-black/60"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowSettingsMenu(false)}
+          >
+            <motion.div
+              className="bg-gradient-to-br from-indigo-900/95 to-purple-900/95 border border-indigo-400/30 rounded-2xl p-6 w-[320px] shadow-[0_0_25px_rgba(99,102,241,0.3)]"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 25 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
+                  설정
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowSettingsMenu(false)}
+                  className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                >
+                  <X className="h-5 w-5 text-white/80" />
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    variant="outline"
+                    className="w-full flex justify-start gap-3 rounded-xl py-4 bg-gradient-to-r from-indigo-800/40 to-purple-800/40 hover:from-indigo-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
+                    onClick={() => {
+                      setShowSettingsMenu(false);
+                      setShowBackConfirmation(true);
+                    }}
+                  >
+                    <Home className="h-5 w-5 text-blue-300" />
+                    <span>메인으로 돌아가기</span>
+                  </Button>
+                </motion.div>
+
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    variant="outline"
+                    className="w-full flex justify-start gap-3 rounded-xl py-4 bg-gradient-to-r from-indigo-800/40 to-purple-800/40 hover:from-indigo-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
+                    onClick={() => {
+                      setShowSettingsMenu(false);
+                      restartGame();
+                    }}
+                  >
+                    <RefreshCw className="h-5 w-5 text-green-300" />
+                    <span>게임 재시작</span>
+                  </Button>
+                </motion.div>
+
+                <div className="mt-6 pt-4 border-t border-indigo-500/30">
+                  <p className="text-center text-sm text-white/60 mb-2">Kepler Pop v1.0</p>
+                  <p className="text-center text-xs text-white/40">© 2023 우주 개발팀</p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
