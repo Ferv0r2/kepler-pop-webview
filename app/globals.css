@@ -127,3 +127,15 @@
     filter: drop-shadow(0 0 8px rgba(147, 197, 253, 0.8));
   }
 }
+
+html,
+body {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
