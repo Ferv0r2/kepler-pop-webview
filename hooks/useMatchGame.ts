@@ -30,6 +30,7 @@ export const useMatchGame = () => {
           type: itemType,
           isMatched: false,
           isNew: false,
+          tier: 1,
         });
       }
       grid.push(newRow);
