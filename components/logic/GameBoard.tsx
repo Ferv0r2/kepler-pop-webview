@@ -9,11 +9,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ConfirmationModal } from '@/components/logic/ConfirmationModal';
 import { Button } from '@/components/ui/button';
-import { ANIMATION_DURATION, GRID_SIZE, SCORE } from '@/constants/game-config';
+import { ANIMATION_DURATION, GRID_SIZE, MIN_MATCH_COUNT, SCORE } from '@/constants/game-config';
 import { useGameItem } from '@/hooks/useGameItem';
 import { useMatchGame } from '@/hooks/useMatchGame';
 import type { GridItem, ItemType, GameState, GameItemType } from '@/types/GameTypes';
-import { createParticles } from '@/utils/animation-helper';
+import { createParticles, fallVariant, swapVariant } from '@/utils/animation-helper';
 import { deepCopyGrid } from '@/utils/game-helper';
 
 const tileConfig: Record<
@@ -149,6 +149,7 @@ export const GameBoard = () => {
     isChecking: false,
     isGameOver: false,
     combo: 0,
+    turn: 1,
   });
   const [showScorePopup, setShowScorePopup] = useState<{
     score: number;
@@ -158,6 +159,8 @@ export const GameBoard = () => {
   const [showBackConfirmation, setShowBackConfirmation] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   // const [artifactFragments, setArtifactFragments] = useState(0);
+  // turn이나 move와 달리 모든 타일 변화를 카운트하는 변수
+  const [tileChangeIndex, setTileChangeIndex] = useState<number>(0);
 
   // const addArtifactFragment = () => {
   //   setArtifactFragments((prev) => prev + 1);
@@ -189,6 +192,7 @@ export const GameBoard = () => {
 
     if (selectedGameItem) {
       activeSelectedGameItem(row, col);
+      setTileChangeIndex((prev) => prev + 1);
       return;
     }
 
@@ -202,6 +206,7 @@ export const GameBoard = () => {
       return;
     }
 
+    setTileChangeIndex((prev) => prev + 1);
     const isAdjacent =
       (Math.abs(selectedTile.row - row) === 1 && selectedTile.col === col) ||
       (Math.abs(selectedTile.col - col) === 1 && selectedTile.row === row);
@@ -247,6 +252,7 @@ export const GameBoard = () => {
       setGameState((prev) => ({
         ...prev,
         moves: prev.moves - 1,
+        turn: prev.turn + 1,
         isSwapping: false,
         isGameOver: prev.moves - 1 <= 0,
       }));
@@ -266,7 +272,7 @@ export const GameBoard = () => {
           currentTile.tier === currentGrid[row][col + 1].tier &&
           currentTile.tier === currentGrid[row][col + 2].tier
         ) {
-          let matchLength = 3;
+          let matchLength = MIN_MATCH_COUNT;
           while (
             col + matchLength < GRID_SIZE &&
             currentGrid[row][col + matchLength].type === currentTile.type &&
@@ -292,7 +298,7 @@ export const GameBoard = () => {
           currentTile.tier === currentGrid[row + 1][col].tier &&
           currentTile.tier === currentGrid[row + 2][col].tier
         ) {
-          let matchLength = 3;
+          let matchLength = MIN_MATCH_COUNT;
           while (
             row + matchLength < GRID_SIZE &&
             currentGrid[row + matchLength][col].type === currentTile.type &&
@@ -325,6 +331,7 @@ export const GameBoard = () => {
       isChecking: true,
       score: prev.score + matchScore,
       moves: isFirstMatch ? prev.moves - 1 : prev.moves,
+      turn: isFirstMatch ? prev.turn + 1 : prev.turn,
       combo,
     }));
 
@@ -431,7 +438,8 @@ export const GameBoard = () => {
           id: `${i}-${col}-${uuidv4()}`,
           type: getRandomItemType(),
           isMatched: false,
-          isNew: true,
+          createdIndex: tileChangeIndex,
+          turn: gameState.turn,
           tier: 1,
         });
       }
@@ -445,8 +453,6 @@ export const GameBoard = () => {
   };
 
   const restartGame = () => {
-    setGrid(createInitialGrid());
-    setSelectedTile(null);
     setGameState({
       score: 0,
       moves: 20,
@@ -454,7 +460,11 @@ export const GameBoard = () => {
       isChecking: false,
       isGameOver: false,
       combo: 0,
+      turn: 0,
     });
+    setTileChangeIndex(0);
+    setGrid(createInitialGrid());
+    setSelectedTile(null);
     setShowScorePopup(null);
   };
 
@@ -704,33 +714,17 @@ export const GameBoard = () => {
               <motion.div
                 layout
                 key={item.id}
-                initial={item.isNew ? { y: -50, opacity: 0 } : { scale: 1 }}
+                initial={item.isMatched ? fallVariant.initial : swapVariant.initial}
                 animate={{
+                  ...(item.isMatched ? fallVariant.animate : swapVariant.animate),
                   scale: item.isMatched
                     ? 0
                     : selectedTile?.row === rowIndex && selectedTile?.col === colIndex
                       ? 1.1
                       : 1,
-                  opacity: item.isMatched ? 0 : 1,
-                  y: 0,
                   rotate: selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? [0, 5, 0, -5, 0] : 0,
                 }}
-                transition={{
-                  scale: {
-                    duration: item.isNew ? 0.3 : 0.2,
-                    type: item.isNew ? 'spring' : 'tween',
-                    stiffness: 200,
-                    damping: 15,
-                  },
-                  opacity: { duration: item.isNew ? 0.3 : 0.2 },
-                  y: { duration: item.isNew ? 0.3 : 0.2 },
-                  rotate: {
-                    duration: 1,
-                    type: 'tween',
-                    repeat:
-                      selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? Number.POSITIVE_INFINITY : 0,
-                  },
-                }}
+                transition={item.isMatched ? fallVariant.transition : swapVariant.transition}
                 className={`
                   w-10 h-10 sm:w-12 sm:h-12 rounded-full 
                   ${tileConfig[item.type].bgColor[item.tier]}

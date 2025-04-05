@@ -5,7 +5,8 @@ export type GridItem = {
   id: string;
   type: ItemType;
   isMatched: boolean;
-  isNew: boolean;
+  createdIndex: number;
+  turn: number;
   tier: number;
 };
 
@@ -16,6 +17,7 @@ export type GameState = {
   isChecking: boolean;
   isGameOver: boolean;
   combo: number;
+  turn: number;
 };
 
 export type GameItem = {

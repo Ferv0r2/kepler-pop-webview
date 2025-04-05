@@ -29,7 +29,8 @@ export const useMatchGame = () => {
           id: `${row}-${col}-${uuidv4()}`,
           type: itemType,
           isMatched: false,
-          isNew: false,
+          createdIndex: 0,
+          turn: 0,
           tier: 1,
         });
       }
