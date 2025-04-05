@@ -15,6 +15,15 @@ export const createParticles = (x: number, y: number, color: string) => {
   });
 };
 
+export const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: 'spring', stiffness: 300, damping: 24 },
+  },
+};
+
 export const swapVariant = {
   initial: { x: 0, y: -50, opacity: 0 },
   animate: { x: 0, y: 0, opacity: 1 },

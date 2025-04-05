@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { createElement, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-import { ConfirmationModal } from '@/components/logic/ConfirmationModal';
+import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { Button } from '@/components/ui/button';
 import { ANIMATION_DURATION, GRID_SIZE, MIN_MATCH_COUNT, SCORE } from '@/constants/game-config';
 import { useGameItem } from '@/hooks/useGameItem';

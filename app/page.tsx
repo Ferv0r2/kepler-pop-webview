@@ -1,5 +1,5 @@
 import { MainView } from '@/screens/MainView';
 
-export default function Home() {
+export default function Main() {
   return <MainView />;
 }
