@@ -133,6 +133,9 @@ body {
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
 }
 
 * {
