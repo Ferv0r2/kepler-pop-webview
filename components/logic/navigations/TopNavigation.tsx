@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Coins, Droplet, Star } from 'lucide-react';
+import Image from 'next/image';
 import { createElement, ElementType } from 'react';
 
 import { formatNumber } from '@/utils/format-helper';
@@ -22,10 +23,12 @@ export const TopNavigation = ({ name, level, energy, gameMoney, gems }: TopNavig
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <img
+          <Image
             src="/preview/cells/corn.png"
             alt="Player Avatar"
-            className="w-8 h-8 rounded-full border-2 border-purple-400 shadow-lg"
+            width={32}
+            height={32}
+            className="rounded-full border-2 border-purple-400 shadow-lg"
           />
           <div className="absolute -bottom-1 -right-1 bg-purple-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
             {level}

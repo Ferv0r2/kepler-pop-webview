@@ -4,7 +4,7 @@ import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Zap, Sparkles, Star, Diamond, Gem, ArrowLeft, Settings, Home, X, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { createElement, useEffect, useState } from 'react';
+import { createElement, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
@@ -165,10 +165,6 @@ export const GameBoard = () => {
   // const addArtifactFragment = () => {
   //   setArtifactFragments((prev) => prev + 1);
   // };
-
-  useEffect(() => {
-    setGrid(createInitialGrid());
-  }, []);
 
   const itemEffects: Record<GameItemType, (row: number, col: number) => GridItem[][]> = {
     shovel: (row, col) => {
@@ -526,6 +522,12 @@ export const GameBoard = () => {
   const handleSettingsClick = () => {
     setShowSettingsMenu(!showSettingsMenu);
   };
+
+  // Hydration 오류 방지를 위해 Grid는 클라이언트 측에서만 생성
+  useEffect(() => {
+    setGrid(createInitialGrid());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-indigo-900 via-purple-800 to-violet-900 p-4">
