@@ -10,11 +10,14 @@ import { LoadingContainer } from '@/components/logic/LoadingContainer';
 import { BottomNavigation } from '@/components/logic/navigations/BottomNavigation';
 import { SideNavigation } from '@/components/logic/navigations/SideNavigation';
 import { TopNavigation } from '@/components/logic/navigations/TopNavigation';
+import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
 import type { UserInfo } from '@/types/UserTypes';
 import { itemVariants } from '@/utils/animation-helper';
+import { Button } from '@/components/ui/button';
 
 export const MainView = () => {
   const router = useRouter();
+  const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
 
   const [userInfo, setUserInfo] = useState<UserInfo>({
     id: '',
@@ -34,19 +37,44 @@ export const MainView = () => {
 
   const [showEnergyModal, setShowEnergyModal] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [webViewStatus, setWebViewStatus] = useState<string>(isInWebView ? '웹뷰 환경 감지됨' : '브라우저 환경 감지됨');
 
   useEffect(() => {
-    // TODO: Remove this coded, apply user info from server
-    setUserInfo((prev) => ({
-      ...prev,
-      name: '우주 탐험가',
-      energy: 5,
-      gameMoney: 1500,
-      gems: 120,
-      level: 1,
-    }));
-    setUnreadMailCount(3);
-  }, []);
+    // Set environment status based on WebView detection
+    setWebViewStatus(isInWebView ? '웹뷰 환경 감지됨' : '브라우저 환경 감지됨');
+
+    // Notify React Native that web app is ready
+    if (isInWebView) {
+      sendMessage('WEB_APP_READY', { timestamp: new Date().toISOString() });
+    }
+
+    // Setup message handlers for communications from React Native
+    const unsubscribeUserInfo = addMessageHandler('SET_USER_INFO', (payload) => {
+      if (payload) {
+        setUserInfo((prev) => ({
+          ...prev,
+          ...payload,
+        }));
+      }
+    });
+
+    // If not in WebView, set mock data for development/testing
+    if (!isInWebView) {
+      setUserInfo((prev) => ({
+        ...prev,
+        name: '우주 탐험가',
+        energy: 5,
+        gameMoney: 1500,
+        gems: 120,
+        level: 1,
+      }));
+      setUnreadMailCount(3);
+    }
+
+    return () => {
+      unsubscribeUserInfo();
+    };
+  }, [isInWebView, sendMessage, addMessageHandler]);
 
   const handleStartGame = () => {
     if (userInfo.energy <= 0) {
@@ -54,10 +82,16 @@ export const MainView = () => {
       return;
     }
 
+    // Notify React Native that we're updating energy
+    if (isInWebView) {
+      sendMessage('UPDATE_ENERGY', { change: -1, newValue: userInfo.energy - 1 });
+    }
+
     setUserInfo((prev) => ({
       ...prev,
       energy: prev.energy - 1,
     }));
+
     router.push('/game');
   };
 
@@ -71,8 +105,14 @@ export const MainView = () => {
 
     setIsLoading(true);
     try {
-      // TODO: 광고 SDK 연동
-      await waitForSecond();
+      // Notify React Native that we want to show an ad
+      if (isInWebView) {
+        sendMessage('SHOW_AD', { reason: 'energy_refill' });
+      } else {
+        // Mock for browser testing
+        await waitForSecond();
+      }
+
       setUserInfo((prev) => ({
         ...prev,
         energy: prev.energy + 1,
@@ -90,8 +130,17 @@ export const MainView = () => {
 
     setIsLoading(true);
     try {
-      // TODO: 인앱 결제 로직
-      await waitForSecond();
+      // Notify React Native that we want to make a purchase
+      if (isInWebView) {
+        sendMessage('MAKE_PURCHASE', {
+          productId: 'energy_pack_5',
+          quantity: 1,
+        });
+      } else {
+        // Mock for browser testing
+        await waitForSecond();
+      }
+
       setUserInfo((prev) => ({
         ...prev,
         energy: prev.energy + 5,
@@ -129,6 +178,12 @@ export const MainView = () => {
       <div className="grid grid-rows-[auto_1fr_auto] min-h-screen bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#334155] p-0 relative">
         <header className="sticky w-full left-0 top-0 z-10">
           <TopNavigation name={name} level={level} energy={energy} gameMoney={gameMoney} gems={gems} />
+          {/* WebView status indicator */}
+          {isInWebView && (
+            <div className="absolute top-0 right-0 bg-green-700/80 text-white text-xs px-2 py-0.5 rounded-bl-md">
+              {webViewStatus}
+            </div>
+          )}
         </header>
 
         <main className="flex-1 flex flex-col mt-16 px-4 py-2 overflow-hidden">
@@ -313,55 +368,43 @@ export const MainView = () => {
       </div>
       {isLoading && <LoadingContainer />}
       <SideNavigation unreadMailCount={unreadMailCount} />
+      {/* Energy Modal */}
       <ConfirmationModal
         isOpen={showEnergyModal}
-        title="물방울 부족"
+        title="에너지가 부족합니다"
         message={
           <div className="space-y-4">
-            <p className="text-white">게임을 시작하기 위한 물방울이 부족합니다.</p>
-            <div className="bg-indigo-800/40 p-4 rounded-lg space-y-4">
-              <p className="text-sm text-white/90">다음 방법으로 물방울을 얻을 수 있습니다:</p>
-
-              <motion.div
-                className={`flex items-center justify-between bg-indigo-700/30 p-3 rounded-lg ${
-                  isLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+            <p>게임을 시작하기 위한 에너지가 부족합니다. 에너지를 충전하시겠습니까?</p>
+            <div className="flex flex-col gap-3 mt-4">
+              <Button
                 onClick={handleWatchAd}
+                variant="default"
+                disabled={isLoading}
+                className="flex justify-between items-center"
               >
-                <div className="flex items-center gap-3">
-                  <PlayCircle className="text-blue-300 w-6 h-6" />
-                  <span className="text-white font-medium">광고 시청하기</span>
-                </div>
+                <span>광고 시청하기</span>
                 <div className="flex items-center gap-1">
                   <Droplet className="text-blue-300 w-4 h-4" />
                   <span className="text-blue-300 font-bold">+1</span>
                 </div>
-              </motion.div>
-
-              <motion.div
-                className={`flex items-center justify-between bg-indigo-700/30 p-3 rounded-lg ${
-                  isLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              </Button>
+              <Button
                 onClick={handlePurchase}
+                variant="secondary"
+                disabled={isLoading}
+                className="flex justify-between items-center"
               >
-                <div className="flex items-center gap-3">
-                  <ShoppingBag className="text-green-300 w-6 h-6" />
-                  <span className="text-white font-medium">물방울 구매하기</span>
-                </div>
+                <span>에너지 구매하기</span>
                 <div className="flex items-center gap-1">
                   <Droplet className="text-blue-300 w-4 h-4" />
                   <span className="text-blue-300 font-bold">+5</span>
                 </div>
-              </motion.div>
+              </Button>
             </div>
           </div>
         }
         confirmText="닫기"
-        cancelText="취소"
+        cancelText=""
         onConfirm={() => setShowEnergyModal(false)}
         onCancel={() => setShowEnergyModal(false)}
       />
