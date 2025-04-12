@@ -141,25 +141,21 @@ export default App;
 
 ### Web → React Native
 
-| Message Type     | Description              | Payload Example                               |
-| ---------------- | ------------------------ | --------------------------------------------- |
-| `WEB_APP_READY`  | Web app initialization   | `{ timestamp: "2023-10-19T12:34:56.789Z" }`   |
-| `UPDATE_ENERGY`  | User energy update       | `{ change: -1, newValue: 9 }`                 |
-| `SHOW_AD`        | Request to show ad       | `{ reason: "energy_refill" }`                 |
-| `MAKE_PURCHASE`  | In-app purchase request  | `{ productId: "energy_pack_5", quantity: 1 }` |
-| `GET_USER_INFO`  | Request user information | `{}`                                          |
-| `BACK_ACTION`    | Request back navigation  | `{}`                                          |
-| `NAVIGATE_STATE` | Navigation state update  | `{ route: "/game", params: { id: "123" } }`   |
+| Message Type    | Description              | Payload Example                               |
+| --------------- | ------------------------ | --------------------------------------------- |
+| `WEB_APP_READY` | Web app initialization   | `{ timestamp: "2023-10-19T12:34:56.789Z" }`   |
+| `UPDATE_ENERGY` | User energy update       | `{ change: -1, newValue: 9 }`                 |
+| `SHOW_AD`       | Request to show ad       | `{ reason: "energy_refill" }`                 |
+| `MAKE_PURCHASE` | In-app purchase request  | `{ productId: "energy_pack_5", quantity: 1 }` |
+| `GET_USER_INFO` | Request user information | `{}`                                          |
 
 ### React Native → Web
 
-| Message Type      | Description            | Payload Example                                                                |
-| ----------------- | ---------------------- | ------------------------------------------------------------------------------ |
-| `SET_USER_INFO`   | Set/update user info   | `{ name: "User", energy: 10, gems: 100, level: 5 }`                            |
-| `AD_RESULT`       | Advertisement result   | `{ success: true, reason: "energy_refill" }`                                   |
-| `PURCHASE_RESULT` | Purchase result        | `{ success: true, productId: "energy_pack_5", transaction: { id: "txn123" } }` |
-| `BACK_RESULT`     | Back navigation result | `{ success: true }`                                                            |
-| `NAVIGATE_RESULT` | Navigation result      | `{ success: true, route: "/game" }`                                            |
+| Message Type      | Description          | Payload Example                                                                |
+| ----------------- | -------------------- | ------------------------------------------------------------------------------ |
+| `SET_USER_INFO`   | Set/update user info | `{ name: "User", energy: 10, gems: 100, level: 5 }`                            |
+| `AD_RESULT`       | Advertisement result | `{ success: true, reason: "energy_refill" }`                                   |
+| `PURCHASE_RESULT` | Purchase result      | `{ success: true, productId: "energy_pack_5", transaction: { id: "txn123" } }` |
 
 ## Testing
 
