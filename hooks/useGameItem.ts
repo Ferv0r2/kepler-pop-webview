@@ -4,7 +4,7 @@ import { Aperture, Bomb, Shovel } from 'lucide-react';
 import { useState } from 'react';
 
 import { DIRECTIONS } from '@/constants/game-config';
-import type { GameItem, GameItemType, GridItem } from '@/types/GameTypes';
+import type { GameItem, GameItemType, GridItem } from '@/types/game-types';
 import { deepCopyGrid } from '@/utils/game-helper';
 
 export interface UseGameItemReturn {

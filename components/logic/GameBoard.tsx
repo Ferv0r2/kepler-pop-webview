@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { ANIMATION_DURATION, GRID_SIZE, MIN_MATCH_COUNT, SCORE } from '@/constants/game-config';
 import { useGameItem } from '@/hooks/useGameItem';
 import { useMatchGame } from '@/hooks/useMatchGame';
-import type { GridItem, ItemType, GameState, GameItemType } from '@/types/GameTypes';
+import type { GridItem, ItemType, GameState, GameItemType } from '@/types/game-types';
 import { createParticles, fallVariant, swapVariant } from '@/utils/animation-helper';
 import { deepCopyGrid } from '@/utils/game-helper';
 

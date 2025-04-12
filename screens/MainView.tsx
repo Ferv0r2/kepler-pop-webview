@@ -7,10 +7,10 @@ import { useEffect, useState } from 'react';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { LoadingContainer } from '@/components/logic/LoadingContainer';
-import { BottomNavigation } from '@/components/logic/navigations/BottomNavigation';
-import { SideNavigation } from '@/components/logic/navigations/SideNavigation';
-import { TopNavigation } from '@/components/logic/navigations/TopNavigation';
-import type { UserInfo } from '@/types/UserTypes';
+import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
+import { SideNavigation } from '@/components/logic/navigation/SideNavigation';
+import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
+import type { UserInfo } from '@/types/user-types';
 import { itemVariants } from '@/utils/animation-helper';
 
 export const MainView = () => {
