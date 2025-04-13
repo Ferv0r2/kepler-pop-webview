@@ -14,7 +14,7 @@ import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgePro
 import { Button } from '@/components/ui/button';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import type { UserInfo } from '@/types/user-types';
-import { itemVariants } from '@/utils/animation-helper';
+import { containerVariants, itemVariants } from '@/utils/animation-helper';
 
 export const MainView = () => {
   const router = useRouter();
@@ -38,12 +38,8 @@ export const MainView = () => {
 
   const [showEnergyModal, setShowEnergyModal] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [webViewStatus, setWebViewStatus] = useState<string>(isInWebView ? '웹뷰 환경 감지됨' : '브라우저 환경 감지됨');
 
   useEffect(() => {
-    // Set environment status based on WebView detection
-    setWebViewStatus(isInWebView ? '웹뷰 환경 감지됨' : '브라우저 환경 감지됨');
-
     // Notify React Native that web app is ready
     if (isInWebView) {
       sendMessage({
@@ -86,13 +82,12 @@ export const MainView = () => {
       return;
     }
 
-    // Notify React Native that we're updating energy
-    if (isInWebView) {
-      sendMessage({
-        type: WebToNativeMessageType.UPDATE_ENERGY,
-        payload: { change: -1, newValue: userInfo.energy - 1 },
-      });
-    }
+    sendMessage({
+      type: WebToNativeMessageType.UPDATE_ENERGY,
+      payload: { change: -1, newValue: userInfo.energy - 1 },
+    });
+
+    // TODO: 게임 시작 대기 & 완료 후 물방울 소모 처리
 
     setUserInfo((prev) => ({
       ...prev,
@@ -102,26 +97,17 @@ export const MainView = () => {
     router.push('/game');
   };
 
-  // TODO: After update get energy function, remove this function
-  const waitForSecond = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
   const handleWatchAd = async () => {
     if (isLoading) return;
 
     setIsLoading(true);
     try {
-      // Notify React Native that we want to show an ad
-      if (isInWebView) {
-        sendMessage({
-          type: WebToNativeMessageType.SHOW_AD,
-          payload: { reason: 'energy_refill' },
-        });
-      } else {
-        // Mock for browser testing
-        await waitForSecond();
-      }
+      sendMessage({
+        type: WebToNativeMessageType.SHOW_AD,
+        payload: { reason: 'energy_refill' },
+      });
+
+      // TODO: 광고 시청 대기 & 완료 후 물방울 충전 처리
 
       setUserInfo((prev) => ({
         ...prev,
@@ -140,19 +126,15 @@ export const MainView = () => {
 
     setIsLoading(true);
     try {
-      // Notify React Native that we want to make a purchase
-      if (isInWebView) {
-        sendMessage({
-          type: WebToNativeMessageType.MAKE_PURCHASE,
-          payload: {
-            productId: 'energy_pack_5',
-            quantity: 1,
-          },
-        });
-      } else {
-        // Mock for browser testing
-        await waitForSecond();
-      }
+      sendMessage({
+        type: WebToNativeMessageType.MAKE_PURCHASE,
+        payload: {
+          productId: 'energy_pack_5',
+          quantity: 1,
+        },
+      });
+
+      // TODO: 결제 처리 대기 & 완료 후 물방울 충전 처리
 
       setUserInfo((prev) => ({
         ...prev,
@@ -170,18 +152,6 @@ export const MainView = () => {
     router.push(path);
   };
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
   if (!userInfo) return <LoadingContainer />;
 
   const { name, level, energy, gameMoney, gems } = userInfo;
@@ -191,12 +161,6 @@ export const MainView = () => {
       <div className="grid grid-rows-[auto_1fr_auto] min-h-screen bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#334155] p-0 relative">
         <header className="sticky w-full left-0 top-0 z-10">
           <TopNavigation name={name} level={level} energy={energy} gameMoney={gameMoney} gems={gems} />
-          {/* WebView status indicator */}
-          {isInWebView && (
-            <div className="absolute top-0 right-0 bg-green-700/80 text-white text-xs px-2 py-0.5 rounded-bl-md">
-              {webViewStatus}
-            </div>
-          )}
         </header>
 
         <main className="flex-1 flex flex-col mt-16 px-4 py-2 overflow-hidden">
@@ -384,10 +348,10 @@ export const MainView = () => {
       {/* Energy Modal */}
       <ConfirmationModal
         isOpen={showEnergyModal}
-        title="에너지가 부족합니다"
+        title="물방울이 부족합니다"
         message={
           <div className="space-y-4">
-            <p>게임을 시작하기 위한 에너지가 부족합니다. 에너지를 충전하시겠습니까?</p>
+            <p>게임을 시작하기 위한 물방울이 부족합니다. 물방울을 충전하시겠습니까?</p>
             <div className="flex flex-col gap-3 mt-4">
               <Button
                 onClick={handleWatchAd}
@@ -407,7 +371,7 @@ export const MainView = () => {
                 disabled={isLoading}
                 className="flex justify-between items-center"
               >
-                <span>에너지 구매하기</span>
+                <span>물방울 구매하기</span>
                 <div className="flex items-center gap-1">
                   <Droplet className="text-blue-300 w-4 h-4" />
                   <span className="text-blue-300 font-bold">+5</span>
