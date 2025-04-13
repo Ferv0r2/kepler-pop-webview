@@ -34,11 +34,14 @@ export interface NativeToWebMessage<T = unknown> extends BaseWebViewMessage<T> {
 
 export enum NativeToWebMessageType {
   // Router handler
-  NAVIGATE_STATE = 'NAVIGATE_STATE',
+  CAN_BACK_STATE = 'CAN_BACK_STATE',
 
   SET_USER_INFO = 'SET_USER_INFO',
   AD_RESULT = 'AD_RESULT',
   PURCHASE_RESULT = 'PURCHASE_RESULT',
+
+  // Wildcard for all message types
+  ALL = '*',
 }
 
 // Web to Native message payloads

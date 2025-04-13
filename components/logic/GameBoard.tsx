@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { Button } from '@/components/ui/button';
 import { ANIMATION_DURATION, GRID_SIZE, MIN_MATCH_COUNT, SCORE } from '@/constants/game-config';
+import { useBackButton } from '@/hooks/useBackButton';
 import { useGameItem } from '@/hooks/useGameItem';
 import { useMatchGame } from '@/hooks/useMatchGame';
 import type { GridItem, ItemType, GameState, GameItemType } from '@/types/game-types';
@@ -509,14 +510,15 @@ export const GameBoard = () => {
 
   const handleBackClick = () => {
     if (gameState.isGameOver) {
-      router.push('/');
+      router.back();
+      return;
     }
     setShowBackConfirmation(true);
   };
 
-  const handleConfirmGoBack = () => {
+  const handleBackConfirm = () => {
     setShowBackConfirmation(false);
-    router.push('/');
+    router.back();
   };
 
   const handleSettingsClick = () => {
@@ -528,6 +530,11 @@ export const GameBoard = () => {
     setGrid(createInitialGrid());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 백 버튼 핸들러 등록
+  useBackButton(() => {
+    setShowBackConfirmation(true);
+  });
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-indigo-900 via-purple-800 to-violet-900 p-4">
@@ -847,7 +854,7 @@ export const GameBoard = () => {
         }
         confirmText="나가기"
         cancelText="계속하기"
-        onConfirm={handleConfirmGoBack}
+        onConfirm={handleBackConfirm}
         onCancel={() => setShowBackConfirmation(false)}
       />
 
