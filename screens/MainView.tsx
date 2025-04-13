@@ -1,20 +1,24 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Droplet, Play, PlayCircle, ShoppingBag, Calendar, Trophy, Star, Gift, ChevronRight } from 'lucide-react';
+import { Droplet, Play, Calendar, Trophy, Star, Gift, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { LoadingContainer } from '@/components/logic/LoadingContainer';
-import { BottomNavigation } from '@/components/logic/navigations/BottomNavigation';
-import { SideNavigation } from '@/components/logic/navigations/SideNavigation';
-import { TopNavigation } from '@/components/logic/navigations/TopNavigation';
-import type { UserInfo } from '@/types/UserTypes';
-import { itemVariants } from '@/utils/animation-helper';
+import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
+import { SideNavigation } from '@/components/logic/navigation/SideNavigation';
+import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
+import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
+import { Button } from '@/components/ui/button';
+import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
+import type { UserInfo } from '@/types/user-types';
+import { containerVariants, itemVariants } from '@/utils/animation-helper';
 
 export const MainView = () => {
   const router = useRouter();
+  const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
 
   const [userInfo, setUserInfo] = useState<UserInfo>({
     id: '',
@@ -36,17 +40,41 @@ export const MainView = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    // TODO: Remove this coded, apply user info from server
-    setUserInfo((prev) => ({
-      ...prev,
-      name: '우주 탐험가',
-      energy: 5,
-      gameMoney: 1500,
-      gems: 120,
-      level: 1,
-    }));
-    setUnreadMailCount(3);
-  }, []);
+    // Notify React Native that web app is ready
+    if (isInWebView) {
+      sendMessage({
+        type: WebToNativeMessageType.WEB_APP_READY,
+        payload: { timestamp: new Date().toISOString() },
+      });
+    }
+
+    // Setup message handlers for communications from React Native
+    const unsubscribeUserInfo = addMessageHandler(NativeToWebMessageType.SET_USER_INFO, (payload) => {
+      if (payload) {
+        setUserInfo((prev) => ({
+          ...prev,
+          ...payload,
+        }));
+      }
+    });
+
+    // If not in WebView, set mock data for development/testing
+    if (!isInWebView) {
+      setUserInfo((prev) => ({
+        ...prev,
+        name: '우주 탐험가',
+        energy: 5,
+        gameMoney: 1500,
+        gems: 120,
+        level: 1,
+      }));
+      setUnreadMailCount(3);
+    }
+
+    return () => {
+      unsubscribeUserInfo();
+    };
+  }, [isInWebView, sendMessage, addMessageHandler]);
 
   const handleStartGame = () => {
     if (userInfo.energy <= 0) {
@@ -54,16 +82,19 @@ export const MainView = () => {
       return;
     }
 
+    sendMessage({
+      type: WebToNativeMessageType.UPDATE_ENERGY,
+      payload: { change: -1, newValue: userInfo.energy - 1 },
+    });
+
+    // TODO: 게임 시작 대기 & 완료 후 물방울 소모 처리
+
     setUserInfo((prev) => ({
       ...prev,
       energy: prev.energy - 1,
     }));
-    router.push('/game');
-  };
 
-  // TODO: After update get energy function, remove this function
-  const waitForSecond = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    router.push('/game');
   };
 
   const handleWatchAd = async () => {
@@ -71,8 +102,13 @@ export const MainView = () => {
 
     setIsLoading(true);
     try {
-      // TODO: 광고 SDK 연동
-      await waitForSecond();
+      sendMessage({
+        type: WebToNativeMessageType.SHOW_AD,
+        payload: { reason: 'energy_refill' },
+      });
+
+      // TODO: 광고 시청 대기 & 완료 후 물방울 충전 처리
+
       setUserInfo((prev) => ({
         ...prev,
         energy: prev.energy + 1,
@@ -90,8 +126,16 @@ export const MainView = () => {
 
     setIsLoading(true);
     try {
-      // TODO: 인앱 결제 로직
-      await waitForSecond();
+      sendMessage({
+        type: WebToNativeMessageType.MAKE_PURCHASE,
+        payload: {
+          productId: 'energy_pack_5',
+          quantity: 1,
+        },
+      });
+
+      // TODO: 결제 처리 대기 & 완료 후 물방울 충전 처리
+
       setUserInfo((prev) => ({
         ...prev,
         energy: prev.energy + 5,
@@ -106,18 +150,6 @@ export const MainView = () => {
 
   const handleNavigation = (path: string) => {
     router.push(path);
-  };
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
   };
 
   if (!userInfo) return <LoadingContainer />;
@@ -313,55 +345,43 @@ export const MainView = () => {
       </div>
       {isLoading && <LoadingContainer />}
       <SideNavigation unreadMailCount={unreadMailCount} />
+      {/* Energy Modal */}
       <ConfirmationModal
         isOpen={showEnergyModal}
-        title="물방울 부족"
+        title="물방울이 부족합니다"
         message={
           <div className="space-y-4">
-            <p className="text-white">게임을 시작하기 위한 물방울이 부족합니다.</p>
-            <div className="bg-indigo-800/40 p-4 rounded-lg space-y-4">
-              <p className="text-sm text-white/90">다음 방법으로 물방울을 얻을 수 있습니다:</p>
-
-              <motion.div
-                className={`flex items-center justify-between bg-indigo-700/30 p-3 rounded-lg ${
-                  isLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+            <p>게임을 시작하기 위한 물방울이 부족합니다. 물방울을 충전하시겠습니까?</p>
+            <div className="flex flex-col gap-3 mt-4">
+              <Button
                 onClick={handleWatchAd}
+                variant="default"
+                disabled={isLoading}
+                className="flex justify-between items-center"
               >
-                <div className="flex items-center gap-3">
-                  <PlayCircle className="text-blue-300 w-6 h-6" />
-                  <span className="text-white font-medium">광고 시청하기</span>
-                </div>
+                <span>광고 시청하기</span>
                 <div className="flex items-center gap-1">
                   <Droplet className="text-blue-300 w-4 h-4" />
                   <span className="text-blue-300 font-bold">+1</span>
                 </div>
-              </motion.div>
-
-              <motion.div
-                className={`flex items-center justify-between bg-indigo-700/30 p-3 rounded-lg ${
-                  isLoading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              </Button>
+              <Button
                 onClick={handlePurchase}
+                variant="secondary"
+                disabled={isLoading}
+                className="flex justify-between items-center"
               >
-                <div className="flex items-center gap-3">
-                  <ShoppingBag className="text-green-300 w-6 h-6" />
-                  <span className="text-white font-medium">물방울 구매하기</span>
-                </div>
+                <span>물방울 구매하기</span>
                 <div className="flex items-center gap-1">
                   <Droplet className="text-blue-300 w-4 h-4" />
                   <span className="text-blue-300 font-bold">+5</span>
                 </div>
-              </motion.div>
+              </Button>
             </div>
           </div>
         }
         confirmText="닫기"
-        cancelText="취소"
+        cancelText=""
         onConfirm={() => setShowEnergyModal(false)}
         onCancel={() => setShowEnergyModal(false)}
       />

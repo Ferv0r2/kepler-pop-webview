@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import { GRID_SIZE } from '@/constants/game-config';
-import { GridItem, ItemType } from '@/types/GameTypes';
+import { GridItem, ItemType } from '@/types/game-types';
 
 export const useMatchGame = () => {
   // 랜덤 아이템 생성 함수
