@@ -1,6 +1,7 @@
 import { ElementType } from 'react';
 
 export type ItemType = 1 | 2 | 3 | 4 | 5 | 6;
+export type TierType = 1 | 2 | 3;
 export type GameMode = 'casual' | 'challenge';
 export type GridItem = {
   id: string;
@@ -8,7 +9,7 @@ export type GridItem = {
   isMatched: boolean;
   createdIndex: number;
   turn: number;
-  tier: number;
+  tier: TierType;
 };
 
 export type GameState = {

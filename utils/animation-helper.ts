@@ -1,17 +1,27 @@
 import confetti from 'canvas-confetti';
 
-// 파티클 효과 생성 함수
 export const createParticles = (x: number, y: number, color: string) => {
+  const colors = {
+    rose: '#f43f5e',
+    cyan: '#06b6d4',
+    emerald: '#10b981',
+    amber: '#f59e0b',
+    violet: '#8b5cf6',
+    fuchsia: '#d946ef',
+  };
+
+  const particleColor = colors[color as keyof typeof colors] || '#f43f5e';
+
   confetti({
     particleCount: 30,
-    spread: 80,
+    spread: 60,
     origin: { x, y },
-    colors: [color],
-    disableForReducedMotion: true,
+    colors: [particleColor, '#ffffff'],
+    ticks: 200,
     gravity: 0.8,
-    scalar: 0.8,
+    scalar: 1.2,
     shapes: ['circle', 'square'],
-    zIndex: 100,
+    disableForReducedMotion: true,
   });
 };
 
