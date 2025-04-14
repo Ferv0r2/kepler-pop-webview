@@ -3,17 +3,25 @@
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Zap, Sparkles, Star, Diamond, Gem, ArrowLeft, Settings, Home, X, RefreshCw } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createElement, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { Button } from '@/components/ui/button';
-import { ANIMATION_DURATION, GRID_SIZE, MIN_MATCH_COUNT, SCORE } from '@/constants/game-config';
+import {
+  ANIMATION_DURATION,
+  CASUAL_MODE_MOVE_COUNT,
+  CHALLENGE_MODE_MOVE_COUNT,
+  GRID_SIZE,
+  MIN_MATCH_COUNT,
+  SCORE,
+  TILE_MAX_TIER,
+} from '@/constants/game-config';
 import { useBackButton } from '@/hooks/useBackButton';
 import { useGameItem } from '@/hooks/useGameItem';
 import { useMatchGame } from '@/hooks/useMatchGame';
-import type { GridItem, ItemType, GameState, GameItemType } from '@/types/game-types';
+import type { GameMode, GridItem, ItemType, GameState, GameItemType } from '@/types/game-types';
 import { createParticles, fallVariant, swapVariant } from '@/utils/animation-helper';
 import { deepCopyGrid } from '@/utils/game-helper';
 
@@ -127,6 +135,8 @@ const tileConfig: Record<
 
 export const GameBoard = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const gameMode = searchParams.get('mode') as GameMode;
   const { getRandomItemType, createInitialGrid } = useMatchGame();
   const {
     gameItems,
@@ -145,7 +155,7 @@ export const GameBoard = () => {
   } | null>(null);
   const [gameState, setGameState] = useState<GameState>({
     score: 0,
-    moves: 20,
+    moves: gameMode === 'casual' ? CASUAL_MODE_MOVE_COUNT : CHALLENGE_MODE_MOVE_COUNT,
     isSwapping: false,
     isChecking: false,
     isGameOver: false,
@@ -359,12 +369,12 @@ export const GameBoard = () => {
       if (!swappedTiles) {
         // 아이템 사용인 경우: 첫 번째 타일만 업그레이드, 나머지는 제거
         if (index === 0) {
-          if (newGrid[row][col].tier < 3) {
+          const challengeMatchCondition = gameMode === 'challenge' && newGrid[row][col].tier < TILE_MAX_TIER;
+          if (challengeMatchCondition) {
             newGrid[row][col].tier += 1;
             newGrid[row][col].isMatched = false;
           } else {
             newGrid[row][col].isMatched = true;
-            // addArtifactFragment();
           }
         } else {
           newGrid[row][col].isMatched = true;
@@ -373,12 +383,11 @@ export const GameBoard = () => {
         // 스왑의 경우: 스왑된 타일이면 업그레이드, 나머지는 제거
         const isSwapped = swappedTiles.some((tile) => tile.row === row && tile.col === col);
         if (isSwapped) {
-          if (newGrid[row][col].tier < 3) {
+          if (gameMode === 'challenge' && newGrid[row][col].tier < 3) {
             newGrid[row][col].tier += 1;
             newGrid[row][col].isMatched = false;
           } else {
             newGrid[row][col].isMatched = true;
-            // addArtifactFragment();
           }
         } else {
           newGrid[row][col].isMatched = true;
@@ -452,7 +461,7 @@ export const GameBoard = () => {
   const restartGame = () => {
     setGameState({
       score: 0,
-      moves: 20,
+      moves: gameMode === 'casual' ? CASUAL_MODE_MOVE_COUNT : CHALLENGE_MODE_MOVE_COUNT,
       isSwapping: false,
       isChecking: false,
       isGameOver: false,
@@ -604,6 +613,15 @@ export const GameBoard = () => {
           >
             {gameState.moves}
           </motion.span>
+        </motion.div>
+        <motion.div
+          className="text-white bg-blue-700/50 px-4 py-2 rounded-full shadow-lg"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <span className="font-bold">모드:</span>{' '}
+          <span className="text-blue-300">{gameMode === 'casual' ? '캐주얼' : '챌린지'}</span>
         </motion.div>
       </div>
 

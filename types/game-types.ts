@@ -1,6 +1,7 @@
 import { ElementType } from 'react';
 
 export type ItemType = 1 | 2 | 3 | 4 | 5 | 6;
+export type GameMode = 'casual' | 'challenge';
 export type GridItem = {
   id: string;
   type: ItemType;

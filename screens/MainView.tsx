@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Droplet, Play, Calendar, Trophy, Star, Gift, ChevronRight } from 'lucide-react';
+import { Droplet, Play, Calendar, Trophy, Gift, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -99,14 +99,31 @@ export const MainView = () => {
       payload: { change: -1, newValue: userInfo.energy - 1 },
     });
 
-    // TODO: 게임 시작 대기 & 완료 후 물방울 소모 처리
+    setUserInfo((prev) => ({
+      ...prev,
+      energy: prev.energy - 1,
+    }));
+
+    router.push('/game?mode=casual');
+  };
+
+  const handleChallengeStart = () => {
+    if (userInfo.energy <= 0) {
+      setShowEnergyModal(true);
+      return;
+    }
+
+    sendMessage({
+      type: WebToNativeMessageType.UPDATE_ENERGY,
+      payload: { change: -1, newValue: userInfo.energy - 1 },
+    });
 
     setUserInfo((prev) => ({
       ...prev,
       energy: prev.energy - 1,
     }));
 
-    router.push('/game');
+    router.push('/game?mode=challenge');
   };
 
   const handleWatchAd = async () => {
@@ -228,8 +245,10 @@ export const MainView = () => {
                   <span className="text-cyan-300 text-xs font-medium">-1</span>
                 </div>
               </div>
-              <h3 className="text-white font-bold text-sm">어드벤처 모드</h3>
-              <p className="text-gray-300 text-xs mt-1">스토리를 따라 퍼즐을 해결하세요</p>
+              <h3 className="text-white font-bold text-sm">캐주얼 모드</h3>
+              <p className="text-gray-300 text-xs mt-1">즐거운 퍼즐 여행을 떠나보세요! 🚀</p>
+              <p className="text-gray-400 text-[10px] mt-1">• 부담없는 난이도</p>
+              <p className="text-gray-400 text-[10px]">• 와르르 터지는 퍼즐</p>
             </motion.div>
 
             <motion.div
@@ -237,19 +256,21 @@ export const MainView = () => {
               variants={itemVariants}
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => handleNavigation('/challenge')}
+              onClick={handleChallengeStart}
             >
               <div className="flex justify-between items-start mb-2">
                 <div className="bg-blue-500/30 p-2 rounded-lg">
                   <Trophy className="text-blue-300 w-5 h-5" />
                 </div>
                 <div className="flex items-center gap-1">
-                  <Star className="text-purple-400 w-3.5 h-3.5" />
-                  <span className="text-purple-300 text-xs font-medium">+5</span>
+                  <Droplet className="text-cyan-400 w-3.5 h-3.5" />
+                  <span className="text-cyan-300 text-xs font-medium">-1</span>
                 </div>
               </div>
               <h3 className="text-white font-bold text-sm">챌린지 모드</h3>
-              <p className="text-gray-300 text-xs mt-1">특별한 미션에 도전하세요</p>
+              <p className="text-gray-300 text-xs mt-1">진정한 퍼즐 마스터가 되어보세요! 🌟</p>
+              <p className="text-gray-400 text-[10px] mt-1">• 엄청난 난이도</p>
+              <p className="text-gray-400 text-[10px]">• 리더보드 도전</p>
             </motion.div>
           </motion.div>
 
