@@ -63,8 +63,10 @@ export const MainView = () => {
     const unsubscribeBackState = addMessageHandler(NativeToWebMessageType.CAN_BACK_STATE, () => {
       if (!showExitModal) {
         setShowExitModal(true);
+        return;
       }
       sendMessage({ type: WebToNativeMessageType.EXIT_ACTION });
+      setShowExitModal(false);
     });
 
     // If not in WebView, set mock data for development/testing
@@ -84,7 +86,7 @@ export const MainView = () => {
       unsubscribeUserInfo();
       unsubscribeBackState();
     };
-  }, [isInWebView, sendMessage, addMessageHandler]);
+  }, [isInWebView, sendMessage, addMessageHandler, showExitModal]);
 
   const handleStartGame = () => {
     if (userInfo.energy <= 0) {
@@ -164,6 +166,7 @@ export const MainView = () => {
 
   const handleExitConfirm = () => {
     sendMessage({ type: WebToNativeMessageType.EXIT_ACTION });
+    setShowExitModal(false);
   };
 
   const handleExitCancel = () => {
