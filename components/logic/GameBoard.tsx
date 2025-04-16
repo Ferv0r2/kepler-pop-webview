@@ -2,28 +2,14 @@
 
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Heart,
-  Zap,
-  Sparkles,
-  Star,
-  Diamond,
-  Gem,
-  ArrowLeft,
-  Settings,
-  Home,
-  X,
-  RefreshCw,
-  Trophy,
-  Clock,
-  Flame,
-} from 'lucide-react';
+import { Sparkles, ArrowLeft, Settings, Home, RefreshCw, Trophy, Flame } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { ElementType } from 'react';
 import { createElement, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
+import { SettingsMenu } from '@/components/logic/dialogs/SettingsMenu';
+import { TutorialDialog } from '@/components/logic/dialogs/TutorialDialog';
 import { Button } from '@/components/ui/button';
 import {
   ANIMATION_DURATION,
@@ -44,118 +30,7 @@ import { useMatchGame } from '@/hooks/useMatchGame';
 import type { GameMode, GridItem, ItemType, GameState, GameItemType, TierType } from '@/types/game-types';
 import { createParticles, fallVariant, swapVariant } from '@/utils/animation-helper';
 import { deepCopyGrid } from '@/utils/game-helper';
-
-const tileConfig: Record<
-  ItemType,
-  {
-    color: Record<TierType, string>;
-    bgColor: Record<TierType, string>;
-    icon: Record<TierType, ElementType>;
-  }
-> = {
-  1: {
-    color: {
-      1: 'text-red-500',
-      2: 'text-red-600',
-      3: 'text-red-700',
-    },
-    bgColor: {
-      1: 'bg-gradient-to-br from-red-400 to-red-600',
-      2: 'bg-gradient-to-br from-red-600 to-red-800',
-      3: 'bg-gradient-to-br from-red-800 to-red-900',
-    },
-    icon: {
-      1: Heart,
-      2: Heart,
-      3: Heart,
-    },
-  },
-  2: {
-    color: {
-      1: 'text-cyan-500',
-      2: 'text-cyan-600',
-      3: 'text-cyan-700',
-    },
-    bgColor: {
-      1: 'bg-gradient-to-br from-cyan-400 to-cyan-600',
-      2: 'bg-gradient-to-br from-cyan-600 to-cyan-800',
-      3: 'bg-gradient-to-br from-cyan-800 to-cyan-900',
-    },
-    icon: {
-      1: Zap,
-      2: Zap,
-      3: Zap,
-    },
-  },
-  3: {
-    color: {
-      1: 'text-emerald-500',
-      2: 'text-emerald-600',
-      3: 'text-emerald-700',
-    },
-    bgColor: {
-      1: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
-      2: 'bg-gradient-to-br from-emerald-600 to-emerald-800',
-      3: 'bg-gradient-to-br from-emerald-800 to-emerald-900',
-    },
-    icon: {
-      1: Sparkles,
-      2: Sparkles,
-      3: Sparkles,
-    },
-  },
-  4: {
-    color: {
-      1: 'text-amber-500',
-      2: 'text-amber-600',
-      3: 'text-amber-700',
-    },
-    bgColor: {
-      1: 'bg-gradient-to-br from-amber-400 to-amber-600',
-      2: 'bg-gradient-to-br from-amber-600 to-amber-800',
-      3: 'bg-gradient-to-br from-amber-800 to-amber-900',
-    },
-    icon: {
-      1: Star,
-      2: Star,
-      3: Star,
-    },
-  },
-  5: {
-    color: {
-      1: 'text-violet-500',
-      2: 'text-violet-600',
-      3: 'text-violet-700',
-    },
-    bgColor: {
-      1: 'bg-gradient-to-br from-violet-400 to-violet-600',
-      2: 'bg-gradient-to-br from-violet-600 to-violet-800',
-      3: 'bg-gradient-to-br from-violet-800 to-violet-900',
-    },
-    icon: {
-      1: Diamond,
-      2: Diamond,
-      3: Diamond,
-    },
-  },
-  6: {
-    color: {
-      1: 'text-fuchsia-500',
-      2: 'text-fuchsia-600',
-      3: 'text-fuchsia-700',
-    },
-    bgColor: {
-      1: 'bg-gradient-to-br from-fuchsia-400 to-fuchsia-600',
-      2: 'bg-gradient-to-br from-fuchsia-600 to-fuchsia-800',
-      3: 'bg-gradient-to-br from-fuchsia-800 to-fuchsia-900',
-    },
-    icon: {
-      1: Gem,
-      2: Gem,
-      3: Gem,
-    },
-  },
-};
+import { tileConfig } from '@/constants/tile-config';
 
 export const GameBoard = () => {
   const router = useRouter();
@@ -878,8 +753,8 @@ export const GameBoard = () => {
                     scale: item.isMatched
                       ? 0
                       : selectedTile?.row === rowIndex && selectedTile?.col === colIndex
-                        ? 1.1
-                        : 1,
+                      ? 1.1
+                      : 1,
                     rotate: selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? [0, 5, 0, -5, 0] : 0,
                   }}
                   transition={item.isMatched ? fallVariant.transition : swapVariant.transition}
@@ -1035,251 +910,25 @@ export const GameBoard = () => {
         onCancel={() => setShowBackConfirmation(false)}
       />
 
-      <AnimatePresence>
-        {showSettingsMenu && (
-          <motion.div
-            className="fixed inset-0 z-40 flex items-center justify-center backdrop-blur-lg bg-black/60"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowSettingsMenu(false)}
-          >
-            <motion.div
-              className="bg-gradient-to-br from-slate-900/95 to-purple-900/95 border border-indigo-400/30 rounded-2xl p-6 w-[320px] shadow-[0_0_25px_rgba(99,102,241,0.3)]"
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', damping: 25 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
-                  Settings
-                </h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowSettingsMenu(false)}
-                  className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                >
-                  <X className="h-5 w-5 text-white/80" />
-                </Button>
-              </div>
+      <SettingsMenu
+        isOpen={showSettingsMenu}
+        onClose={() => setShowSettingsMenu(false)}
+        onRestart={restartGame}
+        onShowTutorial={() => {
+          setShowTutorial(true);
+          setTutorialStep(1);
+        }}
+        onShowBackConfirmation={() => setShowBackConfirmation(true)}
+      />
 
-              <div className="space-y-4">
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    variant="outline"
-                    className="w-full flex justify-start gap-3 rounded-xl py-4 bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
-                    onClick={() => {
-                      setShowSettingsMenu(false);
-                      setShowBackConfirmation(true);
-                    }}
-                  >
-                    <Home className="h-5 w-5 text-blue-300" />
-                    <span>Return to Home</span>
-                  </Button>
-                </motion.div>
-
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    variant="outline"
-                    className="w-full flex justify-start gap-3 rounded-xl py-4 bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
-                    onClick={() => {
-                      setShowSettingsMenu(false);
-                      restartGame();
-                    }}
-                  >
-                    <RefreshCw className="h-5 w-5 text-green-300" />
-                    <span>Restart Game</span>
-                  </Button>
-                </motion.div>
-
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    variant="outline"
-                    className="w-full flex justify-start gap-3 rounded-xl py-4 bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
-                    onClick={() => {
-                      setShowSettingsMenu(false);
-                      setShowTutorial(true);
-                      setTutorialStep(1);
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-amber-300"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <span>How to Play</span>
-                  </Button>
-                </motion.div>
-
-                <div className="mt-6 pt-4 border-t border-indigo-500/30">
-                  <p className="text-center text-sm text-white/60 mb-2">Kepler Pop v1.0</p>
-                  <p className="text-center text-xs text-white/40">© 2025 Ferv0r2Labs</p>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showTutorial && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg bg-black/70"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-gradient-to-br from-slate-900/95 to-purple-900/95 border border-indigo-400/30 rounded-2xl p-6 w-[90%] max-w-md shadow-[0_0_25px_rgba(99,102,241,0.3)]"
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', damping: 25 }}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
-                  How to Play
-                </h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={closeTutorial}
-                  className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                >
-                  <X className="h-5 w-5 text-white/80" />
-                </Button>
-              </div>
-
-              <div className="relative overflow-hidden rounded-lg bg-black/30 p-4 mb-4">
-                {tutorialStep === 1 && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    className="flex flex-col items-center"
-                  >
-                    <div className="flex gap-2 mb-4">
-                      {[1, 2, 3].map((i) => (
-                        <div
-                          key={i}
-                          className={`w-10 h-10 rounded-lg ${tileConfig[i as keyof typeof tileConfig].bgColor[1]} flex items-center justify-center`}
-                        >
-                          {createElement(tileConfig[i as keyof typeof tileConfig].icon[1], {
-                            className: 'w-6 h-6 text-white',
-                          })}
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-white text-center mb-2">
-                      Swap adjacent tiles to create matches of 3 or more identical tiles.
-                    </p>
-                  </motion.div>
-                )}
-
-                {tutorialStep === 2 && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    className="flex flex-col items-center"
-                  >
-                    <div className="flex gap-2 mb-4">
-                      {gameItems.map((item, i) => (
-                        <div
-                          key={i}
-                          className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center"
-                        >
-                          {createElement(item.icon, { className: 'w-6 h-6 text-white' })}
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-white text-center mb-2">
-                      Use special items to clear tiles and create powerful combos.
-                    </p>
-                    <p className="text-white/70 text-sm text-center">
-                      Select an item, then tap a tile to activate its effect.
-                    </p>
-                  </motion.div>
-                )}
-
-                {tutorialStep === 3 && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    className="flex flex-col items-center"
-                  >
-                    <div className="flex gap-4 mb-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-1">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-6 h-6 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                            />
-                          </svg>
-                        </div>
-                        <p className="text-white/70 text-xs">Casual</p>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center mb-1">
-                          <Clock className="w-6 h-6 text-white" />
-                        </div>
-                        <p className="text-white/70 text-xs">Challenge</p>
-                      </div>
-                    </div>
-                    <p className="text-white text-center mb-2">
-                      {gameMode === 'casual'
-                        ? 'In Casual mode, you can play freely. No leaderboards, no pressure to win!'
-                        : 'In Challenge mode, the tile tiers increase, and you can compete with other players on the leaderboard!'}
-                    </p>
-                    <p className="text-white/70 text-sm text-center">
-                      {gameMode === 'challenge' && 'Matching tiles with higher tiers will earn you a higher score.'}
-                    </p>
-                  </motion.div>
-                )}
-              </div>
-
-              <div className="flex justify-between">
-                <div className="flex space-x-1">
-                  {[1, 2, 3].map((step) => (
-                    <div
-                      key={step}
-                      className={`w-2 h-2 rounded-full ${tutorialStep === step ? 'bg-white' : 'bg-white/30'}`}
-                    />
-                  ))}
-                </div>
-                <Button
-                  onClick={nextTutorialStep}
-                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white"
-                >
-                  {tutorialStep < 3 ? 'Next' : 'Start Playing'}
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <TutorialDialog
+        isOpen={showTutorial}
+        onClose={closeTutorial}
+        onNextStep={nextTutorialStep}
+        currentStep={tutorialStep}
+        gameMode={gameMode}
+        gameItems={gameItems}
+      />
     </div>
   );
 };
