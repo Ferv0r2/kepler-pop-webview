@@ -942,21 +942,23 @@ export const GameView = () => {
             ))}
           </motion.div>
 
-          <motion.div
-            className="mt-4 flex justify-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            <Button
-              onClick={showHintMove}
-              variant="ghost"
-              className="text-white/70 hover:text-white hover:bg-white/10 text-sm"
+          {gameMode === 'casual' && (
+            <motion.div
+              className="mt-4 flex justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
             >
-              <Sparkles className="w-4 h-4 mr-1" />
-              Need a hint?
-            </Button>
-          </motion.div>
+              <Button
+                onClick={showHintMove}
+                variant="ghost"
+                className="text-white/70 hover:text-white hover:bg-white/10 text-sm"
+              >
+                <Sparkles className="w-4 h-4 mr-1" />
+                Need a hint?
+              </Button>
+            </motion.div>
+          )}
         </motion.div>
       </div>
 
