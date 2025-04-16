@@ -2,20 +2,21 @@
 
 import { motion } from 'framer-motion';
 import { Droplet, Play, Calendar, Trophy, Gift, ChevronRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
+import { ExitModal } from '@/components/logic/dialogs/ExitModal';
+import { LoadingSpinner } from '@/components/logic/loading/LoadingSpinner';
 import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
 import { SideNavigation } from '@/components/logic/navigation/SideNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
-import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
-import { ExitModal } from '@/components/logic/dialogs/ExitModal';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import type { UserInfo } from '@/types/user-types';
 import { containerVariants, itemVariants } from '@/utils/animation-helper';
-import { LoadingSpinner } from '@/components/logic/loading/LoadingSpinner';
+
 import { LoadingView } from './LoadingView';
 
 export const MainView = () => {
@@ -193,7 +194,7 @@ export const MainView = () => {
     setShowExitModal(false);
   };
 
-  if (!userInfo) {
+  if (!userInfo || !isInitialLoading) {
     return <LoadingView onLoadComplete={() => setIsInitialLoading(false)} />;
   }
 
