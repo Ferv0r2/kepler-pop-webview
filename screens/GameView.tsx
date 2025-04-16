@@ -2,9 +2,9 @@
 
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ArrowLeft, Settings, Home, RefreshCw, Trophy, Flame } from 'lucide-react';
+import { Sparkles, ArrowLeft, Settings, Home, RefreshCw, Flame } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createElement, useState, useEffect, TouchEvent } from 'react';
+import { createElement, useState, useEffect, TouchEvent, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
@@ -291,7 +291,7 @@ export const GameView = () => {
     return matches;
   };
 
-  const findPossibleMove = (): { row1: number; col1: number; row2: number; col2: number } | null => {
+  const findPossibleMove = useCallback((): { row1: number; col1: number; row2: number; col2: number } | null => {
     // Check all possible swaps to find a valid move
     for (let row = 0; row < GRID_SIZE; row++) {
       for (let col = 0; col < GRID_SIZE; col++) {
@@ -322,7 +322,7 @@ export const GameView = () => {
     }
 
     return null;
-  };
+  }, [grid]);
 
   const showHintMove = () => {
     const possibleMove = findPossibleMove();
@@ -561,6 +561,47 @@ export const GameView = () => {
     }
   };
 
+  const shuffleGrid = useCallback(() => {
+    // 1차원 배열로 변환
+    const flatGrid = grid.flat();
+
+    for (let i = flatGrid.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [flatGrid[i], flatGrid[j]] = [flatGrid[j], flatGrid[i]];
+    }
+
+    // 2차원 배열로 다시 변환
+    const newGrid: GridItem[][] = [];
+    for (let i = 0; i < GRID_SIZE; i++) {
+      newGrid.push(flatGrid.slice(i * GRID_SIZE, (i + 1) * GRID_SIZE));
+    }
+
+    // 매치가 있는지 확인
+    const matches = findMatches(newGrid);
+    if (matches.length > 0) {
+      // 매치가 있다면 다시 섞기
+      return shuffleGrid();
+    }
+
+    return newGrid;
+  }, [grid]);
+
+  useEffect(() => {
+    if (grid.length === 0) return;
+
+    const possibleMove = findPossibleMove();
+    if (!possibleMove && !gameState.isSwapping && !gameState.isChecking) {
+      // 움직일 수 있는 타일이 없고, 현재 스왑이나 체크 중이 아닐 때
+      setGameState((prev) => ({ ...prev, isSwapping: true }));
+
+      setTimeout(() => {
+        const newGrid = shuffleGrid();
+        setGrid(newGrid);
+        setGameState((prev) => ({ ...prev, isSwapping: false }));
+      }, ANIMATION_DURATION);
+    }
+  }, [grid, gameState.isSwapping, gameState.isChecking, findPossibleMove, shuffleGrid]);
+
   // Prevent hydration errors by creating grid on client side only
   useEffect(() => {
     setGrid(createInitialGrid());
@@ -686,7 +727,7 @@ export const GameView = () => {
                   transition={{ duration: 0.3 }}
                   className="text-2xl font-bold text-blue-400 font-mono tracking-wider"
                 >
-                  {gameState.moves}
+                  {Math.max(gameState.moves, 0)}
                 </motion.div>
               </div>
             </motion.div>
@@ -775,7 +816,7 @@ export const GameView = () => {
                       animate={{ scale: 1, rotate: 0 }}
                       transition={{ delay: 0.7, type: 'spring', stiffness: 200 }}
                     >
-                      <Trophy className="w-16 h-16 text-yellow-400" />
+                      <div className="text-5xl text-yellow-400">🏆</div>
                     </motion.div>
                     <motion.div
                       className="flex flex-col gap-3"
@@ -785,15 +826,15 @@ export const GameView = () => {
                     >
                       <Button
                         onClick={restartGame}
-                        className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                        className="flex items-center justify-center bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl text-md shadow-lg hover:shadow-xl transition-all duration-300"
                       >
                         <RefreshCw className="w-5 h-5 mr-2" />
                         Play Again
                       </Button>
                       <Button
-                        onClick={() => router.push('/')}
+                        onClick={() => router.back()}
                         variant="outline"
-                        className="bg-slate-800/30 border-indigo-500/50 text-white hover:bg-slate-800/50 rounded-xl py-3"
+                        className="flex items-center justify-center bg-slate-800/30 border-indigo-500/50 text-white hover:bg-slate-800/50 rounded-xl py-3 text-md"
                       >
                         <Home className="w-5 h-5 mr-2" />
                         Return to Home

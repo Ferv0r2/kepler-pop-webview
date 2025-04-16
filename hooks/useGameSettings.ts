@@ -12,6 +12,7 @@ interface GameSettings {
 }
 
 const getHasSeenTutorial = () => {
+  if (typeof window === 'undefined') return false;
   const savedSettings = localStorage.getItem('game-settings');
   if (savedSettings) {
     try {
