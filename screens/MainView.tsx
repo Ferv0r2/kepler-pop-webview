@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Droplet, Play, Calendar, Trophy, Gift, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
@@ -216,7 +217,14 @@ export const MainView = () => {
                 style={{ animationDelay: '0.5s' }}
               ></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <img src="/icons/logo.png" alt="Game Logo" className="rounded-full" />
+                <Image
+                  src="/icons/logo.png"
+                  alt="Game Logo"
+                  className="rounded-full object-cover"
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
               </div>
             </div>
             <p className="text-gray-300 text-sm mt-1">오늘도 떠나볼까요?</p>
@@ -359,7 +367,7 @@ export const MainView = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + i * 0.1 }}
                 >
-                  <img src={`/preview/cells/${cell}.png`} alt={`Friend ${cell}`} />
+                  <Image src={`/preview/cells/${cell}.png`} alt={`Friend ${cell}`} width={50} height={50} />
                 </motion.div>
               ))}
               <motion.div
