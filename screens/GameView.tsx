@@ -24,13 +24,14 @@ import {
   SHOW_STREAK_MAINTAIN_TIME_MS,
   TILE_MAX_TIER,
 } from '@/constants/game-config';
+import { tileConfig } from '@/constants/tile-config';
 import { useBackButton } from '@/hooks/useBackButton';
 import { useGameItem } from '@/hooks/useGameItem';
 import { useMatchGame } from '@/hooks/useMatchGame';
 import type { GameMode, GridItem, ItemType, GameState, GameItemType, TierType } from '@/types/game-types';
 import { createParticles, fallVariant, swapVariant } from '@/utils/animation-helper';
 import { deepCopyGrid } from '@/utils/game-helper';
-import { tileConfig } from '@/constants/tile-config';
+
 import { LoadingView } from './LoadingView';
 
 export const GameView = () => {
@@ -632,17 +633,20 @@ export const GameView = () => {
         </div>
       </motion.div>
 
-      {showStreak && streakCount > 1 && (
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -20, opacity: 0 }}
-          className="absolute top-1/4 z-30 flex items-center jsu bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg px-3 py-1 rounded-full shadow-lg"
-        >
-          <Flame className="inline-block mr-1 h-5 w-5" />
-          {streakCount}x STREAK!
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {showStreak && streakCount > 1 && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -20, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute top-1/4 z-30 flex items-center justify-center bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg px-3 py-1 rounded-full shadow-lg"
+          >
+            <Flame className="inline-block mr-1 h-5 w-5" />
+            {streakCount}x STREAK!
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="w-full p-2">
         <motion.div
@@ -758,8 +762,8 @@ export const GameView = () => {
                     scale: item.isMatched
                       ? 0
                       : selectedTile?.row === rowIndex && selectedTile?.col === colIndex
-                      ? 1.1
-                      : 1,
+                        ? 1.1
+                        : 1,
                     rotate: selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? [0, 5, 0, -5, 0] : 0,
                   }}
                   transition={item.isMatched ? fallVariant.transition : swapVariant.transition}
