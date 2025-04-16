@@ -40,7 +40,7 @@ export const GameView = () => {
   const searchParams = useSearchParams();
   const gameMode = searchParams.get('mode') as GameMode;
   const { getRandomItemType, createInitialGrid } = useMatchGame();
-  const { tileSwapMode, setTileSwapMode } = useGameSettings();
+  const { tileSwapMode, setTileSwapMode, hasSeenTutorial, setHasSeenTutorial } = useGameSettings();
   const {
     gameItems,
     selectedGameItem,
@@ -79,7 +79,7 @@ export const GameView = () => {
   const [hintPosition, setHintPosition] = useState<{ row1: number; col1: number; row2: number; col2: number } | null>(
     null,
   );
-  const [showTutorial, setShowTutorial] = useState<boolean>(true);
+  const [showTutorial, setShowTutorial] = useState<boolean>(false);
   const [tutorialStep, setTutorialStep] = useState<number>(1);
   const [streakCount, setStreakCount] = useState<number>(0);
   const [showStreak, setShowStreak] = useState<boolean>(false);
@@ -550,13 +550,14 @@ export const GameView = () => {
 
   const closeTutorial = () => {
     setShowTutorial(false);
+    setHasSeenTutorial(true);
   };
 
   const nextTutorialStep = () => {
     if (tutorialStep < 3) {
       setTutorialStep(tutorialStep + 1);
     } else {
-      setShowTutorial(false);
+      closeTutorial();
     }
   };
 
@@ -565,6 +566,12 @@ export const GameView = () => {
     setGrid(createInitialGrid());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!hasSeenTutorial) {
+      setShowTutorial(true);
+    }
+  }, [hasSeenTutorial]);
 
   // Register back button handler
   useBackButton(() => {
@@ -702,7 +709,7 @@ export const GameView = () => {
         )}
       </AnimatePresence>
 
-      <div className="w-full p-2">
+      <div className="w-full max-w-lg p-2">
         <motion.div
           className="relative w-full bg-black/40 p-3 rounded-xl border-2 border-purple-600/50 shadow-[0_0_20px_rgba(147,51,234,0.4)] backdrop-blur-sm"
           initial={{ y: 50, opacity: 0 }}
@@ -799,7 +806,7 @@ export const GameView = () => {
           </AnimatePresence>
 
           <div
-            className="grid gap-1.5"
+            className="grid gap-1.5 place-items-center"
             style={{
               gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
               touchAction: 'none',

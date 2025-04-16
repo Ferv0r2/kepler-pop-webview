@@ -7,17 +7,33 @@ import type { TileSwapMode } from '@/types/game-types';
 interface GameSettings {
   tileSwapMode: TileSwapMode;
   setTileSwapMode: (mode: TileSwapMode) => void;
+  hasSeenTutorial: boolean;
+  setHasSeenTutorial: (seen: boolean) => void;
 }
+
+const getHasSeenTutorial = () => {
+  const savedSettings = localStorage.getItem('game-settings');
+  if (savedSettings) {
+    try {
+      const parsedSettings = JSON.parse(savedSettings);
+      return parsedSettings?.hasSeenTutorial || false;
+    } catch (error) {
+      console.error('Error parsing game settings:', error);
+    }
+  }
+  return false;
+};
 
 export const useGameSettings = (): GameSettings => {
   const [tileSwapMode, setTileSwapMode] = useState<TileSwapMode>('select');
+  const [hasSeenTutorial, setHasSeenTutorial] = useState<boolean>(getHasSeenTutorial());
 
   useEffect(() => {
     const savedSettings = localStorage.getItem('game-settings');
     if (savedSettings) {
       try {
         const parsedSettings = JSON.parse(savedSettings);
-        if (parsedSettings.tileSwapMode) {
+        if (parsedSettings?.tileSwapMode) {
           setTileSwapMode(parsedSettings.tileSwapMode);
         }
       } catch (error) {
@@ -31,6 +47,16 @@ export const useGameSettings = (): GameSettings => {
     setTileSwapMode(mode);
     const currentSettings = {
       tileSwapMode: mode,
+      hasSeenTutorial,
+    };
+    localStorage.setItem('game-settings', JSON.stringify(currentSettings));
+  };
+
+  const handleSetHasSeenTutorial = (seen: boolean) => {
+    setHasSeenTutorial(seen);
+    const currentSettings = {
+      tileSwapMode,
+      hasSeenTutorial: seen,
     };
     localStorage.setItem('game-settings', JSON.stringify(currentSettings));
   };
@@ -38,5 +64,7 @@ export const useGameSettings = (): GameSettings => {
   return {
     tileSwapMode,
     setTileSwapMode: handleSetTileSwapMode,
+    hasSeenTutorial,
+    setHasSeenTutorial: handleSetHasSeenTutorial,
   };
 };

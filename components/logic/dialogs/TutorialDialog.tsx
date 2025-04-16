@@ -1,19 +1,20 @@
 import { motion } from 'framer-motion';
 import { X, Clock } from 'lucide-react';
-import { createElement } from 'react';
+import { createElement, ElementType } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { tileConfig } from '@/constants/tile-config';
+import type { GameMode } from '@/types/game-types';
 
 interface TutorialDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onNextStep: () => void;
   currentStep: number;
-  gameMode: 'casual' | 'challenge';
+  gameMode: GameMode;
   gameItems: {
     id: string;
-    icon: React.ElementType;
+    icon: ElementType;
     name: string;
   }[];
 }
