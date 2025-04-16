@@ -1,7 +1,8 @@
-import { X, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { X, Clock } from 'lucide-react';
 import { createElement } from 'react';
+
+import { Button } from '@/components/ui/button';
 import { tileConfig } from '@/constants/tile-config';
 
 interface TutorialDialogProps {

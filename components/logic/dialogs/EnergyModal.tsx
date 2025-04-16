@@ -1,5 +1,7 @@
 import { Droplet } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+
 import { ConfirmationModal } from './ConfirmationModal';
 
 interface EnergyModalProps {

@@ -1,5 +1,6 @@
-import { X, Home, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { X, Home, RefreshCw } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 
 interface SettingsMenuProps {
