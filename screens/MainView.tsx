@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
-import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { LoadingContainer } from '@/components/logic/LoadingContainer';
 import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
 import { SideNavigation } from '@/components/logic/navigation/SideNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
-import { Button } from '@/components/ui/button';
+import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
+import { ExitModal } from '@/components/logic/dialogs/ExitModal';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import type { UserInfo } from '@/types/user-types';
 import { containerVariants, itemVariants } from '@/utils/animation-helper';
@@ -395,77 +395,14 @@ export const MainView = () => {
       </div>
       {isLoading && <LoadingContainer />}
       <SideNavigation unreadMailCount={unreadMailCount} />
-      {/* Energy Modal */}
-      <ConfirmationModal
+      <EnergyModal
         isOpen={showEnergyModal}
-        title="물방울이 부족합니다"
-        message={
-          <div className="space-y-4">
-            <p>게임을 시작하기 위한 물방울이 부족합니다. 물방울을 충전하시겠습니까?</p>
-            <div className="flex flex-col gap-3 mt-4">
-              <Button
-                onClick={handleWatchAd}
-                variant="default"
-                disabled={isLoading}
-                className="flex justify-between items-center"
-              >
-                <span>광고 시청하기</span>
-                <div className="flex items-center gap-1">
-                  <Droplet className="text-blue-300 w-4 h-4" />
-                  <span className="text-blue-300 font-bold">+1</span>
-                </div>
-              </Button>
-              <Button
-                onClick={handlePurchase}
-                variant="secondary"
-                disabled={isLoading}
-                className="flex justify-between items-center"
-              >
-                <span>물방울 구매하기</span>
-                <div className="flex items-center gap-1">
-                  <Droplet className="text-blue-300 w-4 h-4" />
-                  <span className="text-blue-300 font-bold">+5</span>
-                </div>
-              </Button>
-            </div>
-          </div>
-        }
-        confirmText="닫기"
-        cancelText=""
-        onConfirm={() => setShowEnergyModal(false)}
-        onCancel={() => setShowEnergyModal(false)}
+        onClose={() => setShowEnergyModal(false)}
+        onWatchAd={handleWatchAd}
+        onPurchase={handlePurchase}
+        isLoading={isLoading}
       />
-      {/* Exit Modal */}
-      <ConfirmationModal
-        isOpen={showExitModal}
-        title="앱 종료"
-        message={
-          <div className="space-y-3">
-            <p className="text-white">앱을 종료하시겠습니까?</p>
-            <div className="flex items-start gap-2 bg-yellow-400/10 p-2 rounded-lg">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              <p className="text-yellow-300 text-sm font-medium">한 번 더 뒤로가기를 누르면 앱이 종료됩니다.</p>
-            </div>
-          </div>
-        }
-        confirmText="종료"
-        cancelText="취소"
-        onConfirm={handleExitConfirm}
-        onCancel={handleExitCancel}
-      />
+      <ExitModal isOpen={showExitModal} onConfirm={handleExitConfirm} onCancel={handleExitCancel} />
     </>
   );
 };
