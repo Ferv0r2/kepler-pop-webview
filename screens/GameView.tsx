@@ -31,8 +31,9 @@ import type { GameMode, GridItem, ItemType, GameState, GameItemType, TierType } 
 import { createParticles, fallVariant, swapVariant } from '@/utils/animation-helper';
 import { deepCopyGrid } from '@/utils/game-helper';
 import { tileConfig } from '@/constants/tile-config';
+import { LoadingView } from './LoadingView';
 
-export const GameBoard = () => {
+export const GameView = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const gameMode = searchParams.get('mode') as GameMode;
@@ -80,7 +81,7 @@ export const GameBoard = () => {
   const [streakCount, setStreakCount] = useState<number>(0);
   const [showStreak, setShowStreak] = useState<boolean>(false);
   const [lastMatchTime, setLastMatchTime] = useState<number>(Date.now());
-
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const itemEffects: Record<GameItemType, (row: number, col: number) => GridItem[][]> = {
     shovel: (row, col) => {
       return removeTile(grid, row, col);
@@ -521,6 +522,10 @@ export const GameBoard = () => {
   useBackButton(() => {
     setShowBackConfirmation(true);
   });
+
+  if (isLoading) {
+    return <LoadingView onLoadComplete={() => setIsLoading(false)} />;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 overflow-hidden">

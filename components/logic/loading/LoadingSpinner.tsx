@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Loader } from 'lucide-react';
 
-export const LoadingContainer = () => {
+export const LoadingSpinner = () => {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[9999]">
       <motion.div

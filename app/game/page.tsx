@@ -2,12 +2,13 @@
 
 import { Suspense } from 'react';
 
-import { GameBoard } from '@/components/logic/GameBoard';
+import { GameView } from '@/screens/GameView';
+import { LoadingView } from '@/screens/LoadingView';
 
 export default function GameScreen() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <GameBoard />
+    <Suspense fallback={<LoadingView />}>
+      <GameView />
     </Suspense>
   );
 }

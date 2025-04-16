@@ -24,3 +24,22 @@ export const DIRECTIONS = [
 ];
 
 export const SCORE = 10;
+
+// Loading screen constants
+export const DEFAULT_LOADING_TIME_MS = 2000;
+export const LOADING_MESSAGE_INTERVAL_MS = 2000;
+export const LOADING_COMPLETE_DELAY_MS = 500;
+export const LOADING_ANIMATION_DURATION = 0.5;
+export const LOADING_TEXT_ANIMATION_DURATION = 0.3;
+export const LOADING_DOTS_ANIMATION_DURATION = 1.2;
+export const LOADING_TILE_ANIMATION_DURATION = 0.8;
+export const LOADING_TILE_ANIMATION_DELAY = 0.1;
+
+// Loading screen animation delays
+export const LOADING_ANIMATION_DELAYS = {
+  TITLE: 0.2,
+  TILES: 0.4,
+  PROGRESS: 0.6,
+  TEXT: 0.7,
+  TIPS: 0.9,
+} as const;

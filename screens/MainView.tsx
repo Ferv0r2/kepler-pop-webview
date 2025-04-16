@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
-import { LoadingContainer } from '@/components/logic/LoadingContainer';
 import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
 import { SideNavigation } from '@/components/logic/navigation/SideNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
@@ -16,6 +15,8 @@ import { ExitModal } from '@/components/logic/dialogs/ExitModal';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import type { UserInfo } from '@/types/user-types';
 import { containerVariants, itemVariants } from '@/utils/animation-helper';
+import { LoadingSpinner } from '@/components/logic/loading/LoadingSpinner';
+import { LoadingView } from './LoadingView';
 
 export const MainView = () => {
   const router = useRouter();
@@ -38,6 +39,7 @@ export const MainView = () => {
   const [unreadMailCount, setUnreadMailCount] = useState<number>(0);
 
   const [showEnergyModal, setShowEnergyModal] = useState<boolean>(false);
+  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showExitModal, setShowExitModal] = useState<boolean>(false);
 
@@ -191,7 +193,9 @@ export const MainView = () => {
     setShowExitModal(false);
   };
 
-  if (!userInfo) return <LoadingContainer />;
+  if (!userInfo) {
+    return <LoadingView onLoadComplete={() => setIsInitialLoading(false)} />;
+  }
 
   const { name, level, energy, gameMoney, gems } = userInfo;
 
@@ -393,7 +397,7 @@ export const MainView = () => {
         <div className="absolute top-[40%] right-[10%] w-60 h-60 rounded-full bg-blue-500/10 blur-3xl"></div>
         <div className="absolute bottom-[20%] left-[30%] w-80 h-80 rounded-full bg-pink-500/10 blur-3xl"></div>
       </div>
-      {isLoading && <LoadingContainer />}
+      {isLoading && <LoadingSpinner />}
       <SideNavigation unreadMailCount={unreadMailCount} />
       <EnergyModal
         isOpen={showEnergyModal}
