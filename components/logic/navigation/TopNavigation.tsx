@@ -59,10 +59,24 @@ export const TopNavigation = ({ name, level, energy, gameMoney, gems }: TopNavig
   );
 };
 
-export const AssetCard = ({ icon, color, value }: { icon: ElementType; color: string; value: number }) => {
+export const AssetCard = ({
+  icon,
+  color,
+  value,
+}: {
+  icon: ElementType;
+  color: 'cyan' | 'yellow' | 'purple';
+  value: number;
+}) => {
+  const colorClasses = {
+    cyan: 'text-cyan-400',
+    yellow: 'text-yellow-400',
+    purple: 'text-purple-400',
+  };
+
   return (
     <div className="flex justify-between items-center gap-1.5 bg-gray-800/50 backdrop-blur-md px-1 py-0.5 rounded-full shadow-lg">
-      {createElement(icon, { className: `text-${color}-400 w-4 h-4` })}
+      {createElement(icon, { className: `${colorClasses[color]} w-4 h-4` })}
       <span className="text-white text-sm font-medium">{formatNumber(value)}</span>
     </div>
   );
