@@ -1,18 +1,23 @@
 import { motion } from 'framer-motion';
-import { X, Home, RefreshCw } from 'lucide-react';
+import { X, Home, RefreshCw, MousePointer, Hand } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import type { TileSwapMode } from '@/types/game-types';
 
 interface SettingsMenuProps {
   isOpen: boolean;
+  tileSwapMode: TileSwapMode;
   onClose: () => void;
   onRestart: () => void;
   onShowTutorial: () => void;
   onShowBackConfirmation: () => void;
+  onChangeTileSwapMode: (mode: TileSwapMode) => void;
 }
 
 export const SettingsMenu = ({
   isOpen,
+  tileSwapMode,
+  onChangeTileSwapMode,
   onClose,
   onRestart,
   onShowTutorial,
@@ -30,9 +35,9 @@ export const SettingsMenu = ({
     >
       <motion.div
         className="bg-gradient-to-br from-slate-900/95 to-purple-900/95 border border-indigo-400/30 rounded-2xl p-6 w-[320px] shadow-[0_0_25px_rgba(99,102,241,0.3)]"
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
+        initial={{ y: 20 }}
+        animate={{ y: 0 }}
+        exit={{ y: 20 }}
         transition={{ type: 'spring', damping: 25 }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -51,6 +56,32 @@ export const SettingsMenu = ({
         </div>
 
         <div className="space-y-4">
+          <div className="space-y-2">
+            <h4 className="text-white/80 font-medium">Swap Mode</h4>
+            <div className="flex gap-2">
+              <Button
+                variant={tileSwapMode === 'drag' ? 'default' : 'outline'}
+                className={`border-none flex-1 flex items-center justify-center gap-2 ${
+                  tileSwapMode === 'drag' ? 'bg-gradient-to-r from-pink-500 to-purple-600' : ''
+                }`}
+                onClick={() => onChangeTileSwapMode('drag')}
+              >
+                <Hand className="h-4 w-4" />
+                <span>Drag</span>
+              </Button>
+              <Button
+                variant={tileSwapMode === 'select' ? 'default' : 'outline'}
+                className={`border-none flex-1 flex items-center justify-center gap-2 ${
+                  tileSwapMode === 'select' ? 'bg-gradient-to-r from-pink-500 to-purple-600' : ''
+                }`}
+                onClick={() => onChangeTileSwapMode('select')}
+              >
+                <MousePointer className="h-4 w-4" />
+                <span>Select</span>
+              </Button>
+            </div>
+          </div>
+
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               variant="outline"

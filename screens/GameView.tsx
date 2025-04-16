@@ -4,7 +4,7 @@ import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowLeft, Settings, Home, RefreshCw, Trophy, Flame } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createElement, useState, useEffect } from 'react';
+import { createElement, useState, useEffect, TouchEvent } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
@@ -27,6 +27,7 @@ import {
 import { tileConfig } from '@/constants/tile-config';
 import { useBackButton } from '@/hooks/useBackButton';
 import { useGameItem } from '@/hooks/useGameItem';
+import { useGameSettings } from '@/hooks/useGameSettings';
 import { useMatchGame } from '@/hooks/useMatchGame';
 import type { GameMode, GridItem, ItemType, GameState, GameItemType, TierType } from '@/types/game-types';
 import { createParticles, fallVariant, swapVariant } from '@/utils/animation-helper';
@@ -39,6 +40,7 @@ export const GameView = () => {
   const searchParams = useSearchParams();
   const gameMode = searchParams.get('mode') as GameMode;
   const { getRandomItemType, createInitialGrid } = useMatchGame();
+  const { tileSwapMode, setTileSwapMode } = useGameSettings();
   const {
     gameItems,
     selectedGameItem,
@@ -83,6 +85,8 @@ export const GameView = () => {
   const [showStreak, setShowStreak] = useState<boolean>(false);
   const [lastMatchTime, setLastMatchTime] = useState<number>(Date.now());
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
   const itemEffects: Record<GameItemType, (row: number, col: number) => GridItem[][]> = {
     shovel: (row, col) => {
       return removeTile(grid, row, col);
@@ -109,25 +113,68 @@ export const GameView = () => {
       return;
     }
 
-    if (selectedTile === null) {
-      setSelectedTile({ row, col });
-      return;
-    }
+    if (tileSwapMode === 'select') {
+      if (selectedTile === null) {
+        setSelectedTile({ row, col });
+        return;
+      }
 
-    if (selectedTile.row === row && selectedTile.col === col) {
-      setSelectedTile(null);
-      return;
-    }
+      if (selectedTile.row === row && selectedTile.col === col) {
+        setSelectedTile(null);
+        return;
+      }
 
-    setTileChangeIndex((prev) => prev + 1);
+      setTileChangeIndex((prev) => prev + 1);
+      const isAdjacent =
+        (Math.abs(selectedTile.row - row) === 1 && selectedTile.col === col) ||
+        (Math.abs(selectedTile.col - col) === 1 && selectedTile.row === row);
+
+      if (isAdjacent) {
+        swapTiles(selectedTile.row, selectedTile.col, row, col);
+      } else {
+        setSelectedTile({ row, col });
+      }
+    }
+  };
+
+  const handleDragStart = (row: number, col: number) => {
+    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver || selectedGameItem) return;
+
+    setDraggedTile({ row, col });
+    setIsDragging(true);
+  };
+
+  const handleDragEnter = (row: number, col: number) => {
+    if (!isDragging || !draggedTile || gameState.isSwapping || gameState.isChecking || gameState.isGameOver) return;
+
+    // Check if the tile is adjacent to the dragged tile
     const isAdjacent =
-      (Math.abs(selectedTile.row - row) === 1 && selectedTile.col === col) ||
-      (Math.abs(selectedTile.col - col) === 1 && selectedTile.row === row);
+      (Math.abs(draggedTile.row - row) === 1 && draggedTile.col === col) ||
+      (Math.abs(draggedTile.col - col) === 1 && draggedTile.row === row);
 
     if (isAdjacent) {
-      swapTiles(selectedTile.row, selectedTile.col, row, col);
-    } else {
-      setSelectedTile({ row, col });
+      setIsDragging(false);
+      setDraggedTile(null);
+      setTileChangeIndex((prev) => prev + 1);
+      swapTiles(draggedTile.row, draggedTile.col, row, col);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    setDraggedTile(null);
+  };
+
+  const onTouchMove = (event: TouchEvent) => {
+    if (tileSwapMode === 'drag' && isDragging) {
+      const touch = event.touches[0];
+      const element = document.elementFromPoint(touch.clientX, touch.clientY);
+      const tileElement = element?.closest('[data-row]');
+      if (tileElement) {
+        const row = Number.parseInt(tileElement.getAttribute('data-row') || '0', 10);
+        const col = Number.parseInt(tileElement.getAttribute('data-col') || '0', 10);
+        handleDragEnter(row, col);
+      }
     }
   };
 
@@ -430,7 +477,7 @@ export const GameView = () => {
       isSwapping: false,
       isChecking: false,
       isGameOver: false,
-      combo: 0,
+      combo: 1,
       turn: 0,
     });
     setTileChangeIndex(0);
@@ -479,7 +526,7 @@ export const GameView = () => {
         ...prev,
         isSwapping: false,
         isChecking: false,
-        combo: 0,
+        combo: 1,
       }));
     }
   };
@@ -523,6 +570,13 @@ export const GameView = () => {
   useBackButton(() => {
     setShowBackConfirmation(true);
   });
+
+  useEffect(() => {
+    return () => {
+      setIsDragging(false);
+      setDraggedTile(null);
+    };
+  }, []);
 
   if (isLoading) {
     return <LoadingView onLoadComplete={() => setIsLoading(false)} />;
@@ -763,7 +817,9 @@ export const GameView = () => {
                       ? 0
                       : selectedTile?.row === rowIndex && selectedTile?.col === colIndex
                         ? 1.1
-                        : 1,
+                        : draggedTile?.row === rowIndex && draggedTile?.col === colIndex
+                          ? 1.1
+                          : 1,
                     rotate: selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? [0, 5, 0, -5, 0] : 0,
                   }}
                   transition={item.isMatched ? fallVariant.transition : swapVariant.transition}
@@ -773,7 +829,9 @@ export const GameView = () => {
                   ${
                     selectedTile?.row === rowIndex && selectedTile?.col === colIndex
                       ? 'ring-4 ring-white shadow-[0_0_15px_rgba(255,255,255,0.7)]'
-                      : 'shadow-md hover:shadow-lg'
+                      : draggedTile?.row === rowIndex && draggedTile?.col === colIndex
+                        ? 'ring-4 ring-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.7)]'
+                        : 'shadow-md hover:shadow-lg'
                   }
                   ${
                     showHint &&
@@ -786,8 +844,17 @@ export const GameView = () => {
                   flex items-center justify-center
                   transition-shadow duration-200
                   relative overflow-hidden
+                  touch-none
                 `}
-                  onClick={() => handleTileClick(rowIndex, colIndex)}
+                  onClick={() => tileSwapMode === 'select' && handleTileClick(rowIndex, colIndex)}
+                  onMouseDown={() => tileSwapMode === 'drag' && handleDragStart(rowIndex, colIndex)}
+                  onMouseEnter={() => tileSwapMode === 'drag' && handleDragEnter(rowIndex, colIndex)}
+                  onMouseUp={() => tileSwapMode === 'drag' && handleDragEnd()}
+                  onTouchStart={() => tileSwapMode === 'drag' && handleDragStart(rowIndex, colIndex)}
+                  onTouchMove={(e: TouchEvent<HTMLDivElement>) => onTouchMove(e)}
+                  onTouchEnd={() => tileSwapMode === 'drag' && handleDragEnd()}
+                  data-row={rowIndex}
+                  data-col={colIndex}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -921,6 +988,8 @@ export const GameView = () => {
 
       <SettingsMenu
         isOpen={showSettingsMenu}
+        tileSwapMode={tileSwapMode}
+        onChangeTileSwapMode={setTileSwapMode}
         onClose={() => setShowSettingsMenu(false)}
         onRestart={restartGame}
         onShowTutorial={() => {

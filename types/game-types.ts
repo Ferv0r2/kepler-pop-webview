@@ -3,6 +3,7 @@ import { ElementType } from 'react';
 export type ItemType = 1 | 2 | 3 | 4 | 5 | 6;
 export type TierType = 1 | 2 | 3;
 export type GameMode = 'casual' | 'challenge';
+export type TileSwapMode = 'drag' | 'select';
 export type GridItem = {
   id: string;
   type: ItemType;
