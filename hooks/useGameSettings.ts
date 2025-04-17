@@ -26,7 +26,7 @@ const getHasSeenTutorial = () => {
 };
 
 export const useGameSettings = (): GameSettings => {
-  const [tileSwapMode, setTileSwapMode] = useState<TileSwapMode>('select');
+  const [tileSwapMode, setTileSwapMode] = useState<TileSwapMode>('drag');
   const [hasSeenTutorial, setHasSeenTutorial] = useState<boolean>(getHasSeenTutorial());
 
   useEffect(() => {
