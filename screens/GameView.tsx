@@ -138,7 +138,13 @@ export const GameView = () => {
   };
 
   const handleDragStart = (row: number, col: number) => {
-    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver || selectedGameItem) return;
+    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver) return;
+
+    if (selectedGameItem) {
+      activeSelectedGameItem(row, col);
+      setTileChangeIndex((prev) => prev + 1);
+      return;
+    }
 
     setDraggedTile({ row, col });
     setIsDragging(true);
