@@ -2,7 +2,7 @@
 
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ArrowLeft, Settings, Home, RefreshCw, Flame } from 'lucide-react';
+import { Sparkles, ArrowLeft, Settings, Home, RefreshCw, Flame, Shuffle } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createElement, useState, useEffect, TouchEvent, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,6 +11,7 @@ import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal'
 import { SettingsMenu } from '@/components/logic/dialogs/SettingsMenu';
 import { TutorialDialog } from '@/components/logic/dialogs/TutorialDialog';
 import { Button } from '@/components/ui/button';
+import { Toast } from '@/components/ui/toast';
 import {
   ANIMATION_DURATION,
   CASUAL_MODE_MOVE_COUNT,
@@ -87,6 +88,7 @@ export const GameView = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [showShuffleToast, setShowShuffleToast] = useState<boolean>(false);
   const itemEffects: Record<GameItemType, (row: number, col: number) => GridItem[][]> = {
     shovel: (row, col) => {
       return removeTile(grid, row, col);
@@ -599,11 +601,13 @@ export const GameView = () => {
     if (!possibleMove && !gameState.isSwapping && !gameState.isChecking) {
       // 움직일 수 있는 타일이 없고, 현재 스왑이나 체크 중이 아닐 때
       setGameState((prev) => ({ ...prev, isSwapping: true }));
+      setShowShuffleToast(true);
 
       setTimeout(() => {
         const newGrid = shuffleGrid();
         setGrid(newGrid);
         setGameState((prev) => ({ ...prev, isSwapping: false }));
+        setTimeout(() => setShowShuffleToast(false), 2000);
       }, ANIMATION_DURATION);
     }
   }, [grid, gameState.isSwapping, gameState.isChecking, findPossibleMove, shuffleGrid]);
@@ -1119,6 +1123,8 @@ export const GameView = () => {
         gameMode={gameMode}
         gameItems={gameItems}
       />
+
+      <Toast isOpen={showShuffleToast} icon={Shuffle} message="타일을 섞고 있습니다..." />
     </div>
   );
 };
