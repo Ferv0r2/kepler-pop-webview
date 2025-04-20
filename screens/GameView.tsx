@@ -349,9 +349,10 @@ export const GameView = () => {
     currentGrid: GridItem[][],
     isFirstMatch = false,
     swappedTiles?: { row: number; col: number }[],
+    currentCombo = gameState.combo,
   ) => {
-    const combo = gameState.combo + 1;
-    const matchScore = matches.length * SCORE * combo * (streakCount > 1 ? streakCount : 1);
+    const nextCombo = currentCombo + 1;
+    const matchScore = matches.length * SCORE * nextCombo * (streakCount > 1 ? streakCount : 1);
 
     setGameState((prev) => ({
       ...prev,
@@ -359,7 +360,7 @@ export const GameView = () => {
       score: prev.score + matchScore,
       moves: isFirstMatch ? prev.moves - 1 : prev.moves,
       turn: isFirstMatch ? prev.turn + 1 : prev.turn,
-      combo,
+      combo: nextCombo,
     }));
 
     if (matches.length > 0) {
@@ -424,7 +425,7 @@ export const GameView = () => {
 
     const newMatches = findMatches(newGrid);
     if (newMatches.length > 0) {
-      processMatches(newMatches, newGrid, false);
+      processMatches(newMatches, newGrid, false, undefined, nextCombo);
     } else {
       setGameState((prev) => ({
         ...prev,
