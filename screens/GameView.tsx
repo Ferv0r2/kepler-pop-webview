@@ -348,11 +348,14 @@ export const GameView = () => {
     const matchScore = matches.length * SCORE * nextCombo * (streakCount > 1 ? streakCount : 1);
     const bonusMoves = calculateComboBonus(nextCombo);
 
+    const shouldDecreaseMoves = isFirstMatch && !selectedGameItem;
+    const movesAdjustment = shouldDecreaseMoves ? -1 : 0;
+
     setGameState((prev) => ({
       ...prev,
       isChecking: true,
       score: prev.score + matchScore,
-      moves: isFirstMatch ? prev.moves - 1 + bonusMoves : prev.moves + bonusMoves,
+      moves: prev.moves + movesAdjustment + bonusMoves,
       turn: isFirstMatch ? prev.turn + 1 : prev.turn,
       combo: nextCombo,
     }));
