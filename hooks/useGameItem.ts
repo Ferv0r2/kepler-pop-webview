@@ -1,6 +1,5 @@
 'use client';
 
-import { Aperture, Bomb, Shovel } from 'lucide-react';
 import { useState } from 'react';
 
 import { DIRECTIONS } from '@/constants/game-config';
@@ -30,19 +29,19 @@ export const useGameItem = (): UseGameItemReturn => {
       id: 'shovel',
       name: '모종삽',
       count: 3,
-      icon: Shovel,
+      icon: '/icons/shovel.png',
     },
     {
       id: 'mole',
       name: '두더지',
       count: 2,
-      icon: Aperture,
+      icon: '/icons/mole.png',
     },
     {
       id: 'bomb',
-      name: '알폭탄',
+      name: '폭탄',
       count: 1,
-      icon: Bomb,
+      icon: '/icons/bomb.png',
     },
   ]);
 

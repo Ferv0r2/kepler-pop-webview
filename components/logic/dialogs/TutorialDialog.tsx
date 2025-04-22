@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { X, Clock } from 'lucide-react';
-import { createElement, ElementType } from 'react';
+import Image from 'next/image';
+import { createElement } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { tileConfig } from '@/constants/tile-config';
@@ -14,7 +15,7 @@ interface TutorialDialogProps {
   gameMode: GameMode;
   gameItems: {
     id: string;
-    icon: ElementType;
+    icon: string;
     name: string;
   }[];
 }
@@ -98,7 +99,7 @@ export const TutorialDialog = ({
                     key={i}
                     className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center"
                   >
-                    {createElement(item.icon, { className: 'w-6 h-6 text-white' })}
+                    <Image src={item.icon} alt={item.name} width={24} height={24} />
                   </div>
                 ))}
               </div>

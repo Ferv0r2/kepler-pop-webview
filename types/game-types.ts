@@ -1,5 +1,3 @@
-import { ElementType } from 'react';
-
 export type ItemType = 1 | 2 | 3 | 4 | 5 | 6;
 export type TierType = 1 | 2 | 3;
 export type GameMode = 'casual' | 'challenge';
@@ -27,7 +25,7 @@ export type GameItem = {
   id: string;
   name: string;
   count: number;
-  icon: ElementType;
+  icon: string;
 };
 
 export type GameItemType = 'shovel' | 'mole' | 'bomb';

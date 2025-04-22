@@ -3,6 +3,7 @@
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowLeft, Settings, Home, RefreshCw, Flame, Shuffle } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createElement, useState, useEffect, TouchEvent, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
@@ -644,246 +645,232 @@ export const GameView = () => {
   }
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
+    <>
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-20 -left-20 w-40 h-40 rounded-full bg-purple-500/20 blur-3xl animate-blob"></div>
         <div className="absolute top-1/3 -right-20 w-60 h-60 rounded-full bg-pink-500/20 blur-3xl animate-blob animation-delay-2000"></div>
         <div className="absolute bottom-20 left-1/4 w-40 h-40 rounded-full bg-cyan-500/20 blur-3xl animate-blob animation-delay-4000"></div>
       </div>
-
-      <div className="sticky w-full top-0 left-0 right-0 z-20 p-4">
-        <div className="flex justify-between items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBackClick}
-            className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-full"
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSettingsClick}
-            className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-full"
-          >
-            <Settings className="h-6 w-6" />
-          </Button>
-        </div>
-      </div>
-
-      <motion.div
-        className="w-full flex flex-col items-center relative z-10 p-2"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        <div className="w-full max-w-lg">
-          <div className="flex justify-between items-center mb-6">
-            <motion.div
-              className="relative flex-2"
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
+      <div className="grid grid-rows-[auto_1fr_auto] items-center min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
+        <header className="sticky w-full inset-0 z-20 p-4">
+          <div className="flex justify-between items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleBackClick}
+              className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-full"
             >
-              <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg blur opacity-30" />
-              <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
-                <div className="text-xs text-pink-400 mb-1 font-mono tracking-widest">SCORE</div>
-                <motion.div
-                  key={gameState.score}
-                  initial={{ scale: 1.5 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-2xl font-bold text-pink-400 font-mono tracking-wider"
-                >
-                  {gameState.score.toLocaleString()}
-                </motion.div>
-              </div>
-            </motion.div>
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
 
-            <motion.div
-              className="relative flex-1 mx-2"
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSettingsClick}
+              className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-full"
             >
-              <div className="absolute -inset-1 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-lg blur opacity-30" />
-              <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-violet-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                <div className="text-xs text-violet-400 mb-1 font-mono tracking-widest">COMBO</div>
-                <motion.div
-                  key={gameState.combo}
-                  initial={{ scale: 1.5 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-2xl font-bold text-violet-400 font-mono tracking-wider"
-                >
-                  {gameState.combo}x
-                </motion.div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="relative flex-1"
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-            >
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg blur opacity-30" />
-              <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                <div className="text-xs text-blue-400 mb-1 font-mono tracking-widest">MOVES</div>
-                <motion.div
-                  key={gameState.moves}
-                  initial={{ scale: 1.5 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-2xl font-bold text-blue-400 font-mono tracking-wider"
-                >
-                  {Math.max(gameState.moves, 0)}
-                </motion.div>
-              </div>
-            </motion.div>
+              <Settings className="h-6 w-6" />
+            </Button>
           </div>
-        </div>
-      </motion.div>
+        </header>
 
-      <AnimatePresence>
-        {showStreak && streakCount > 1 && (
+        <main className="w-full max-w-lg mx-auto flex flex-col items-center relative z-10 p-2">
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
+            className="w-full flex flex-col items-center relative z-10 p-2"
+            initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute top-1/4 z-30 flex items-center justify-center bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg px-3 py-1 rounded-full shadow-lg"
           >
-            <Flame className="inline-block mr-1 h-5 w-5" />
-            {streakCount}x STREAK!
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="w-full max-w-lg p-2">
-        <motion.div
-          className="relative w-full bg-black/40 p-3 rounded-xl border-2 border-purple-600/50 shadow-[0_0_20px_rgba(147,51,234,0.4)] backdrop-blur-sm"
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, type: 'spring' }}
-        >
-          <AnimatePresence>
-            {gameState.isGameOver && (
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-xl z-20 backdrop-blur-md"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-              >
+            <div className="w-full max-w-lg">
+              <div className="flex justify-between items-center mb-6">
                 <motion.div
-                  className="relative w-5/6 max-w-md"
-                  initial={{ scale: 0.8, y: 20 }}
-                  animate={{ scale: 1, y: 0 }}
-                  exit={{ scale: 0.8, y: 20 }}
-                  transition={{ type: 'spring', damping: 25, delay: 0.1 }}
+                  className="relative flex-2"
+                  initial={{ x: -50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
                 >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-2xl opacity-70 blur-md animate-pulse" />
-                  <div className="relative bg-gradient-to-b from-slate-900/95 to-purple-900/95 rounded-2xl p-8 border border-indigo-400/30 shadow-[0_0_30px_rgba(139,92,246,0.5)]">
-                    <div className="absolute -top-10 -right-10 text-yellow-300 text-4xl animate-pulse opacity-70">
-                      ✨
-                    </div>
-                    <div
-                      className="absolute -bottom-6 -left-6 text-pink-300 text-3xl animate-pulse opacity-70"
-                      style={{ animationDelay: '0.5s' }}
-                    >
-                      ✨
-                    </div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg blur opacity-30" />
+                  <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
+                    <div className="text-xs text-pink-400 mb-1 font-mono tracking-widest">SCORE</div>
                     <motion.div
-                      className="flex justify-center mb-6"
-                      initial={{ y: -20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.2, duration: 0.5 }}
+                      key={gameState.score}
+                      initial={{ scale: 1.5 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="text-2xl font-bold text-pink-400 font-mono tracking-wider"
                     >
-                      <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
-                        GAME OVER!
-                      </h2>
-                    </motion.div>
-                    <motion.div
-                      className="text-center mb-6 bg-slate-800/60 p-4 rounded-xl"
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.4, duration: 0.5 }}
-                    >
-                      <p className="text-lg text-white/80 mb-1">Final Score</p>
-                      <motion.div
-                        className="text-4xl font-bold text-yellow-300"
-                        initial={{ scale: 0.8 }}
-                        animate={{ scale: [0.8, 1.2, 1] }}
-                        transition={{ delay: 0.6, duration: 0.7, times: [0, 0.6, 1] }}
-                      >
-                        {gameState.score.toLocaleString()}
-                      </motion.div>
-                    </motion.div>
-                    <motion.div
-                      className="flex justify-center mb-6"
-                      initial={{ scale: 0, rotate: 180 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ delay: 0.7, type: 'spring', stiffness: 200 }}
-                    >
-                      <div className="text-5xl text-yellow-400">🏆</div>
-                    </motion.div>
-                    <motion.div
-                      className="flex flex-col gap-3"
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.8, duration: 0.5 }}
-                    >
-                      <Button
-                        onClick={restartGame}
-                        className="flex items-center justify-center bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl text-md shadow-lg hover:shadow-xl transition-all duration-300"
-                      >
-                        <RefreshCw className="w-5 h-5 mr-2" />
-                        Play Again
-                      </Button>
-                      <Button
-                        onClick={() => router.back()}
-                        variant="outline"
-                        className="flex items-center justify-center bg-slate-800/30 border-indigo-500/50 text-white hover:bg-slate-800/50 rounded-xl py-3 text-md"
-                      >
-                        <Home className="w-5 h-5 mr-2" />
-                        Return to Home
-                      </Button>
+                      {gameState.score.toLocaleString()}
                     </motion.div>
                   </div>
                 </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
-          <div
-            className="grid gap-1.5 place-items-center"
-            style={{
-              gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
-              touchAction: 'none',
-            }}
-          >
-            {grid.map((row, rowIndex) =>
-              row.map((item, colIndex) => (
                 <motion.div
-                  layout
-                  key={item.id}
-                  initial={item.isMatched ? fallVariant.initial : swapVariant.initial}
-                  animate={{
-                    ...(item.isMatched ? fallVariant.animate : swapVariant.animate),
-                    scale: item.isMatched
-                      ? 0
-                      : selectedTile?.row === rowIndex && selectedTile?.col === colIndex
-                        ? 1.1
-                        : draggedTile?.row === rowIndex && draggedTile?.col === colIndex
-                          ? 1.1
-                          : 1,
-                    rotate: selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? [0, 5, 0, -5, 0] : 0,
-                  }}
-                  transition={item.isMatched ? fallVariant.transition : swapVariant.transition}
-                  className={`
+                  className="relative flex-1 mx-2"
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.5 }}
+                >
+                  <div className="absolute -inset-1 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-lg blur opacity-30" />
+                  <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-violet-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                    <div className="text-xs text-violet-400 mb-1 font-mono tracking-widest">COMBO</div>
+                    <motion.div
+                      key={gameState.combo}
+                      initial={{ scale: 1.5 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="text-2xl font-bold text-violet-400 font-mono tracking-wider"
+                    >
+                      {gameState.combo}x
+                    </motion.div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  className="relative flex-1"
+                  initial={{ x: 50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                >
+                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg blur opacity-30" />
+                  <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                    <div className="text-xs text-blue-400 mb-1 font-mono tracking-widest">MOVES</div>
+                    <motion.div
+                      key={gameState.moves}
+                      initial={{ scale: 1.5 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="text-2xl font-bold text-blue-400 font-mono tracking-wider"
+                    >
+                      {Math.max(gameState.moves, 0)}
+                    </motion.div>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="w-full p-2">
+            <motion.div
+              className="relative w-full bg-black/40 p-3 rounded-xl border-2 border-purple-600/50 shadow-[0_0_20px_rgba(147,51,234,0.4)] backdrop-blur-sm"
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5, type: 'spring' }}
+            >
+              <AnimatePresence>
+                {gameState.isGameOver && (
+                  <motion.div
+                    className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-xl z-20 backdrop-blur-md"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <motion.div
+                      className="relative w-5/6 max-w-md"
+                      initial={{ scale: 0.8, y: 20 }}
+                      animate={{ scale: 1, y: 0 }}
+                      exit={{ scale: 0.8, y: 20 }}
+                      transition={{ type: 'spring', damping: 25, delay: 0.1 }}
+                    >
+                      <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-2xl opacity-70 blur-md animate-pulse" />
+                      <div className="relative bg-gradient-to-b from-slate-900/95 to-purple-900/95 rounded-2xl p-8 border border-indigo-400/30 shadow-[0_0_30px_rgba(139,92,246,0.5)]">
+                        <div className="absolute -top-10 -right-10 text-yellow-300 text-4xl animate-pulse opacity-70">
+                          ✨
+                        </div>
+                        <div
+                          className="absolute -bottom-6 -left-6 text-pink-300 text-3xl animate-pulse opacity-70"
+                          style={{ animationDelay: '0.5s' }}
+                        >
+                          ✨
+                        </div>
+                        <motion.div
+                          className="flex justify-center mb-6"
+                          initial={{ y: -20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          transition={{ delay: 0.2, duration: 0.5 }}
+                        >
+                          <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
+                            GAME OVER!
+                          </h2>
+                        </motion.div>
+                        <motion.div
+                          className="text-center mb-6 bg-slate-800/60 p-4 rounded-xl"
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: 0.4, duration: 0.5 }}
+                        >
+                          <p className="text-lg text-white/80 mb-1">Final Score</p>
+                          <motion.div
+                            className="text-4xl font-bold text-yellow-300"
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: [0.8, 1.2, 1] }}
+                            transition={{ delay: 0.6, duration: 0.7, times: [0, 0.6, 1] }}
+                          >
+                            {gameState.score.toLocaleString()}
+                          </motion.div>
+                        </motion.div>
+                        <motion.div
+                          className="flex justify-center mb-6"
+                          initial={{ scale: 0, rotate: 180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ delay: 0.7, type: 'spring', stiffness: 200 }}
+                        >
+                          <div className="text-5xl text-yellow-400">🏆</div>
+                        </motion.div>
+                        <motion.div
+                          className="flex flex-col gap-3"
+                          initial={{ y: 20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          transition={{ delay: 0.8, duration: 0.5 }}
+                        >
+                          <Button
+                            onClick={restartGame}
+                            className="flex items-center justify-center bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl text-md shadow-lg hover:shadow-xl transition-all duration-300"
+                          >
+                            <RefreshCw className="w-5 h-5 mr-2" />
+                            Play Again
+                          </Button>
+                          <Button
+                            onClick={() => router.back()}
+                            variant="outline"
+                            className="flex items-center justify-center bg-slate-800/30 border-indigo-500/50 text-white hover:bg-slate-800/50 rounded-xl py-3 text-md"
+                          >
+                            <Home className="w-5 h-5 mr-2" />
+                            Return to Home
+                          </Button>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div
+                className="grid gap-1.5 place-items-center"
+                style={{
+                  gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
+                  touchAction: 'none',
+                }}
+              >
+                {grid.map((row, rowIndex) =>
+                  row.map((item, colIndex) => (
+                    <motion.div
+                      layout
+                      key={item.id}
+                      initial={item.isMatched ? fallVariant.initial : swapVariant.initial}
+                      animate={{
+                        ...(item.isMatched ? fallVariant.animate : swapVariant.animate),
+                        scale: item.isMatched
+                          ? 0
+                          : selectedTile?.row === rowIndex && selectedTile?.col === colIndex
+                            ? 1.1
+                            : draggedTile?.row === rowIndex && draggedTile?.col === colIndex
+                              ? 1.1
+                              : 1,
+                        rotate: selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? [0, 5, 0, -5, 0] : 0,
+                      }}
+                      transition={item.isMatched ? fallVariant.transition : swapVariant.transition}
+                      className={`
                   w-10 h-10 sm:w-12 sm:h-12 rounded-xl
                   ${tileConfig[item.type].bgColor[item.tier]}
                   ${
@@ -906,129 +893,131 @@ export const GameView = () => {
                   relative overflow-hidden
                   touch-none
                 `}
-                  onClick={() => tileSwapMode === 'select' && handleTileClick(rowIndex, colIndex)}
-                  onMouseDown={() => tileSwapMode === 'drag' && handleDragStart(rowIndex, colIndex)}
-                  onMouseEnter={() => tileSwapMode === 'drag' && handleDragEnter(rowIndex, colIndex)}
-                  onMouseUp={() => tileSwapMode === 'drag' && handleDragEnd()}
-                  onTouchStart={() => tileSwapMode === 'drag' && handleDragStart(rowIndex, colIndex)}
-                  onTouchMove={(e: TouchEvent<HTMLDivElement>) => onTouchMove(e)}
-                  onTouchEnd={() => tileSwapMode === 'drag' && handleDragEnd()}
-                  data-row={rowIndex}
-                  data-col={colIndex}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/20" />
-                  {item.tier > 1 && (
-                    <>
-                      {item.tier === 2 && (
+                      onClick={() => tileSwapMode === 'select' && handleTileClick(rowIndex, colIndex)}
+                      onMouseDown={() => tileSwapMode === 'drag' && handleDragStart(rowIndex, colIndex)}
+                      onMouseEnter={() => tileSwapMode === 'drag' && handleDragEnter(rowIndex, colIndex)}
+                      onMouseUp={() => tileSwapMode === 'drag' && handleDragEnd()}
+                      onTouchStart={() => tileSwapMode === 'drag' && handleDragStart(rowIndex, colIndex)}
+                      onTouchMove={(e: TouchEvent<HTMLDivElement>) => onTouchMove(e)}
+                      onTouchEnd={() => tileSwapMode === 'drag' && handleDragEnd()}
+                      data-row={rowIndex}
+                      data-col={colIndex}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/20" />
+                      {item.tier > 1 && (
                         <>
-                          <div className="absolute inset-0 rounded-xl border-2 border-yellow-400 opacity-70 animate-pulse"></div>
-                          <div className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                              className="w-5 h-5 text-yellow-300 drop-shadow-[0_0_3px_rgba(253,224,71,0.7)]"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </div>
-                        </>
-                      )}
+                          {item.tier === 2 && (
+                            <>
+                              <div className="absolute inset-0 rounded-xl border-2 border-yellow-400 opacity-70 animate-pulse"></div>
+                              <div className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                  className="w-5 h-5 text-yellow-300 drop-shadow-[0_0_3px_rgba(253,224,71,0.7)]"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              </div>
+                            </>
+                          )}
 
-                      {item.tier === 3 && (
-                        <>
-                          <div className="absolute inset-0 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-cyan-500/20 to-purple-500/20"></div>
-                          <div className="absolute inset-0 rounded-xl border border-white/30 shadow-[inset_0_0_15px_rgba(255,255,255,0.5)] animate-pulse"></div>
-                          <div className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                              className="w-6 h-6 text-cyan-300 drop-shadow-[0_0_5px_rgba(103,232,249,0.9)]"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M9.315 7.584C12.195 3.883 16.695 1.5 21.75 1.5a.75.75 0 01.75.75c0 5.056-2.383 9.555-6.084 12.436A6.75 6.75 0 019.75 22.5a.75.75 0 01-.75-.75v-4.131A15.838 15.838 0 016.382 15H2.25a.75.75 0 01-.75-.75 6.75 6.75 0 017.815-6.666zM15 6.75a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z"
-                                clipRule="evenodd"
-                              />
-                              <path d="M5.26 17.242a.75.75 0 10-.897-1.203 5.243 5.243 0 00-2.05 5.022.75.75 0 00.625.627 5.243 5.243 0 005.022-2.051.75.75 0 10-1.202-.897 3.744 3.744 0 01-3.008 1.51c0-1.23.592-2.323 1.51-3.008z" />
-                            </svg>
-                          </div>
-                          <div className="absolute -bottom-1 -left-1 w-5 h-5 flex items-center justify-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                              className="w-5 h-5 text-purple-300 drop-shadow-[0_0_5px_rgba(216,180,254,0.9)] animate-pulse"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M11.484 2.17a.75.75 0 011.032 0 11.209 11.209 0 007.877 3.08.75.75 0 01.722.515 12.74 12.74 0 01.635 3.985c0 5.942-4.064 10.933-9.563 12.348a.749.749 0 01-.374 0C6.314 20.683 2.25 15.692 2.25 9.75c0-1.39.223-2.73.635-3.985a.75.75 0 01.722-.516l.143.001c2.996 0 5.718-1.17 7.734-3.08zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zM12 15a.75.75 0 00-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 00.75-.75v-.008a.75.75 0 00-.75-.75H12z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </div>
+                          {item.tier === 3 && (
+                            <>
+                              <div className="absolute inset-0 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-cyan-500/20 to-purple-500/20"></div>
+                              <div className="absolute inset-0 rounded-xl border border-white/30 shadow-[inset_0_0_15px_rgba(255,255,255,0.5)] animate-pulse"></div>
+                              <div className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                  className="w-6 h-6 text-cyan-300 drop-shadow-[0_0_5px_rgba(103,232,249,0.9)]"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M9.315 7.584C12.195 3.883 16.695 1.5 21.75 1.5a.75.75 0 01.75.75c0 5.056-2.383 9.555-6.084 12.436A6.75 6.75 0 019.75 22.5a.75.75 0 01-.75-.75v-4.131A15.838 15.838 0 016.382 15H2.25a.75.75 0 01-.75-.75 6.75 6.75 0 017.815-6.666zM15 6.75a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z"
+                                    clipRule="evenodd"
+                                  />
+                                  <path d="M5.26 17.242a.75.75 0 10-.897-1.203 5.243 5.243 0 00-2.05 5.022.75.75 0 00.625.627 5.243 5.243 0 005.022-2.051.75.75 0 10-1.202-.897 3.744 3.744 0 01-3.008 1.51c0-1.23.592-2.323 1.51-3.008z" />
+                                </svg>
+                              </div>
+                              <div className="absolute -bottom-1 -left-1 w-5 h-5 flex items-center justify-center">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                  className="w-5 h-5 text-purple-300 drop-shadow-[0_0_5px_rgba(216,180,254,0.9)] animate-pulse"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M11.484 2.17a.75.75 0 011.032 0 11.209 11.209 0 007.877 3.08.75.75 0 01.722.515 12.74 12.74 0 01.635 3.985c0 5.942-4.064 10.933-9.563 12.348a.749.749 0 01-.374 0C6.314 20.683 2.25 15.692 2.25 9.75c0-1.39.223-2.73.635-3.985a.75.75 0 01.722-.516l.143.001c2.996 0 5.718-1.17 7.734-3.08zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zM12 15a.75.75 0 00-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 00.75-.75v-.008a.75.75 0 00-.75-.75H12z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              </div>
+                            </>
+                          )}
                         </>
                       )}
-                    </>
+                      <motion.div
+                        animate={{
+                          rotate: selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? 360 : 0,
+                        }}
+                        transition={{
+                          duration: 1,
+                          type: 'tween',
+                          repeat:
+                            selectedTile?.row === rowIndex && selectedTile?.col === colIndex
+                              ? Number.POSITIVE_INFINITY
+                              : 0,
+                        }}
+                        className="relative z-10"
+                      >
+                        {createElement(tileConfig[item.type].icon[item.tier], {
+                          className: 'w-6 h-6 sm:w-7 sm:h-7 text-white drop-shadow-md',
+                          strokeWidth: 2.5,
+                        })}
+                      </motion.div>
+                    </motion.div>
+                  )),
+                )}
+
+                <AnimatePresence>
+                  {showScorePopup && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.5, y: 0 }}
+                      animate={{ opacity: 1, scale: 1, y: -30 }}
+                      exit={{ opacity: 0, y: -60 }}
+                      transition={{ duration: 0.8 }}
+                      className="absolute text-yellow-300 font-bold text-xl z-20"
+                      style={{
+                        left: `${(showScorePopup.x / GRID_SIZE) * 100}%`,
+                        top: `${(showScorePopup.y / GRID_SIZE) * 100}%`,
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    >
+                      +{showScorePopup.score}
+                    </motion.div>
                   )}
-                  <motion.div
-                    animate={{
-                      rotate: selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? 360 : 0,
-                    }}
-                    transition={{
-                      duration: 1,
-                      type: 'tween',
-                      repeat:
-                        selectedTile?.row === rowIndex && selectedTile?.col === colIndex ? Number.POSITIVE_INFINITY : 0,
-                    }}
-                    className="relative z-10"
-                  >
-                    {createElement(tileConfig[item.type].icon[item.tier], {
-                      className: 'w-6 h-6 sm:w-7 sm:h-7 text-white drop-shadow-md',
-                      strokeWidth: 2.5,
-                    })}
-                  </motion.div>
-                </motion.div>
-              )),
-            )}
+                </AnimatePresence>
+              </div>
 
-            <AnimatePresence>
-              {showScorePopup && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.5, y: 0 }}
-                  animate={{ opacity: 1, scale: 1, y: -30 }}
-                  exit={{ opacity: 0, y: -60 }}
-                  transition={{ duration: 0.8 }}
-                  className="absolute text-yellow-300 font-bold text-xl z-20"
-                  style={{
-                    left: `${(showScorePopup.x / GRID_SIZE) * 100}%`,
-                    top: `${(showScorePopup.y / GRID_SIZE) * 100}%`,
-                    transform: 'translate(-50%, -50%)',
-                  }}
-                >
-                  +{showScorePopup.score}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <motion.div
-            className="mt-6 flex justify-center gap-3"
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3, type: 'spring' }}
-          >
-            {gameItems.map(({ id, count, icon, name }) => (
               <motion.div
-                key={id}
-                className={`
+                className="mt-6 flex justify-center gap-3"
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.3, type: 'spring' }}
+              >
+                {gameItems.map(({ id, count, icon, name }) => (
+                  <motion.div
+                    key={id}
+                    className={`
                 relative flex flex-col flex-1 text-center items-center p-3 rounded-lg cursor-pointer
                 ${
                   selectedGameItem === id
@@ -1038,38 +1027,63 @@ export const GameView = () => {
                 ${count === 0 ? 'opacity-50 cursor-not-allowed' : ''}
                 drop-shadow-md transition-all duration-200
               `}
-                onClick={() => count > 0 && handleGameItemSelect(id as GameItemType)}
-                whileHover={{ scale: count > 0 ? 1.05 : 1 }}
-                whileTap={{ scale: count > 0 ? 0.95 : 1 }}
-              >
-                <div className="text-3xl mb-2">{createElement(icon, { className: 'w-8 h-8 text-white' })}</div>
-                <div className="text-sm font-bold text-white">{name}</div>
-                <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                  {count}
-                </div>
+                    onClick={() => count > 0 && handleGameItemSelect(id as GameItemType)}
+                    whileHover={{ scale: count > 0 ? 1.05 : 1 }}
+                    whileTap={{ scale: count > 0 ? 0.95 : 1 }}
+                  >
+                    <div className="text-3xl mb-2">
+                      <Image
+                        className={`${selectedGameItem === id ? 'animate-item-selected' : ''}`}
+                        src={icon}
+                        alt={name}
+                        width={64}
+                        height={64}
+                      />
+                    </div>
+                    <div className="text-sm font-bold text-white">{name}</div>
+                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                      {count}
+                    </div>
+                  </motion.div>
+                ))}
               </motion.div>
-            ))}
-          </motion.div>
 
-          {gameMode === 'casual' && (
-            <motion.div
-              className="mt-4 flex justify-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              <Button
-                onClick={showHintMove}
-                variant="ghost"
-                className="text-white/70 hover:text-white hover:bg-white/10 text-sm"
-              >
-                <Sparkles className="w-4 h-4 mr-1" />
-                Need a hint?
-              </Button>
+              {gameMode === 'casual' && (
+                <motion.div
+                  className="mt-4 flex justify-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <Button
+                    onClick={showHintMove}
+                    variant="ghost"
+                    className="text-white/70 hover:text-white hover:bg-white/10 text-sm"
+                  >
+                    <Sparkles className="w-4 h-4 mr-1" />
+                    Need a hint?
+                  </Button>
+                </motion.div>
+              )}
             </motion.div>
-          )}
-        </motion.div>
+          </div>
+        </main>
       </div>
+
+      <AnimatePresence>
+        {showStreak && streakCount > 1 && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -20, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute top-1/4 z-30 flex items-center justify-center bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg px-3 py-1 rounded-full shadow-lg"
+          >
+            <Flame className="inline-block mr-1 h-5 w-5" />
+            {streakCount}x STREAK!
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ConfirmationModal
         isOpen={showBackConfirmation}
@@ -1146,6 +1160,6 @@ export const GameView = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 };
