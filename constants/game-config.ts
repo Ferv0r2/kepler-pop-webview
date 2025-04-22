@@ -43,3 +43,9 @@ export const LOADING_ANIMATION_DELAYS = {
   TEXT: 0.7,
   TIPS: 0.9,
 } as const;
+
+export const COMBO_BONUS = {
+  MIN_COMBO: 3,
+  MAX_COMBO: 10,
+  MAX_BONUS: 5,
+} as const;

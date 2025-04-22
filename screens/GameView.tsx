@@ -32,7 +32,7 @@ import { useGameSettings } from '@/hooks/useGameSettings';
 import { useMatchGame } from '@/hooks/useMatchGame';
 import type { GameMode, GridItem, ItemType, GameState, GameItemType, TierType } from '@/types/game-types';
 import { createParticles, fallVariant, swapVariant } from '@/utils/animation-helper';
-import { deepCopyGrid } from '@/utils/game-helper';
+import { deepCopyGrid, calculateComboBonus } from '@/utils/game-helper';
 
 import { LoadingView } from './LoadingView';
 
@@ -73,8 +73,6 @@ export const GameView = () => {
   } | null>(null);
   const [showBackConfirmation, setShowBackConfirmation] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
-  // const [artifactFragments, setArtifactFragments] = useState(0);
-  // turn이나 move와 달리 모든 타일 변화를 카운트하는 변수
   const [tileChangeIndex, setTileChangeIndex] = useState<number>(0);
   const [showHint, setShowHint] = useState<boolean>(false);
   const [hintPosition, setHintPosition] = useState<{ row1: number; col1: number; row2: number; col2: number } | null>(
@@ -89,6 +87,11 @@ export const GameView = () => {
   const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showShuffleToast, setShowShuffleToast] = useState<boolean>(false);
+  const [showBonusMovesPopup, setShowBonusMovesPopup] = useState<{
+    moves: number;
+    x: number;
+    y: number;
+  } | null>(null);
   const itemEffects: Record<GameItemType, (row: number, col: number) => GridItem[][]> = {
     shovel: (row, col) => {
       return removeTile(grid, row, col);
@@ -155,7 +158,6 @@ export const GameView = () => {
   const handleDragEnter = (row: number, col: number) => {
     if (!isDragging || !draggedTile || gameState.isSwapping || gameState.isChecking || gameState.isGameOver) return;
 
-    // Check if the tile is adjacent to the dragged tile
     const isAdjacent =
       (Math.abs(draggedTile.row - row) === 1 && draggedTile.col === col) ||
       (Math.abs(draggedTile.col - col) === 1 && draggedTile.row === row);
@@ -190,16 +192,13 @@ export const GameView = () => {
     setGameState((prev) => ({ ...prev, isSwapping: true }));
     let newGrid = deepCopyGrid(grid);
 
-    // Hide hint when swapping
     setShowHint(false);
 
-    // Swapped tiles info
     const swappedTiles = [
       { row: row1, col: col1 },
       { row: row2, col: col2 },
     ];
 
-    // Execute swap
     const temp = { ...newGrid[row1][col1] };
     newGrid[row1][col1] = { ...newGrid[row2][col2] };
     newGrid[row2][col2] = temp;
@@ -213,7 +212,6 @@ export const GameView = () => {
 
     await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION + 100));
     if (matches.length > 0) {
-      // Check if this match was made quickly after the last one
       const now = Date.now();
       if (now - lastMatchTime < SHOW_STREAK_MAINTAIN_TIME_MS) {
         setStreakCount((prev) => prev + 1);
@@ -244,7 +242,6 @@ export const GameView = () => {
   const findMatches = (currentGrid: GridItem[][]): { row: number; col: number }[] => {
     const matches: { row: number; col: number }[] = [];
 
-    // Check horizontal matches
     for (let row = 0; row < GRID_SIZE; row++) {
       for (let col = 0; col < GRID_SIZE - 2; col++) {
         const currentTile = currentGrid[row][col];
@@ -270,7 +267,6 @@ export const GameView = () => {
       }
     }
 
-    // Check vertical matches
     for (let col = 0; col < GRID_SIZE; col++) {
       for (let row = 0; row < GRID_SIZE - 2; row++) {
         const currentTile = currentGrid[row][col];
@@ -300,10 +296,8 @@ export const GameView = () => {
   };
 
   const findPossibleMove = useCallback((): { row1: number; col1: number; row2: number; col2: number } | null => {
-    // Check all possible swaps to find a valid move
     for (let row = 0; row < GRID_SIZE; row++) {
       for (let col = 0; col < GRID_SIZE; col++) {
-        // Check right swap
         if (col < GRID_SIZE - 1) {
           const tempGrid = deepCopyGrid(grid);
           const temp = { ...tempGrid[row][col] };
@@ -315,7 +309,6 @@ export const GameView = () => {
           }
         }
 
-        // Check down swap
         if (row < GRID_SIZE - 1) {
           const tempGrid = deepCopyGrid(grid);
           const temp = { ...tempGrid[row][col] };
@@ -353,12 +346,13 @@ export const GameView = () => {
   ) => {
     const nextCombo = currentCombo + 1;
     const matchScore = matches.length * SCORE * nextCombo * (streakCount > 1 ? streakCount : 1);
+    const bonusMoves = calculateComboBonus(nextCombo);
 
     setGameState((prev) => ({
       ...prev,
       isChecking: true,
       score: prev.score + matchScore,
-      moves: isFirstMatch ? prev.moves - 1 : prev.moves,
+      moves: isFirstMatch ? prev.moves - 1 + bonusMoves : prev.moves + bonusMoves,
       turn: isFirstMatch ? prev.turn + 1 : prev.turn,
       combo: nextCombo,
     }));
@@ -385,10 +379,24 @@ export const GameView = () => {
       }, SHOW_EFFECT_TIME_MS);
     }
 
+    if (bonusMoves > 0) {
+      const centerRow = matches.reduce((sum, m) => sum + m.row, 0) / matches.length;
+      const centerCol = matches.reduce((sum, m) => sum + m.col, 0) / matches.length;
+
+      setShowBonusMovesPopup({
+        moves: bonusMoves,
+        x: centerCol,
+        y: centerRow,
+      });
+
+      setTimeout(() => {
+        setShowBonusMovesPopup(null);
+      }, SHOW_EFFECT_TIME_MS);
+    }
+
     let newGrid = deepCopyGrid(currentGrid);
     matches.forEach(({ row, col }, index) => {
       if (!swappedTiles) {
-        // Item usage: upgrade first tile, remove others
         if (index === 0) {
           const challengeMatchCondition = gameMode === 'challenge' && newGrid[row][col].tier < TILE_MAX_TIER;
           if (challengeMatchCondition) {
@@ -401,7 +409,6 @@ export const GameView = () => {
           newGrid[row][col].isMatched = true;
         }
       } else {
-        // Swap case: upgrade swapped tiles, remove others
         const isSwapped = swappedTiles.some((tile) => tile.row === row && tile.col === col);
         if (isSwapped) {
           if (gameMode === 'challenge' && newGrid[row][col].tier < 3) {
@@ -571,7 +578,6 @@ export const GameView = () => {
   };
 
   const shuffleGrid = useCallback(() => {
-    // 1차원 배열로 변환
     const flatGrid = grid.flat();
 
     for (let i = flatGrid.length - 1; i > 0; i--) {
@@ -579,16 +585,13 @@ export const GameView = () => {
       [flatGrid[i], flatGrid[j]] = [flatGrid[j], flatGrid[i]];
     }
 
-    // 2차원 배열로 다시 변환
     const newGrid: GridItem[][] = [];
     for (let i = 0; i < GRID_SIZE; i++) {
       newGrid.push(flatGrid.slice(i * GRID_SIZE, (i + 1) * GRID_SIZE));
     }
 
-    // 매치가 있는지 확인
     const matches = findMatches(newGrid);
     if (matches.length > 0) {
-      // 매치가 있다면 다시 섞기
       return shuffleGrid();
     }
 
@@ -600,7 +603,6 @@ export const GameView = () => {
 
     const possibleMove = findPossibleMove();
     if (!possibleMove && !gameState.isSwapping && !gameState.isChecking) {
-      // 움직일 수 있는 타일이 없고, 현재 스왑이나 체크 중이 아닐 때
       setGameState((prev) => ({ ...prev, isSwapping: true }));
       setShowShuffleToast(true);
 
@@ -613,10 +615,8 @@ export const GameView = () => {
     }
   }, [grid, gameState.isSwapping, gameState.isChecking, findPossibleMove, shuffleGrid]);
 
-  // Prevent hydration errors by creating grid on client side only
   useEffect(() => {
     setGrid(createInitialGrid());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -625,7 +625,6 @@ export const GameView = () => {
     }
   }, [hasSeenTutorial]);
 
-  // Register back button handler
   useBackButton(() => {
     setShowBackConfirmation(true);
   });
@@ -643,7 +642,6 @@ export const GameView = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
-      {/* Animated background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-20 -left-20 w-40 h-40 rounded-full bg-purple-500/20 blur-3xl animate-blob"></div>
         <div className="absolute top-1/3 -right-20 w-60 h-60 rounded-full bg-pink-500/20 blur-3xl animate-blob animation-delay-2000"></div>
@@ -1126,6 +1124,25 @@ export const GameView = () => {
       />
 
       <Toast isOpen={showShuffleToast} icon={Shuffle} message="타일을 섞고 있습니다..." />
+
+      <AnimatePresence>
+        {showBonusMovesPopup && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5, y: 0 }}
+            animate={{ opacity: 1, scale: 1, y: -60 }}
+            exit={{ opacity: 0, y: -90 }}
+            transition={{ duration: 0.8 }}
+            className="absolute text-green-400 font-bold text-xl z-20"
+            style={{
+              left: `${(showBonusMovesPopup.x / GRID_SIZE) * 100}%`,
+              top: `${(showBonusMovesPopup.y / GRID_SIZE) * 100}%`,
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            +{showBonusMovesPopup.moves} Moves!
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
