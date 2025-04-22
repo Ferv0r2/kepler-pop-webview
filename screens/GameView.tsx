@@ -2,7 +2,7 @@
 
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ArrowLeft, Settings, Home, RefreshCw, Flame, Shuffle } from 'lucide-react';
+import { ArrowLeft, Settings, Home, RefreshCw, Flame, Shuffle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createElement, useState, useEffect, TouchEvent, useCallback } from 'react';
@@ -25,6 +25,7 @@ import {
   SHOW_HINT_TIME_MS,
   SHOW_STREAK_MAINTAIN_TIME_MS,
   TILE_MAX_TIER,
+  HINT_MOVE_INTERVAL_MS,
 } from '@/constants/game-config';
 import { tileConfig } from '@/constants/tile-config';
 import { useBackButton } from '@/hooks/useBackButton';
@@ -326,18 +327,6 @@ export const GameView = () => {
     return null;
   }, [grid]);
 
-  const showHintMove = () => {
-    const possibleMove = findPossibleMove();
-    if (possibleMove) {
-      setHintPosition(possibleMove);
-      setShowHint(true);
-
-      setTimeout(() => {
-        setShowHint(false);
-      }, SHOW_HINT_TIME_MS);
-    }
-  };
-
   const processMatches = async (
     matches: { row: number; col: number }[],
     currentGrid: GridItem[][],
@@ -360,6 +349,8 @@ export const GameView = () => {
       turn: isFirstMatch ? prev.turn + 1 : prev.turn,
       combo: nextCombo,
     }));
+
+    setLastMatchTime(Date.now());
 
     if (matches.length > 0) {
       const centerRow = matches.reduce((sum, m) => sum + m.row, 0) / matches.length;
@@ -628,6 +619,24 @@ export const GameView = () => {
       setShowTutorial(true);
     }
   }, [hasSeenTutorial]);
+
+  useEffect(() => {
+    if (lastMatchTime > 0) {
+      const timer = setTimeout(() => {
+        const possibleMove = findPossibleMove();
+        if (possibleMove) {
+          setHintPosition(possibleMove);
+          setShowHint(true);
+
+          setTimeout(() => {
+            setShowHint(false);
+          }, SHOW_HINT_TIME_MS);
+        }
+      }, HINT_MOVE_INTERVAL_MS);
+
+      return () => clearTimeout(timer);
+    }
+  }, [lastMatchTime, findPossibleMove]);
 
   useBackButton(() => {
     setShowBackConfirmation(true);
@@ -1038,6 +1047,7 @@ export const GameView = () => {
                         alt={name}
                         width={64}
                         height={64}
+                        priority
                       />
                     </div>
                     <div className="text-sm font-bold text-white">{name}</div>
@@ -1047,24 +1057,6 @@ export const GameView = () => {
                   </motion.div>
                 ))}
               </motion.div>
-
-              {gameMode === 'casual' && (
-                <motion.div
-                  className="mt-4 flex justify-center"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  <Button
-                    onClick={showHintMove}
-                    variant="ghost"
-                    className="text-white/70 hover:text-white hover:bg-white/10 text-sm"
-                  >
-                    <Sparkles className="w-4 h-4 mr-1" />
-                    Need a hint?
-                  </Button>
-                </motion.div>
-              )}
             </motion.div>
           </div>
         </main>
