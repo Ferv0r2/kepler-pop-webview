@@ -429,15 +429,17 @@ export const GameView = () => {
     if (newMatches.length > 0) {
       processMatches(newMatches, newGrid, false, undefined, nextCombo);
     } else {
+      const isGameOver = gameState.moves <= 0 && findPossibleMove() === null;
+
       setGameState((prev) => ({
         ...prev,
         isSwapping: false,
         isChecking: false,
         combo: 1,
-        isGameOver: prev.moves <= 0,
+        isGameOver,
       }));
 
-      if (gameState.moves <= 1) {
+      if (isGameOver) {
         setTimeout(() => {
           confetti({
             particleCount: 200,
