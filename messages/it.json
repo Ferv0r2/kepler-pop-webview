@@ -1,0 +1,62 @@
+{
+  "common": {
+    "welcome": "Benvenuto",
+    "login": "Accedi",
+    "logout": "Esci",
+    "signup": "Registrati",
+    "profile": "Profilo",
+    "settings": "Impostazioni",
+    "search": "Cerca",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "loading": "Caricamento...",
+    "error": "Si è verificato un errore",
+    "success": "Completato con successo",
+    "today": "Pronto per un'avventura oggi?",
+    "casualMode": "Modalità Casual",
+    "casualDescription": "Imbarcati in un divertente viaggio di puzzle! 🚀",
+    "casualFeature1": "• Difficoltà rilassata",
+    "casualFeature2": "• Esplosioni di puzzle soddisfacenti",
+    "challengeMode": "Modalità Sfida",
+    "challengeDescription": "Affronta puzzle impegnativi! 🎯",
+    "challengeFeature1": "• Difficoltà maggiore",
+    "challengeFeature2": "• Ricompense speciali",
+    "energy": "Energia",
+    "adError": "Errore durante la visualizzazione dell'annuncio",
+    "purchaseError": "Errore durante l'elaborazione dell'acquisto",
+    "userName": "Esploratore Spaziale"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "Chi siamo",
+    "contact": "Contatti",
+    "help": "Aiuto"
+  },
+  "auth": {
+    "email": "E-mail",
+    "password": "Password",
+    "forgotPassword": "Password dimenticata?",
+    "rememberMe": "Ricordami",
+    "noAccount": "Non hai un account?",
+    "haveAccount": "Hai già un account?"
+  },
+  "validation": {
+    "required": "Questo campo è obbligatorio",
+    "invalidEmail": "Inserisci un indirizzo e-mail valido",
+    "passwordLength": "La password deve contenere almeno 8 caratteri",
+    "passwordMatch": "Le password non coincidono"
+  },
+  "game": {
+    "modes": {
+      "casual": "Casual",
+      "challenge": "Sfida"
+    },
+    "items": {
+      "shovel": "Pala",
+      "mole": "Talpa",
+      "bomb": "Bomba"
+    }
+  }
+}

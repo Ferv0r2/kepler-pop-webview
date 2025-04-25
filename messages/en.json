@@ -1,0 +1,62 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up",
+    "profile": "Profile",
+    "settings": "Settings",
+    "search": "Search",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Successfully completed",
+    "today": "Ready for an adventure today?",
+    "casualMode": "Casual Mode",
+    "casualDescription": "Embark on a fun puzzle journey! 🚀",
+    "casualFeature1": "• Relaxed difficulty",
+    "casualFeature2": "• Satisfying puzzle bursts",
+    "challengeMode": "Challenge Mode",
+    "challengeDescription": "Take on challenging puzzles! 🎯",
+    "challengeFeature1": "• Higher difficulty",
+    "challengeFeature2": "• Special rewards",
+    "energy": "Energy",
+    "adError": "Ad viewing error",
+    "purchaseError": "Purchase processing error",
+    "userName": "Space Explorer"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact",
+    "help": "Help"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember Me",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "passwordLength": "Password must be at least 8 characters",
+    "passwordMatch": "Passwords do not match"
+  },
+  "game": {
+    "modes": {
+      "casual": "Casual",
+      "challenge": "Challenge"
+    },
+    "items": {
+      "shovel": "Shovel",
+      "mole": "Mole",
+      "bomb": "Bomb"
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "common": {
+    "welcome": "Bienvenue",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "signup": "S'inscrire",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "search": "Rechercher",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "success": "Terminé avec succès",
+    "today": "Prêt pour une aventure aujourd'hui ?",
+    "casualMode": "Mode Détente",
+    "casualDescription": "Partez pour un voyage de puzzle amusant ! 🚀",
+    "casualFeature1": "• Difficulté détendue",
+    "casualFeature2": "• Explosions de puzzle satisfaisantes",
+    "challengeMode": "Mode Défi",
+    "challengeDescription": "Relevez des puzzles stimulants ! 🎯",
+    "challengeFeature1": "• Difficulté plus élevée",
+    "challengeFeature2": "• Récompenses spéciales",
+    "energy": "Énergie",
+    "adError": "Erreur de visionnage de publicité",
+    "purchaseError": "Erreur de traitement de l'achat",
+    "userName": "Explorateur Spatial"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "about": "À propos",
+    "contact": "Contact",
+    "help": "Aide"
+  },
+  "auth": {
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "rememberMe": "Se souvenir de moi",
+    "noAccount": "Pas de compte ?",
+    "haveAccount": "Déjà un compte ?"
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "invalidEmail": "Veuillez entrer une adresse e-mail valide",
+    "passwordLength": "Le mot de passe doit contenir au moins 8 caractères",
+    "passwordMatch": "Les mots de passe ne correspondent pas"
+  },
+  "game": {
+    "modes": {
+      "casual": "Détente",
+      "challenge": "Défi"
+    },
+    "items": {
+      "shovel": "Pelle",
+      "mole": "Taupe",
+      "bomb": "Bombe"
+    }
+  }
+}

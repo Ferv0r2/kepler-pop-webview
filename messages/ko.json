@@ -1,0 +1,62 @@
+{
+  "common": {
+    "welcome": "환영합니다",
+    "login": "로그인",
+    "logout": "로그아웃",
+    "signup": "회원가입",
+    "profile": "프로필",
+    "settings": "설정",
+    "search": "검색",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "편집",
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "success": "성공적으로 완료되었습니다",
+    "today": "오늘도 떠나볼까요?",
+    "casualMode": "캐주얼 모드",
+    "casualDescription": "즐거운 퍼즐 여행을 떠나보세요! 🚀",
+    "casualFeature1": "• 부담없는 난이도",
+    "casualFeature2": "• 와르르 터지는 퍼즐",
+    "challengeMode": "챌린지 모드",
+    "challengeDescription": "도전적인 퍼즐에 도전하세요! 🎯",
+    "challengeFeature1": "• 높은 난이도",
+    "challengeFeature2": "• 특별한 보상",
+    "energy": "에너지",
+    "adError": "광고 시청 오류",
+    "purchaseError": "결제 처리 오류",
+    "userName": "우주 탐험가"
+  },
+  "navigation": {
+    "home": "홈",
+    "about": "소개",
+    "contact": "문의하기",
+    "help": "도움말"
+  },
+  "auth": {
+    "email": "이메일",
+    "password": "비밀번호",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "rememberMe": "로그인 상태 유지",
+    "noAccount": "계정이 없으신가요?",
+    "haveAccount": "이미 계정이 있으신가요?"
+  },
+  "validation": {
+    "required": "필수 입력 항목입니다",
+    "invalidEmail": "유효한 이메일 주소를 입력해주세요",
+    "passwordLength": "비밀번호는 최소 8자 이상이어야 합니다",
+    "passwordMatch": "비밀번호가 일치하지 않습니다"
+  },
+  "game": {
+    "modes": {
+      "casual": "캐주얼",
+      "challenge": "챌린지"
+    },
+    "items": {
+      "shovel": "삽",
+      "mole": "두더지",
+      "bomb": "폭탄"
+    }
+  }
+}

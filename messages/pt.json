@@ -1,0 +1,62 @@
+{
+  "common": {
+    "welcome": "Bem-vindo",
+    "login": "Entrar",
+    "logout": "Sair",
+    "signup": "Cadastrar",
+    "profile": "Perfil",
+    "settings": "Configurações",
+    "search": "Pesquisar",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "loading": "Carregando...",
+    "error": "Ocorreu um erro",
+    "success": "Concluído com sucesso",
+    "today": "Pronto para uma aventura hoje?",
+    "casualMode": "Modo Casual",
+    "casualDescription": "Embarque em uma jornada divertida de quebra-cabeças! 🚀",
+    "casualFeature1": "• Dificuldade relaxada",
+    "casualFeature2": "• Explosões satisfatórias de quebra-cabeças",
+    "challengeMode": "Modo Desafio",
+    "challengeDescription": "Enfrente quebra-cabeças desafiadores! 🎯",
+    "challengeFeature1": "• Maior dificuldade",
+    "challengeFeature2": "• Recompensas especiais",
+    "energy": "Energia",
+    "adError": "Erro ao assistir anúncio",
+    "purchaseError": "Erro ao processar compra",
+    "userName": "Explorador Espacial"
+  },
+  "navigation": {
+    "home": "Início",
+    "about": "Sobre",
+    "contact": "Contato",
+    "help": "Ajuda"
+  },
+  "auth": {
+    "email": "E-mail",
+    "password": "Senha",
+    "forgotPassword": "Esqueceu a senha?",
+    "rememberMe": "Lembrar de mim",
+    "noAccount": "Não tem uma conta?",
+    "haveAccount": "Já tem uma conta?"
+  },
+  "validation": {
+    "required": "Este campo é obrigatório",
+    "invalidEmail": "Por favor, insira um endereço de e-mail válido",
+    "passwordLength": "A senha deve ter pelo menos 8 caracteres",
+    "passwordMatch": "As senhas não coincidem"
+  },
+  "game": {
+    "modes": {
+      "casual": "Casual",
+      "challenge": "Desafio"
+    },
+    "items": {
+      "shovel": "Pá",
+      "mole": "Toupeira",
+      "bomb": "Bomba"
+    }
+  }
+}
