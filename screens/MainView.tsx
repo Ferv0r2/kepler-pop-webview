@@ -1,9 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Droplet, Play, Calendar, Trophy, Gift, ChevronRight } from 'lucide-react';
+import { Play, Calendar, Trophy, Gift, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
@@ -13,6 +13,7 @@ import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation
 import { SideNavigation } from '@/components/logic/navigation/SideNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
+import { useRouter } from '@/i18n/routing';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import type { UserInfo } from '@/types/user-types';
 import { containerVariants, itemVariants } from '@/utils/animation-helper';
@@ -22,6 +23,7 @@ import { LoadingView } from './LoadingView';
 export const MainView = () => {
   const router = useRouter();
   const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
+  const t = useTranslations();
 
   const [userInfo, setUserInfo] = useState<UserInfo>({
     id: '',
@@ -77,7 +79,7 @@ export const MainView = () => {
     if (!isInWebView) {
       setUserInfo((prev) => ({
         ...prev,
-        name: '우주 탐험가',
+        name: t('common.userName'),
         energy: 5,
         gameMoney: 1500,
         gems: 120,
@@ -90,7 +92,7 @@ export const MainView = () => {
       unsubscribeUserInfo();
       unsubscribeBackState();
     };
-  }, [isInWebView, sendMessage, addMessageHandler, showExitModal]);
+  }, [isInWebView, sendMessage, addMessageHandler, showExitModal, t]);
 
   const handleStartGame = () => {
     if (userInfo.energy <= 0) {
@@ -232,7 +234,7 @@ export const MainView = () => {
                 />
               </div>
             </div>
-            <p className="text-gray-300 text-sm mt-1">오늘도 떠나볼까요?</p>
+            <p className="text-gray-300 text-sm mt-1">{t('common.today')}</p>
           </motion.div>
 
           {/* Game Modes and Features */}
@@ -249,41 +251,33 @@ export const MainView = () => {
               whileTap={{ scale: 0.98 }}
               onClick={handleStartGame}
             >
-              <div className="flex justify-between items-start mb-2">
-                <div className="bg-purple-500/30 p-2 rounded-lg">
-                  <Play className="text-purple-300 w-5 h-5" />
-                </div>
-                <div className="flex items-center gap-1">
-                  <Droplet className="text-cyan-400 w-3.5 h-3.5" />
-                  <span className="text-cyan-300 text-xs font-medium">-1</span>
-                </div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-white font-medium">{t('common.casualMode')}</h3>
+                <Play className="w-5 h-5 text-purple-400" />
               </div>
-              <h3 className="text-white font-bold text-sm">캐주얼 모드</h3>
-              <p className="text-gray-300 text-xs mt-1">즐거운 퍼즐 여행을 떠나보세요! 🚀</p>
-              <p className="text-gray-400 text-[10px] mt-1">• 부담없는 난이도</p>
-              <p className="text-gray-400 text-[10px]">• 와르르 터지는 퍼즐</p>
+              <p className="text-gray-300 text-sm mb-3">{t('common.casualDescription')}</p>
+              <ul className="text-gray-400 text-xs space-y-1">
+                <li>{t('common.casualFeature1')}</li>
+                <li>{t('common.casualFeature2')}</li>
+              </ul>
             </motion.div>
 
             <motion.div
-              className="bg-gradient-to-br from-blue-900/60 to-cyan-900/60 backdrop-blur-md rounded-2xl p-3 shadow-lg border border-blue-800/30"
+              className="bg-gradient-to-br from-amber-900/60 to-orange-900/60 backdrop-blur-md rounded-2xl p-3 shadow-lg border border-amber-800/30"
               variants={itemVariants}
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleChallengeStart}
             >
-              <div className="flex justify-between items-start mb-2">
-                <div className="bg-blue-500/30 p-2 rounded-lg">
-                  <Trophy className="text-blue-300 w-5 h-5" />
-                </div>
-                <div className="flex items-center gap-1">
-                  <Droplet className="text-cyan-400 w-3.5 h-3.5" />
-                  <span className="text-cyan-300 text-xs font-medium">-1</span>
-                </div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-white font-medium">{t('common.challengeMode')}</h3>
+                <Trophy className="w-5 h-5 text-amber-400" />
               </div>
-              <h3 className="text-white font-bold text-sm">챌린지 모드</h3>
-              <p className="text-gray-300 text-xs mt-1">진정한 퍼즐 마스터가 되어보세요! 🌟</p>
-              <p className="text-gray-400 text-[10px] mt-1">• 엄청난 난이도</p>
-              <p className="text-gray-400 text-[10px]">• 리더보드 도전</p>
+              <p className="text-gray-300 text-sm mb-3">{t('common.challengeDescription')}</p>
+              <ul className="text-gray-400 text-xs space-y-1">
+                <li>{t('common.challengeFeature1')}</li>
+                <li>{t('common.challengeFeature2')}</li>
+              </ul>
             </motion.div>
           </motion.div>
 
@@ -296,9 +290,9 @@ export const MainView = () => {
             transition={{ delay: 0.3 }}
           >
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-white font-bold text-sm">이벤트 & 보상</h2>
+              <h2 className="text-white font-bold text-sm">{t('common.eventsAndRewards')}</h2>
               <button className="text-gray-400 text-xs flex items-center" onClick={() => handleNavigation('/events')}>
-                더보기 <ChevronRight className="w-3 h-3 ml-0.5" />
+                {t('common.more')} <ChevronRight className="w-3 h-3 ml-0.5" />
               </button>
             </div>
 
@@ -314,11 +308,11 @@ export const MainView = () => {
                   <Calendar className="text-pink-300 w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-white font-bold text-sm">오늘의 출석 체크</h3>
-                  <p className="text-gray-300 text-xs">5일 연속 출석 중! 보상을 받으세요</p>
+                  <h3 className="text-white font-bold text-sm">{t('common.todayAttendance')}</h3>
+                  <p className="text-gray-300 text-xs">{t('common.attendanceDescription')}</p>
                 </div>
                 <div className="bg-pink-500/20 rounded-lg px-2 py-1">
-                  <span className="text-pink-300 text-xs font-medium">Day 5</span>
+                  <span className="text-pink-300 text-xs font-medium">{t('common.day5')}</span>
                 </div>
               </div>
             </motion.div>
@@ -336,13 +330,15 @@ export const MainView = () => {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center">
-                    <h3 className="text-white font-bold text-sm">특별 이벤트</h3>
-                    <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">NEW</span>
+                    <h3 className="text-white font-bold text-sm">{t('common.specialEvent')}</h3>
+                    <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">
+                      {t('common.new')}
+                    </span>
                   </div>
-                  <p className="text-gray-300 text-xs">우주 탐험 이벤트 진행 중</p>
+                  <p className="text-gray-300 text-xs">{t('common.spaceExplorationEvent')}</p>
                 </div>
                 <div className="bg-amber-500/20 rounded-lg px-2 py-1">
-                  <span className="text-amber-300 text-xs font-medium">2일 남음</span>
+                  <span className="text-amber-300 text-xs font-medium">{t('common.2DaysLeft')}</span>
                 </div>
               </div>
             </motion.div>
@@ -357,9 +353,9 @@ export const MainView = () => {
             transition={{ delay: 0.5 }}
           >
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-white font-bold text-sm">친구 활동</h2>
+              <h2 className="text-white font-bold text-sm">{t('common.friendsActivity')}</h2>
               <button className="text-gray-400 text-xs flex items-center" onClick={() => handleNavigation('/friends')}>
-                더보기 <ChevronRight className="w-3 h-3 ml-0.5" />
+                {t('common.more')} <ChevronRight className="w-3 h-3 ml-0.5" />
               </button>
             </div>
 
@@ -384,7 +380,7 @@ export const MainView = () => {
                 +3
               </motion.div>
             </div>
-            <p className="text-gray-400 text-xs">친구 4명이 지금 게임 중입니다</p>
+            <p className="text-gray-400 text-xs">{t('common.friendsPlaying')}</p>
           </motion.div>
         </main>
 

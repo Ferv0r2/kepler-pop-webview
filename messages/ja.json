@@ -1,0 +1,120 @@
+{
+  "common": {
+    "welcome": "ようこそ",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "signup": "新規登録",
+    "profile": "プロフィール",
+    "settings": "設定",
+    "search": "検索",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "loading": "読み込み中...",
+    "store": "ストア",
+    "play": "プレイ",
+    "error": "エラーが発生しました",
+    "success": "正常に完了しました",
+    "today": "今日も探索に出かけましょうか？",
+    "casualMode": "カジュアルモード",
+    "casualDescription": "楽しいパズルの旅をお楽しみください！ 🚀",
+    "casualFeature1": "• 気軽な難易度",
+    "casualFeature2": "• 爽快な爆発",
+    "challengeMode": "チャレンジモード",
+    "challengeDescription": "挑戦的なパズルに挑戦しましょう！ 🎯",
+    "challengeFeature1": "• 高い難易度",
+    "challengeFeature2": "• 特別な報酬",
+    "energy": "エネルギー",
+    "userName": "宇宙探検家",
+    "score": "スコア",
+    "moves": "移動",
+    "combo": "コンボ",
+    "streak": "連続",
+    "exit": "終了",
+    "continue": "続ける",
+    "eventsAndRewards": "イベント＆報酬",
+    "more": "もっと見る",
+    "todayAttendance": "今日の出勤",
+    "attendanceDescription": "5日連続！報酬を受け取ろう",
+    "day5": "5日目",
+    "specialEvent": "スペシャルイベント",
+    "new": "NEW",
+    "spaceExplorationEvent": "宇宙探検イベント開催中",
+    "2DaysLeft": "あと2日",
+    "friendsActivity": "フレンドの活動",
+    "friendsPlaying": "4人のフレンドがプレイ中です"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "about": "概要",
+    "contact": "お問い合わせ",
+    "help": "ヘルプ"
+  },
+  "auth": {
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "forgotPassword": "パスワードをお忘れですか？",
+    "rememberMe": "ログイン状態を保持",
+    "noAccount": "アカウントをお持ちでないですか？",
+    "haveAccount": "すでにアカウントをお持ちですか？"
+  },
+  "validation": {
+    "required": "この項目は必須です",
+    "invalidEmail": "有効なメールアドレスを入力してください",
+    "passwordLength": "パスワードは8文字以上必要です",
+    "passwordMatch": "パスワードが一致しません"
+  },
+  "game": {
+    "modes": {
+      "casual": "カジュアル",
+      "challenge": "チャレンジ"
+    },
+    "items": {
+      "shovel": "シャベル",
+      "mole": "モグラ",
+      "bomb": "爆弾"
+    },
+    "shuffleMessage": "タイルをシャッフル中...",
+    "bonusMoves": "ボーナス移動！",
+    "gameOver": "ゲームオーバー！",
+    "finalScore": "最終スコア",
+    "playAgain": "もう一度プレイ",
+    "returnToHome": "ホームに戻る",
+    "streak": "連続！",
+    "combo": "コンボ",
+    "score": "スコア",
+    "moves": "移動"
+  },
+  "loading": {
+    "tip": "💡 ヒント",
+    "challengeTip": "チャレンジモードで4つ以上のタイルをマッチさせてボーナスタイムを獲得しよう！",
+    "messages": {
+      "loadingAssets": "ゲームアセットを読み込み中",
+      "preparingTiles": "タイルを準備中",
+      "generatingPuzzles": "パズルを生成中",
+      "polishingGems": "宝石を研磨中",
+      "almostReady": "もうすぐ準備完了"
+    }
+  },
+  "modal": {
+    "confirm": "確認",
+    "cancel": "キャンセル",
+    "confirmExit": "ゲームを終了してもよろしいですか？",
+    "exitMessage": "進行状況は保存されず、使用したアイテムは返金されません。",
+    "settings": "設定",
+    "tutorial": "チュートリアル",
+    "restart": "ゲームを再開",
+    "tileSwapMode": "タイル交換モード",
+    "select": "選択モード",
+    "drag": "ドラッグモード",
+    "sound": "サウンド",
+    "music": "BGM",
+    "effects": "効果音",
+    "language": "言語",
+    "help": "ヘルプ",
+    "about": "概要",
+    "version": "バージョン",
+    "credits": "クレジット"
+  }
+}

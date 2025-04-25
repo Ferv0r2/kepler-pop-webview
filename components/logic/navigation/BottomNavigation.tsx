@@ -3,17 +3,19 @@
 import { motion } from 'framer-motion';
 import { Store, User, Sparkles } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { createElement, ElementType } from 'react';
 
 export const BottomNavigation = () => {
+  const t = useTranslations();
   const router = useRouter();
 
   const pathname = usePathname();
 
   const navigationButtons = [
-    { icon: Store, label: '상점', path: '/store' },
-    { icon: Sparkles, label: '플레이', path: '/' },
-    { icon: User, label: '내 정보', path: '/profile' },
+    { icon: Store, label: t('common.store'), path: '/store' },
+    { icon: Sparkles, label: t('common.play'), path: '/' },
+    { icon: User, label: t('common.profile'), path: '/profile' },
   ];
 
   const handleNavigation = (path: string) => {

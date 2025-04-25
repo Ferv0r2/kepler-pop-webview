@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Zap, Sparkles, Star, Diamond, Gem } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState, useMemo } from 'react';
+
 import {
   DEFAULT_LOADING_TIME_MS,
   LOADING_MESSAGE_INTERVAL_MS,
@@ -23,15 +25,19 @@ interface LoadingScreenProps {
 export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_TIME_MS }: LoadingScreenProps) => {
   const [progress, setProgress] = useState(0);
   const [loadingText, setLoadingText] = useState('Loading game assets');
+  const t = useTranslations();
 
   // Array of loading messages to cycle through
-  const loadingMessages = [
-    'Loading game assets',
-    'Preparing tiles',
-    'Generating puzzles',
-    'Polishing gems',
-    'Almost ready',
-  ];
+  const loadingMessages = useMemo(
+    () => [
+      t('loading.messages.loadingAssets'),
+      t('loading.messages.preparingTiles'),
+      t('loading.messages.generatingPuzzles'),
+      t('loading.messages.polishingGems'),
+      t('loading.messages.almostReady'),
+    ],
+    [t],
+  );
 
   // Icons for the loading animation
   const icons = [
@@ -46,7 +52,6 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
   useEffect(() => {
     const startTime = Date.now();
     let animationFrame: number;
-    let messageInterval: NodeJS.Timeout;
 
     // Simulate loading progress
     const simulateLoading = () => {
@@ -74,7 +79,7 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
     animationFrame = requestAnimationFrame(simulateLoading);
 
     // Cycle through loading messages
-    messageInterval = setInterval(() => {
+    const messageInterval = setInterval(() => {
       setLoadingText((prevText) => {
         const currentIndex = loadingMessages.indexOf(prevText);
         const nextIndex = (currentIndex + 1) % loadingMessages.length;
@@ -206,8 +211,8 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
         transition={{ delay: LOADING_ANIMATION_DELAYS.TIPS }}
       >
         <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 max-w-md mx-auto border border-white/10">
-          <div className="text-yellow-300 text-sm font-medium mb-2">💡 Tip</div>
-          <p className="text-white/80 text-sm">Match 4 or more tiles in Challenge mode to earn bonus time!</p>
+          <div className="text-yellow-300 text-sm font-medium mb-2">{t('loading.tip')}</div>
+          <p className="text-white/80 text-sm">{t('loading.challengeTip')}</p>
         </div>
       </motion.div>
     </motion.div>

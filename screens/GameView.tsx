@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Settings, Home, RefreshCw, Flame, Shuffle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { createElement, useState, useEffect, TouchEvent, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -110,6 +111,7 @@ export const GameView = () => {
       return removeAdjacentTiles(grid, row, col);
     },
   };
+  const t = useTranslations();
 
   const handleTileClick = (row: number, col: number) => {
     if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver) return;
@@ -614,6 +616,7 @@ export const GameView = () => {
 
   useEffect(() => {
     setGrid(createInitialGrid());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -702,7 +705,7 @@ export const GameView = () => {
                 >
                   <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg blur opacity-30" />
                   <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
-                    <div className="text-xs text-pink-400 mb-1 font-mono tracking-widest">SCORE</div>
+                    <div className="text-xs text-pink-400 mb-1 font-mono tracking-widest">{t('common.score')}</div>
                     <motion.div
                       key={gameState.score}
                       initial={{ scale: 1.5 }}
@@ -723,7 +726,7 @@ export const GameView = () => {
                 >
                   <div className="absolute -inset-1 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-lg blur opacity-30" />
                   <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-violet-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                    <div className="text-xs text-violet-400 mb-1 font-mono tracking-widest">COMBO</div>
+                    <div className="text-xs text-violet-400 mb-1 font-mono tracking-widest">{t('common.combo')}</div>
                     <motion.div
                       key={gameState.combo}
                       initial={{ scale: 1.5 }}
@@ -744,7 +747,7 @@ export const GameView = () => {
                 >
                   <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg blur opacity-30" />
                   <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                    <div className="text-xs text-blue-400 mb-1 font-mono tracking-widest">MOVES</div>
+                    <div className="text-xs text-blue-400 mb-1 font-mono tracking-widest">{t('common.moves')}</div>
                     <motion.div
                       key={gameState.moves}
                       initial={{ scale: 1.5 }}
@@ -801,7 +804,7 @@ export const GameView = () => {
                           transition={{ delay: 0.2, duration: 0.5 }}
                         >
                           <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
-                            GAME OVER!
+                            {t('game.gameOver')}
                           </h2>
                         </motion.div>
                         <motion.div
@@ -810,7 +813,7 @@ export const GameView = () => {
                           animate={{ scale: 1, opacity: 1 }}
                           transition={{ delay: 0.4, duration: 0.5 }}
                         >
-                          <p className="text-lg text-white/80 mb-1">Final Score</p>
+                          <p className="text-lg text-white/80 mb-1">{t('game.finalScore')}</p>
                           <motion.div
                             className="text-4xl font-bold text-yellow-300"
                             initial={{ scale: 0.8 }}
@@ -839,7 +842,7 @@ export const GameView = () => {
                             className="flex items-center justify-center bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl text-md shadow-lg hover:shadow-xl transition-all duration-300"
                           >
                             <RefreshCw className="w-5 h-5 mr-2" />
-                            Play Again
+                            {t('game.playAgain')}
                           </Button>
                           <Button
                             onClick={() => router.back()}
@@ -847,7 +850,7 @@ export const GameView = () => {
                             className="flex items-center justify-center bg-slate-800/30 border-indigo-500/50 text-white hover:bg-slate-800/50 rounded-xl py-3 text-md"
                           >
                             <Home className="w-5 h-5 mr-2" />
-                            Return to Home
+                            {t('game.returnToHome')}
                           </Button>
                         </motion.div>
                       </div>
@@ -1052,7 +1055,7 @@ export const GameView = () => {
                         priority
                       />
                     </div>
-                    <div className="text-sm font-bold text-white">{name}</div>
+                    <div className="text-sm font-bold text-white">{t(`game.items.${id}`)}</div>
                     <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
                       {count}
                     </div>
@@ -1074,17 +1077,17 @@ export const GameView = () => {
             className="absolute top-1/4 z-30 flex items-center justify-center bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg px-3 py-1 rounded-full shadow-lg"
           >
             <Flame className="inline-block mr-1 h-5 w-5" />
-            {streakCount}x STREAK!
+            {streakCount}x {t('game.streak')}
           </motion.div>
         )}
       </AnimatePresence>
 
       <ConfirmationModal
         isOpen={showBackConfirmation}
-        title="Exit Game"
+        title={t('modal.confirmExit')}
         message={
           <div className="space-y-3">
-            <p className="text-white">Are you sure you want to exit the game?</p>
+            <p className="text-white">{t('modal.exitMessage')}</p>
             <div className="flex items-start gap-2 bg-yellow-400/10 p-2 rounded-lg">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1100,14 +1103,12 @@ export const GameView = () => {
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                 />
               </svg>
-              <p className="text-yellow-300 text-sm font-medium">
-                Your progress will not be saved and any used items will not be refunded.
-              </p>
+              <p className="text-yellow-300 text-sm font-medium">{t('modal.exitMessage')}</p>
             </div>
           </div>
         }
-        confirmText="Exit"
-        cancelText="Continue"
+        confirmText={t('common.exit')}
+        cancelText={t('common.continue')}
         onConfirm={handleBackConfirm}
         onCancel={() => setShowBackConfirmation(false)}
       />
@@ -1134,7 +1135,7 @@ export const GameView = () => {
         gameItems={gameItems}
       />
 
-      <Toast isOpen={showShuffleToast} icon={Shuffle} message="타일을 섞고 있습니다..." />
+      <Toast isOpen={showShuffleToast} icon={Shuffle} message={t('game.shuffleMessage')} />
 
       <AnimatePresence>
         {showBonusMovesPopup && (
@@ -1150,7 +1151,7 @@ export const GameView = () => {
               transform: 'translate(-50%, -50%)',
             }}
           >
-            +{showBonusMovesPopup.moves} Moves!
+            +{showBonusMovesPopup.moves} {t('game.bonusMoves')}
           </motion.div>
         )}
       </AnimatePresence>

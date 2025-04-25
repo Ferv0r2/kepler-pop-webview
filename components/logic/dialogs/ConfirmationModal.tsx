@@ -2,6 +2,7 @@
 
 import { motion, useIsPresent, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -10,8 +11,8 @@ export type ConfirmationModalProps = {
   isOpen: boolean;
   title: string;
   message: ReactNode;
-  confirmText: string;
-  cancelText: string;
+  confirmText?: string;
+  cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -25,14 +26,16 @@ export const ConfirmationModal = ({
   onConfirm,
   onCancel,
 }: ConfirmationModalProps) => {
+  const t = useTranslations();
+
   return (
     <AnimatePresence>
       {isOpen && (
         <ModalContent
           title={title}
           message={message}
-          confirmText={confirmText}
-          cancelText={cancelText}
+          confirmText={confirmText || t('modal.confirm')}
+          cancelText={cancelText || t('modal.cancel')}
           onConfirm={onConfirm}
           onCancel={onCancel}
         />
