@@ -4,19 +4,23 @@ import { motion } from 'framer-motion';
 import { Store, User, Sparkles } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { createElement, ElementType } from 'react';
+import { createElement, ElementType, useMemo } from 'react';
 
 export const BottomNavigation = () => {
   const t = useTranslations();
   const router = useRouter();
-
   const pathname = usePathname();
 
-  const navigationButtons = [
-    { icon: Store, label: t('common.store'), path: '/store' },
-    { icon: Sparkles, label: t('common.play'), path: '/' },
-    { icon: User, label: t('common.profile'), path: '/profile' },
-  ];
+  const locale = pathname.split('/')[1] || 'en';
+
+  const navigationButtons = useMemo(
+    () => [
+      { icon: Store, label: t('common.store'), path: `/${locale}/store` },
+      { icon: Sparkles, label: t('common.play'), path: `/${locale}` },
+      { icon: User, label: t('common.profile'), path: `/${locale}/profile` },
+    ],
+    [t, locale],
+  );
 
   const handleNavigation = (path: string) => {
     router.push(path);
