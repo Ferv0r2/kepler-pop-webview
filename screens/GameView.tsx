@@ -673,8 +673,8 @@ export const GameView = () => {
         <div className="absolute top-1/3 -right-20 w-60 h-60 rounded-full bg-pink-500/20 blur-3xl animate-blob animation-delay-2000"></div>
         <div className="absolute bottom-20 left-1/4 w-40 h-40 rounded-full bg-cyan-500/20 blur-3xl animate-blob animation-delay-4000"></div>
       </div>
-      <div className="grid grid-rows-[auto_1fr_auto] items-center min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
-        <header className="sticky w-full inset-0 z-20 p-4">
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
+        <header className="fixed w-full h-16 inset-0 z-20 p-4">
           <div className="flex justify-between items-center">
             <Button
               variant="ghost"
