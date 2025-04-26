@@ -147,7 +147,11 @@ export const GameView = () => {
   };
 
   const handleDragStart = (row: number, col: number) => {
-    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver) return;
+    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver) {
+      setIsDragging(false);
+      setDraggedTile(null);
+      return;
+    }
 
     if (selectedGameItem) {
       activeSelectedGameItem(row, col);
@@ -160,7 +164,11 @@ export const GameView = () => {
   };
 
   const handleDragEnter = (row: number, col: number) => {
-    if (!isDragging || !draggedTile || gameState.isSwapping || gameState.isChecking || gameState.isGameOver) return;
+    if (!isDragging || !draggedTile || gameState.isSwapping || gameState.isChecking || gameState.isGameOver) {
+      setIsDragging(false);
+      setDraggedTile(null);
+      return;
+    }
 
     const isAdjacent =
       (Math.abs(draggedTile.row - row) === 1 && draggedTile.col === col) ||
