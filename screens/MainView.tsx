@@ -14,6 +14,7 @@ import { SideNavigation } from '@/components/logic/navigation/SideNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
 import { useRouter } from '@/i18n/routing';
+import { useAuthStore } from '@/store/authStore';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import type { UserInfo } from '@/types/user-types';
 import { containerVariants, itemVariants } from '@/utils/animation-helper';
@@ -24,6 +25,8 @@ export const MainView = () => {
   const router = useRouter();
   const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
   const t = useTranslations();
+
+  const { accessToken } = useAuthStore();
 
   const [userInfo, setUserInfo] = useState<UserInfo>({
     id: '',
@@ -45,6 +48,12 @@ export const MainView = () => {
   const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showExitModal, setShowExitModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!accessToken) {
+      router.replace('/auth');
+    }
+  }, [accessToken, router]);
 
   useEffect(() => {
     // Notify React Native that web app is ready

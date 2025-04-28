@@ -1,7 +1,9 @@
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ReactNode } from 'react';
 
+import { QueryProvider } from '@/components/providers/QueryProvider';
 import { WebViewBridgeProvider } from '@/components/providers/WebViewBridgeProvider';
 
 import '@/styles/globals.css';
@@ -29,7 +31,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <WebViewBridgeProvider>{children}</WebViewBridgeProvider>
+        <QueryProvider>
+          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+            <WebViewBridgeProvider>{children}</WebViewBridgeProvider>
+          </GoogleOAuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );
