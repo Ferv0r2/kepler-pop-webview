@@ -18,16 +18,15 @@ export default function AuthPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
-  const { setTokens } = useAuthStore.getState();
+  const { setTokens } = useAuthStore();
 
   const { mutate: handleGoogleLogin, isPending } = useMutation({
     mutationFn: authMutation,
     onSuccess: (data) => {
-      document.cookie = `accessToken=${data.accessToken}; path=/; secure; samesite=lax`;
-      document.cookie = `refreshToken=${data.refreshToken}; path=/; secure; samesite=lax`;
-
       setTokens(data.accessToken, data.refreshToken);
-      router.push('/');
+
+      const currentLocale = window.location.pathname.split('/')[1];
+      router.replace(`/${currentLocale}`);
     },
     onError: (error) => {
       console.error('Login failed:', error);

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface AuthState {
   accessToken: string | null;
@@ -7,6 +7,19 @@ interface AuthState {
   setTokens: (accessToken: string, refreshToken: string) => void;
   clearTokens: () => void;
 }
+
+const storage = {
+  getItem: (name: string): string | null => {
+    const cookie = document.cookie.split('; ').find((row) => row.startsWith(`${name}=`));
+    return cookie ? decodeURIComponent(cookie.split('=')[1]) : null;
+  },
+  setItem: (name: string, value: string): void => {
+    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=31536000`;
+  },
+  removeItem: (name: string): void => {
+    document.cookie = `${name}=; path=/; max-age=0`;
+  },
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -18,6 +31,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
+      storage: createJSONStorage(() => storage),
     },
   ),
 );

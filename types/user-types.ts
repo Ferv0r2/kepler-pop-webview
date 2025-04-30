@@ -1,3 +1,5 @@
+import type { GameItemType } from './game-types';
+
 export type UserInfo = {
   id: string;
   name: string;
@@ -10,4 +12,5 @@ export type UserInfo = {
   level: number;
   isAdFree: boolean;
   isSubscribed: boolean;
+  gameItems: Partial<Record<GameItemType, number>>;
 };
