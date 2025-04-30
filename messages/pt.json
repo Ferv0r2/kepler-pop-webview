@@ -55,9 +55,14 @@
     "email": "E-mail",
     "password": "Senha",
     "forgotPassword": "Esqueceu a senha?",
-    "rememberMe": "Lembrar de mim",
+    "rememberMe": "Manter conectado",
     "noAccount": "Não tem uma conta?",
-    "haveAccount": "Já tem uma conta?"
+    "haveAccount": "Já tem uma conta?",
+    "loginWithGoogle": "Continuar com Google",
+    "loginFailed": "Falha no login",
+    "loggingIn": "Entrando...",
+    "pleaseLogin": "Por favor, faça login",
+    "termsAndPrivacy": "Ao fazer login, você concorda com os Termos de Serviço e a Política de Privacidade do Kepler Pop"
   },
   "validation": {
     "required": "Este campo é obrigatório",

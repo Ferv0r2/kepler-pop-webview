@@ -55,9 +55,14 @@
     "email": "Электронная почта",
     "password": "Пароль",
     "forgotPassword": "Забыли пароль?",
-    "rememberMe": "Запомнить меня",
+    "rememberMe": "Оставаться в системе",
     "noAccount": "Нет аккаунта?",
-    "haveAccount": "Уже есть аккаунт?"
+    "haveAccount": "Уже есть аккаунт?",
+    "loginWithGoogle": "Продолжить с Google",
+    "loginFailed": "Ошибка входа",
+    "loggingIn": "Вход в систему...",
+    "pleaseLogin": "Пожалуйста, войдите",
+    "termsAndPrivacy": "Входя в систему, вы соглашаетесь с Условиями использования и Политикой конфиденциальности Kepler Pop"
   },
   "validation": {
     "required": "Это поле обязательно",

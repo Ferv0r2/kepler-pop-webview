@@ -57,7 +57,12 @@
     "forgotPassword": "Forgot your password?",
     "rememberMe": "Remember me",
     "noAccount": "Don't have an account?",
-    "haveAccount": "Already have an account?"
+    "haveAccount": "Already have an account?",
+    "loginWithGoogle": "Continue with Google",
+    "loginFailed": "Login failed",
+    "loggingIn": "Logging in...",
+    "pleaseLogin": "Please log in",
+    "termsAndPrivacy": "By logging in, you agree to Kepler Pop's Terms of Service and Privacy Policy"
   },
   "validation": {
     "required": "This field is required",

@@ -57,7 +57,12 @@
     "forgotPassword": "パスワードをお忘れですか？",
     "rememberMe": "ログイン状態を保持",
     "noAccount": "アカウントをお持ちでないですか？",
-    "haveAccount": "すでにアカウントをお持ちですか？"
+    "haveAccount": "すでにアカウントをお持ちですか？",
+    "loginWithGoogle": "Googleで続行",
+    "loginFailed": "ログインに失敗しました",
+    "loggingIn": "ログイン中...",
+    "pleaseLogin": "ログインしてください",
+    "termsAndPrivacy": "ログインすることで、Kepler Popの利用規約とプライバシーポリシーに同意したことになります"
   },
   "validation": {
     "required": "この項目は必須です",

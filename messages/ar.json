@@ -55,9 +55,14 @@
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
     "forgotPassword": "نسيت كلمة المرور؟",
-    "rememberMe": "تذكرني",
+    "rememberMe": "البقاء متصلاً",
     "noAccount": "ليس لديك حساب؟",
-    "haveAccount": "لديك حساب بالفعل؟"
+    "haveAccount": "لديك حساب بالفعل؟",
+    "loginWithGoogle": "المتابعة باستخدام Google",
+    "loginFailed": "فشل تسجيل الدخول",
+    "loggingIn": "جاري تسجيل الدخول...",
+    "pleaseLogin": "يرجى تسجيل الدخول",
+    "termsAndPrivacy": "بمجرد تسجيل الدخول، فإنك توافق على شروط الخدمة وسياسة الخصوصية الخاصة بـ Kepler Pop"
   },
   "validation": {
     "required": "هذا الحقل مطلوب",

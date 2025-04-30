@@ -52,12 +52,17 @@
     "help": "Aiuto"
   },
   "auth": {
-    "email": "Email",
+    "email": "E-mail",
     "password": "Password",
     "forgotPassword": "Password dimenticata?",
-    "rememberMe": "Ricordami",
+    "rememberMe": "Resta connesso",
     "noAccount": "Non hai un account?",
-    "haveAccount": "Hai già un account?"
+    "haveAccount": "Hai già un account?",
+    "loginWithGoogle": "Continua con Google",
+    "loginFailed": "Accesso fallito",
+    "loggingIn": "Accesso in corso...",
+    "pleaseLogin": "Per favore accedi",
+    "termsAndPrivacy": "Accedendo, accetti i Termini di servizio e l'Informativa sulla privacy di Kepler Pop"
   },
   "validation": {
     "required": "Questo campo è obbligatorio",

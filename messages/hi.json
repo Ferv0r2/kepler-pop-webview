@@ -44,9 +44,14 @@
     "email": "ईमेल",
     "password": "पासवर्ड",
     "forgotPassword": "पासवर्ड भूल गए?",
-    "rememberMe": "मुझे याद रखें",
-    "noAccount": "अकाउंट नहीं है?",
-    "haveAccount": "पहले से अकाउंट है?"
+    "rememberMe": "लॉग इन रखें",
+    "noAccount": "खाता नहीं है?",
+    "haveAccount": "पहले से खाता है?",
+    "loginWithGoogle": "Google के साथ जारी रखें",
+    "loginFailed": "लॉगिन विफल",
+    "loggingIn": "लॉगिन हो रहा है...",
+    "pleaseLogin": "कृपया लॉगिन करें",
+    "termsAndPrivacy": "लॉगिन करके, आप Kepler Pop की सेवा शर्तें और गोपनीयता नीति से सहमत होते हैं"
   },
   "validation": {
     "required": "यह फील्ड जरूरी है",
