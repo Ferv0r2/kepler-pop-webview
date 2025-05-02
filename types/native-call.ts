@@ -19,12 +19,6 @@ export enum WebToNativeMessageType {
   // Router handler
   BACK_ACTION = 'BACK_ACTION',
   EXIT_ACTION = 'EXIT_ACTION',
-
-  // Game handler
-  UPDATE_ENERGY = 'UPDATE_ENERGY',
-  SHOW_AD = 'SHOW_AD',
-  MAKE_PURCHASE = 'MAKE_PURCHASE',
-  GET_USER_INFO = 'GET_USER_INFO',
 }
 
 // Messages from Native to Web
@@ -36,7 +30,7 @@ export enum NativeToWebMessageType {
   // Router handler
   CAN_BACK_STATE = 'CAN_BACK_STATE',
 
-  SET_USER_INFO = 'SET_USER_INFO',
+  GOOGLE_ID_TOKEN = 'GOOGLE_ID_TOKEN',
   AD_RESULT = 'AD_RESULT',
   PURCHASE_RESULT = 'PURCHASE_RESULT',
 
@@ -52,52 +46,15 @@ export interface WebAppReadyPayload {
   timestamp: string;
 }
 
-export interface UpdateEnergyPayload {
-  change: number;
-  newValue: number;
-}
-
-export interface ShowAdPayload {
-  reason: 'energy_refill' | 'reward' | 'purchase';
-}
-
-export interface MakePurchasePayload {
-  productId: string;
-  quantity: number;
-}
-
 // Native to Web message payloads
 export interface NavigateStatePayload {
   canGoBack: boolean;
 }
 
-export interface SetUserInfoPayload {
-  name: string;
-  energy: number;
-  gems: number;
-  level: number;
-}
-
-export interface AdResultPayload {
-  success: boolean;
-  reason: string;
-}
-
-export interface PurchaseResultPayload {
-  success: boolean;
-  productId: string;
-  transaction: {
-    id: string;
-  };
+export interface GoogleIdTokenPayload {
+  token: string;
 }
 
 // Typed message interfaces
 export type WebAppReadyMessage = WebToNativeMessage<WebAppReadyPayload>;
-export type UpdateEnergyMessage = WebToNativeMessage<UpdateEnergyPayload>;
-export type ShowAdMessage = WebToNativeMessage<ShowAdPayload>;
-export type MakePurchaseMessage = WebToNativeMessage<MakePurchasePayload>;
-export type GetUserInfoMessage = WebToNativeMessage<void>;
-
-export type SetUserInfoMessage = NativeToWebMessage<SetUserInfoPayload>;
-export type AdResultMessage = NativeToWebMessage<AdResultPayload>;
-export type PurchaseResultMessage = NativeToWebMessage<PurchaseResultPayload>;
+export type GoogleIdTokenMessage = NativeToWebMessage<GoogleIdTokenPayload>;

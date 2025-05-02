@@ -56,16 +56,6 @@ export const MainView = () => {
       });
     }
 
-    // Setup message handlers for communications from React Native
-    const unsubscribeUserInfo = addMessageHandler(NativeToWebMessageType.SET_USER_INFO, (payload) => {
-      if (payload) {
-        setUserInfo((prev) => ({
-          ...prev,
-          ...payload,
-        }));
-      }
-    });
-
     // Handle back button in main view
     const unsubscribeBackState = addMessageHandler(NativeToWebMessageType.CAN_BACK_STATE, () => {
       if (!showExitModal) {
@@ -90,7 +80,6 @@ export const MainView = () => {
     }
 
     return () => {
-      unsubscribeUserInfo();
       unsubscribeBackState();
     };
   }, [isInWebView, sendMessage, addMessageHandler, showExitModal, t]);
@@ -100,11 +89,6 @@ export const MainView = () => {
       setShowEnergyModal(true);
       return;
     }
-
-    sendMessage({
-      type: WebToNativeMessageType.UPDATE_ENERGY,
-      payload: { change: -1, newValue: userInfo.energy - 1 },
-    });
 
     setUserInfo((prev) => ({
       ...prev,
@@ -120,11 +104,6 @@ export const MainView = () => {
       return;
     }
 
-    sendMessage({
-      type: WebToNativeMessageType.UPDATE_ENERGY,
-      payload: { change: -1, newValue: userInfo.energy - 1 },
-    });
-
     setUserInfo((prev) => ({
       ...prev,
       energy: prev.energy - 1,
@@ -138,11 +117,6 @@ export const MainView = () => {
 
     setIsLoading(true);
     try {
-      sendMessage({
-        type: WebToNativeMessageType.SHOW_AD,
-        payload: { reason: 'energy_refill' },
-      });
-
       // TODO: 광고 시청 대기 & 완료 후 물방울 충전 처리
 
       setUserInfo((prev) => ({
@@ -162,14 +136,6 @@ export const MainView = () => {
 
     setIsLoading(true);
     try {
-      sendMessage({
-        type: WebToNativeMessageType.MAKE_PURCHASE,
-        payload: {
-          productId: 'energy_pack_5',
-          quantity: 1,
-        },
-      });
-
       // TODO: 결제 처리 대기 & 완료 후 물방울 충전 처리
 
       setUserInfo((prev) => ({
