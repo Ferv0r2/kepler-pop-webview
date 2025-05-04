@@ -16,6 +16,8 @@ export interface WebToNativeMessage<T = unknown> extends BaseWebViewMessage<T> {
 export enum WebToNativeMessageType {
   WEB_APP_READY = 'WEB_APP_READY',
 
+  LOGIN_SUCCESS = 'LOGIN_SUCCESS',
+
   // Router handler
   BACK_ACTION = 'BACK_ACTION',
   EXIT_ACTION = 'EXIT_ACTION',
@@ -34,6 +36,7 @@ export enum NativeToWebMessageType {
   AD_RESULT = 'AD_RESULT',
   PURCHASE_RESULT = 'PURCHASE_RESULT',
 
+  NATIVE_ERROR = 'NATIVE_ERROR',
   // Wildcard for all message types
   ALL = '*',
 }
@@ -53,6 +56,11 @@ export interface NavigateStatePayload {
 
 export interface GoogleIdTokenPayload {
   token: string;
+}
+
+export interface NativeErrorPayload {
+  message: string;
+  stack?: string;
 }
 
 // Typed message interfaces

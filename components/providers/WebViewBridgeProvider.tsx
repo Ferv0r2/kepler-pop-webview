@@ -1,9 +1,10 @@
 'use client';
 
-import React, { createContext, ReactNode, useContext } from 'react';
+import React, { createContext, ReactNode, useContext, useEffect } from 'react';
 
 import { useWebViewBridge } from '@/hooks/useWebViewBridge';
-import type { NativeToWebMessage, WebToNativeMessage, NativeToWebMessageType } from '@/types/native-call';
+import type { NativeToWebMessage, WebToNativeMessage } from '@/types/native-call';
+import { NativeToWebMessageType } from '@/types/native-call';
 
 // Define context type
 interface WebViewBridgeContextType {
@@ -34,6 +35,19 @@ interface WebViewBridgeProviderProps {
  */
 export function WebViewBridgeProvider({ children }: WebViewBridgeProviderProps) {
   const bridge = useWebViewBridge();
+
+  // NATIVE_ERROR 메시지 전역 처리
+  useEffect(() => {
+    const unsubscribe = bridge.addMessageHandler<NativeToWebMessage<import('@/types/native-call').NativeErrorPayload>>(
+      NativeToWebMessageType.NATIVE_ERROR,
+      (msg) => {
+        const payload = msg.payload as import('@/types/native-call').NativeErrorPayload;
+        console.error('[ERROR]', payload?.message, payload?.stack);
+        // TODO: 전역 알림, Sentry 등 원하는 처리 추가
+      },
+    );
+    return unsubscribe;
+  }, [bridge]);
 
   return <WebViewBridgeContext.Provider value={bridge}>{children}</WebViewBridgeContext.Provider>;
 }

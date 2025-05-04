@@ -10,7 +10,7 @@ import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgePro
 import { api } from '@/networks/FetchAPI';
 import type { AuthRequest, AuthResponse } from '@/networks/types/auth';
 import { useAuthStore } from '@/store/authStore';
-import { GoogleIdTokenMessage, NativeToWebMessageType } from '@/types/native-call';
+import { GoogleIdTokenMessage, NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 
 const authMutation = async (token: string): Promise<AuthResponse> => {
   const response = await api.post<AuthRequest>('/auth/google', { token });
@@ -28,12 +28,17 @@ export default function AuthPage() {
     }>
   >([]);
 
-  const { addMessageHandler } = useWebViewBridgeContext();
+  const { addMessageHandler, sendMessage } = useWebViewBridgeContext();
   const { setTokens } = useAuthStore();
 
   const { mutate: handleGoogleLogin } = useMutation({
     mutationFn: authMutation,
     onSuccess: (data) => {
+      sendMessage({
+        type: WebToNativeMessageType.LOGIN_SUCCESS,
+        payload: { status: 'success' },
+      });
+
       setTokens(data.accessToken, data.refreshToken);
 
       const currentLocale = window.location.pathname.split('/')[1];
