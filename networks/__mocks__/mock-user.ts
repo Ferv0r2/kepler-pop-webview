@@ -17,4 +17,5 @@ export const mockUser: UserInfo = {
     mole: 2,
     bomb: 1,
   },
+  locale: 'ko',
 };

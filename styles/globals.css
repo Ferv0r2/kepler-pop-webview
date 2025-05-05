@@ -120,6 +120,9 @@
     user-select: none; /* 텍스트 드래그 방지 */
     @apply bg-background text-foreground;
   }
+  .font-game {
+    font-family: var(--font-press-start);
+  }
   @keyframes blob {
     0% {
       transform: translate(0px, 0px) scale(1);
@@ -190,4 +193,85 @@ body {
 * {
   -webkit-touch-callout: none;
   user-select: none;
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+  }
+  50% {
+    filter: drop-shadow(0 0 25px rgba(255, 255, 255, 1));
+  }
+}
+
+.item-glow {
+  animation: glow 1.5s infinite;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes explosion-ring {
+  0% {
+    transform: scale(0);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+.explosion-ring {
+  animation: explosion-ring 0.8s forwards;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float {
+  animation: float 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.8);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 1.5s infinite;
 }

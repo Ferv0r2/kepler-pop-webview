@@ -11,9 +11,10 @@ export interface TopNavigationProps {
   energy: number;
   gameMoney: number;
   gems: number;
+  profileImage: string;
 }
 
-export const TopNavigation = ({ name, level, energy, gameMoney, gems }: TopNavigationProps) => {
+export const TopNavigation = ({ name, level, energy, gameMoney, gems, profileImage }: TopNavigationProps) => {
   return (
     <div className="grid grid-cols-[auto_1fr] justify-between items-center gap-4 px-4 pt-4 pb-2">
       <div className="flex items-center gap-3">
@@ -24,7 +25,7 @@ export const TopNavigation = ({ name, level, energy, gameMoney, gems }: TopNavig
           transition={{ duration: 0.3 }}
         >
           <Image
-            src="/preview/cells/corn.png"
+            src={profileImage || '/plants/sunflower.png'}
             alt="Player Avatar"
             width={32}
             height={32}

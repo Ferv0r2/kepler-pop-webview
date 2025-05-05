@@ -12,5 +12,7 @@ export type UserInfo = {
   level: number;
   isAdFree: boolean;
   isSubscribed: boolean;
+  locale: string;
   gameItems: Partial<Record<GameItemType, number>>;
+  profileImage?: string;
 };

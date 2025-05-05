@@ -6,12 +6,13 @@ import { ArrowLeft, Settings, Home, RefreshCw, Flame, Shuffle } from 'lucide-rea
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { createElement, useState, useEffect, TouchEvent, useCallback } from 'react';
+import { createElement, useState, useEffect, type TouchEvent, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { SettingsMenu } from '@/components/logic/dialogs/SettingsMenu';
 import { TutorialDialog } from '@/components/logic/dialogs/TutorialDialog';
+import { ItemAnimationManager } from '@/components/logic/managers/ItemAnimationManager';
 import { Button } from '@/components/ui/button';
 import { Toast } from '@/components/ui/toast';
 import {
@@ -95,6 +96,16 @@ export const GameView = () => {
     x: number;
     y: number;
   } | null>(null);
+  const [isItemAnimating, setIsItemAnimating] = useState<boolean>(false);
+  const [itemAnimation, setItemAnimation] = useState<{
+    type: GameItemType;
+    row: number;
+    col: number;
+    direction?: 'row' | 'col';
+    left?: number;
+    top?: number;
+  } | null>(null);
+  const tileRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const itemEffects: Record<GameItemType, (row: number, col: number) => GridItem[][]> = {
     shovel: (row, col) => {
       return removeTile(grid, row, col);
@@ -114,7 +125,7 @@ export const GameView = () => {
   const t = useTranslations();
 
   const handleTileClick = (row: number, col: number) => {
-    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver) return;
+    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver || isItemAnimating) return;
 
     if (selectedGameItem) {
       activeSelectedGameItem(row, col);
@@ -147,7 +158,7 @@ export const GameView = () => {
   };
 
   const handleDragStart = (row: number, col: number) => {
-    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver) {
+    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver || isItemAnimating) {
       setIsDragging(false);
       setDraggedTile(null);
       return;
@@ -164,7 +175,14 @@ export const GameView = () => {
   };
 
   const handleDragEnter = (row: number, col: number) => {
-    if (!isDragging || !draggedTile || gameState.isSwapping || gameState.isChecking || gameState.isGameOver) {
+    if (
+      !isDragging ||
+      !draggedTile ||
+      gameState.isSwapping ||
+      gameState.isChecking ||
+      gameState.isGameOver ||
+      isItemAnimating
+    ) {
       setIsDragging(false);
       setDraggedTile(null);
       return;
@@ -526,32 +544,61 @@ export const GameView = () => {
 
   const activeSelectedGameItem = async (row: number, col: number) => {
     if (!selectedGameItem) return;
+    const tileEl = tileRefs.current[row]?.[col];
+    let left: number | undefined = undefined;
+    let top: number | undefined = undefined;
+    if (tileEl) {
+      const rect = tileEl.getBoundingClientRect();
+      left = rect.left + rect.width / 2;
+      top = rect.top + rect.height / 2;
+    }
+    if (selectedGameItem === 'mole') {
+      const randomDirection = Math.random() < 0.5 ? 'row' : 'col';
+      setItemAnimation({ type: selectedGameItem, row, col, direction: randomDirection, left, top });
+    } else {
+      setItemAnimation({ type: selectedGameItem, row, col, left, top });
+    }
+    setIsItemAnimating(true);
+  };
 
-    const updatedGrid = itemEffects[selectedGameItem](row, col);
-    executeItem(selectedGameItem, () => {
+  const handleItemAnimationComplete = () => {
+    if (!itemAnimation) return;
+    const { type, row, col, direction } = itemAnimation;
+    let updatedGrid: GridItem[][] = grid;
+    if (type === 'shovel') {
+      updatedGrid = itemEffects['shovel'](row, col);
+    } else if (type === 'mole') {
+      if (direction === 'row') {
+        updatedGrid = itemEffects['mole'](row, col);
+      } else {
+        updatedGrid = itemEffects['mole'](row, col);
+      }
+    } else if (type === 'bomb') {
+      updatedGrid = itemEffects['bomb'](row, col);
+    }
+    executeItem(type, () => {
       selectGameItem(null);
     });
-
     setGrid(updatedGrid);
+    setItemAnimation(null);
+    setIsItemAnimating(false);
 
-    await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
-
-    const afterRemovalGrid = removeMatchedTiles(updatedGrid);
-    setGrid(afterRemovalGrid);
-
-    await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION * 1.5));
-
-    const matches = findMatches(afterRemovalGrid);
-    if (matches.length > 0) {
-      processMatches(matches, afterRemovalGrid, true);
-    } else {
-      setGameState((prev) => ({
-        ...prev,
-        isSwapping: false,
-        isChecking: false,
-        combo: 1,
-      }));
-    }
+    setTimeout(async () => {
+      const afterRemovalGrid = removeMatchedTiles(updatedGrid);
+      setGrid(afterRemovalGrid);
+      await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION * 1.5));
+      const matches = findMatches(afterRemovalGrid);
+      if (matches.length > 0) {
+        processMatches(matches, afterRemovalGrid, true);
+      } else {
+        setGameState((prev) => ({
+          ...prev,
+          isSwapping: false,
+          isChecking: false,
+          combo: 1,
+        }));
+      }
+    }, ANIMATION_DURATION);
   };
 
   const handleBackClick = () => {
@@ -668,10 +715,18 @@ export const GameView = () => {
 
   return (
     <>
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-40 h-40 rounded-full bg-purple-500/20 blur-3xl animate-blob"></div>
-        <div className="absolute top-1/3 -right-20 w-60 h-60 rounded-full bg-pink-500/20 blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-20 left-1/4 w-40 h-40 rounded-full bg-cyan-500/20 blur-3xl animate-blob animation-delay-4000"></div>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-[1000]">
+        {itemAnimation && (
+          <ItemAnimationManager
+            itemType={itemAnimation.type}
+            row={itemAnimation.row}
+            col={itemAnimation.col}
+            direction={itemAnimation.direction}
+            left={itemAnimation.left}
+            top={itemAnimation.top}
+            onComplete={handleItemAnimationComplete}
+          />
+        )}
       </div>
       <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
         <header className="fixed w-full h-16 inset-0 z-20 p-4">
@@ -713,13 +768,15 @@ export const GameView = () => {
                 >
                   <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg blur opacity-30" />
                   <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
-                    <div className="text-xs text-pink-400 mb-1 font-mono tracking-widest">{t('common.score')}</div>
+                    <div className="text-xs text-pink-400 mb-1 font-mono tracking-widest font-game">
+                      {t('common.score')}
+                    </div>
                     <motion.div
                       key={gameState.score}
                       initial={{ scale: 1.5 }}
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.3 }}
-                      className="text-2xl font-bold text-pink-400 font-mono tracking-wider"
+                      className="text-2xl font-bold text-pink-400 font-mono tracking-wider font-game"
                     >
                       {gameState.score.toLocaleString()}
                     </motion.div>
@@ -821,9 +878,9 @@ export const GameView = () => {
                           animate={{ scale: 1, opacity: 1 }}
                           transition={{ delay: 0.4, duration: 0.5 }}
                         >
-                          <p className="text-lg text-white/80 mb-1">{t('game.finalScore')}</p>
+                          <p className="text-lg text-white/80 mb-1 font-game">{t('game.finalScore')}</p>
                           <motion.div
-                            className="text-4xl font-bold text-yellow-300"
+                            className="text-4xl font-bold text-yellow-300 font-game"
                             initial={{ scale: 0.8 }}
                             animate={{ scale: [0.8, 1.2, 1] }}
                             transition={{ delay: 0.6, duration: 0.7, times: [0, 0.6, 1] }}
@@ -926,6 +983,10 @@ export const GameView = () => {
                       data-col={colIndex}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
+                      ref={(el) => {
+                        if (!tileRefs.current[rowIndex]) tileRefs.current[rowIndex] = [];
+                        tileRefs.current[rowIndex][colIndex] = el;
+                      }}
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/20" />
                       {item.tier > 1 && (

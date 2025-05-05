@@ -37,6 +37,7 @@ export const MainView = () => {
     level: 1,
     isAdFree: false,
     isSubscribed: false,
+    locale: 'ko',
     gameItems: {},
   });
 
@@ -167,13 +168,20 @@ export const MainView = () => {
     return <LoadingView onLoadComplete={() => setIsInitialLoading(false)} />;
   }
 
-  const { name, level, energy, gameMoney, gems } = userInfo;
+  const { name, level, energy, gameMoney, gems, profileImage } = userInfo;
 
   return (
     <>
       <div className="grid grid-rows-[auto_1fr_auto] min-h-screen bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#334155] p-0 relative">
         <header className="sticky w-full left-0 top-0 z-10">
-          <TopNavigation name={name} level={level} energy={energy} gameMoney={gameMoney} gems={gems} />
+          <TopNavigation
+            name={name}
+            level={level}
+            energy={energy}
+            gameMoney={gameMoney}
+            gems={gems}
+            profileImage={profileImage}
+          />
         </header>
 
         <main className="flex-1 flex flex-col mt-16 px-4 py-2 overflow-hidden">
@@ -327,15 +335,15 @@ export const MainView = () => {
             </div>
 
             <div className="flex -space-x-2 mb-1">
-              {['carrot', 'morning_glory', 'mushroom', 'strawberry'].map((cell, i) => (
+              {['sunflower', 'tulip', 'cactus', 'crystal-cactus'].map((plant, i) => (
                 <motion.div
-                  key={cell}
+                  key={plant}
                   className="w-8 h-8 rounded-full border-2 border-gray-800 overflow-hidden"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + i * 0.1 }}
                 >
-                  <Image src={`/preview/cells/${cell}.png`} alt={`Friend ${cell}`} width={50} height={50} />
+                  <Image src={`/plants/${plant}.png`} alt={plant} width={50} height={50} />
                 </motion.div>
               ))}
               <motion.div
