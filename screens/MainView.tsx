@@ -67,18 +67,16 @@ export const MainView = () => {
       setShowExitModal(false);
     });
 
-    // If not in WebView, set mock data for development/testing
-    if (!isInWebView) {
-      setUserInfo((prev) => ({
-        ...prev,
-        name: t('common.userName'),
-        energy: 5,
-        gameMoney: 1500,
-        gems: 120,
-        level: 1,
-      }));
-      setUnreadMailCount(3);
-    }
+    // TODO: Remove this after testing
+    setUserInfo((prev) => ({
+      ...prev,
+      name: t('common.userName'),
+      energy: 5,
+      gameMoney: 1500,
+      gems: 120,
+      level: 1,
+    }));
+    setUnreadMailCount(3);
 
     return () => {
       unsubscribeBackState();
