@@ -16,7 +16,7 @@ export interface WebToNativeMessage<T = unknown> extends BaseWebViewMessage<T> {
 export enum WebToNativeMessageType {
   WEB_APP_READY = 'WEB_APP_READY',
 
-  LOGIN_SUCCESS = 'LOGIN_SUCCESS',
+  NEED_TO_LOGIN = 'NEED_TO_LOGIN',
 
   // Router handler
   BACK_ACTION = 'BACK_ACTION',

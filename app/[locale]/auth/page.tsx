@@ -34,11 +34,6 @@ export default function AuthPage() {
   const { mutate: handleGoogleLogin } = useMutation({
     mutationFn: authMutation,
     onSuccess: (data) => {
-      sendMessage({
-        type: WebToNativeMessageType.LOGIN_SUCCESS,
-        payload: { status: 'success' },
-      });
-
       setTokens(data.accessToken, data.refreshToken);
 
       const currentLocale = window.location.pathname.split('/')[1];
@@ -58,7 +53,11 @@ export default function AuthPage() {
         top: `${Math.random() * 100}%`,
       })),
     );
-  }, []);
+
+    sendMessage({
+      type: WebToNativeMessageType.NEED_TO_LOGIN,
+    });
+  }, [sendMessage]);
 
   useEffect(() => {
     const unsubscribeGoogleIdToken = addMessageHandler<GoogleIdTokenMessage>(
