@@ -7,6 +7,24 @@ import { routing } from '@/i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 
+function getPreferredLocale(request: NextRequest): string {
+  // Cookie
+  const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
+  if (cookieLocale && isSupportedLocale(cookieLocale)) return cookieLocale;
+
+  // Accept-Language
+  const acceptLang = request.headers.get('accept-language');
+  if (acceptLang) {
+    const preferred = acceptLang
+      .split(',')
+      .map((lang) => lang.split(';')[0].trim())
+      .find(isSupportedLocale);
+    if (preferred) return preferred;
+  }
+
+  return DEFAULT_LOCALE;
+}
+
 export function middleware(request: NextRequest) {
   // i18n
   const response = intlMiddleware(request);
@@ -26,9 +44,9 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  const currentLocale = getPreferredLocale(request);
+
   const pathname = request.nextUrl.pathname;
-  const locale = pathname.split('/')[1];
-  const currentLocale = isSupportedLocale(locale) ? locale : DEFAULT_LOCALE;
 
   if (pathname.includes('/auth')) {
     if (hasAccessToken) {

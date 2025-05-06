@@ -180,7 +180,7 @@ export const MainView = () => {
             energy={energy}
             gameMoney={gameMoney}
             gems={gems}
-            profileImage={profileImage}
+            profileImage={profileImage || '/plants/sprout.png'}
           />
         </header>
 
