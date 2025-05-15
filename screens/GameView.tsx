@@ -457,7 +457,7 @@ export const GameView = () => {
     if (newMatches.length > 0) {
       processMatches(newMatches, newGrid, false, undefined, nextCombo);
     } else {
-      const isGameOver = gameState.moves <= 0 && findPossibleMove() === null;
+      const isGameOver = gameState.moves <= 0;
 
       setGameState((prev) => ({
         ...prev,
@@ -654,20 +654,21 @@ export const GameView = () => {
 
   useEffect(() => {
     if (grid.length === 0) return;
+    if (gameState.moves > 0) {
+      const possibleMove = findPossibleMove();
+      if (!possibleMove && !gameState.isSwapping && !gameState.isChecking) {
+        setGameState((prev) => ({ ...prev, isSwapping: true }));
+        setShowShuffleToast(true);
 
-    const possibleMove = findPossibleMove();
-    if (!possibleMove && !gameState.isSwapping && !gameState.isChecking) {
-      setGameState((prev) => ({ ...prev, isSwapping: true }));
-      setShowShuffleToast(true);
-
-      setTimeout(() => {
-        const newGrid = shuffleGrid();
-        setGrid(newGrid);
-        setGameState((prev) => ({ ...prev, isSwapping: false }));
-        setTimeout(() => setShowShuffleToast(false), 2000);
-      }, ANIMATION_DURATION);
+        setTimeout(() => {
+          const newGrid = shuffleGrid();
+          setGrid(newGrid);
+          setGameState((prev) => ({ ...prev, isSwapping: false }));
+          setTimeout(() => setShowShuffleToast(false), 2000);
+        }, ANIMATION_DURATION);
+      }
     }
-  }, [grid, gameState.isSwapping, gameState.isChecking, findPossibleMove, shuffleGrid]);
+  }, [grid, gameState.isSwapping, gameState.isChecking, gameState.moves, findPossibleMove, shuffleGrid]);
 
   useEffect(() => {
     setGrid(createInitialGrid());
