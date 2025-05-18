@@ -5,8 +5,11 @@ import { ReactNode } from 'react';
 
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { WebViewBridgeProvider } from '@/components/providers/WebViewBridgeProvider';
-import '@/styles/globals.css';
 import { InitialLoaderRemover } from '@/components/ui/InitialLoader';
+import { StarsAndSparkles } from '@/components/ui/StarsAndSparkles';
+
+import '@/styles/globals.css';
+
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -159,6 +162,7 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} antialiased`}>
         <div id="initial-loader" aria-busy="true" role="status" tabIndex={-1}>
+          <StarsAndSparkles />
           <div className="title-container">
             <div className="title-kepler">KEPLER</div>
             <div className="title-pop">POP</div>
@@ -177,44 +181,6 @@ export default function RootLayout({
             <WebViewBridgeProvider>{children}</WebViewBridgeProvider>
           </GoogleOAuthProvider>
         </QueryProvider>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-            (function createStars() {
-              var loaderElement = document.getElementById('initial-loader');
-              if (!loaderElement) return;
-              var width = window.innerWidth;
-              var height = window.innerHeight;
-              for (var i = 0; i < 20; i++) {
-                var star = document.createElement('div');
-                star.className = 'star';
-                var size = Math.random() * 4 + 2;
-                star.style.width = size + 'px';
-                star.style.height = size + 'px';
-                star.style.left = Math.random() * width + 'px';
-                star.style.top = Math.random() * height + 'px';
-                star.style.animationDelay = Math.random() * 2 + 's';
-                loaderElement.appendChild(star);
-              }
-              var sparklePositions = [
-                { x: width * 0.2, y: height * 0.3, size: 24, delay: 0 },
-                { x: width * 0.8, y: height * 0.2, size: 16, delay: 0.5 },
-                { x: width * 0.3, y: height * 0.7, size: 20, delay: 1 },
-                { x: width * 0.7, y: height * 0.6, size: 18, delay: 1.5 }
-              ];
-              sparklePositions.forEach(function(sp) {
-                var sparkle = document.createElement('div');
-                sparkle.className = 'sparkle';
-                sparkle.style.left = sp.x + 'px';
-                sparkle.style.top = sp.y + 'px';
-                sparkle.style.animationDelay = sp.delay + 's';
-                sparkle.innerHTML = '<svg width="' + sp.size + '" height="' + sp.size + '" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#FFEB3B" stroke="#FFF" stroke-width="1" /></svg>';
-                loaderElement.appendChild(sparkle);
-              });
-            })();
-          `,
-          }}
-        />
       </body>
     </html>
   );
