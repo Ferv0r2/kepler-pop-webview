@@ -1,10 +1,10 @@
-export type ItemType = 1 | 2 | 3 | 4 | 5 | 6;
+export type TileType = 1 | 2 | 3 | 4 | 5 | 6;
 export type TierType = 1 | 2 | 3;
 export type GameMode = 'casual' | 'challenge';
 export type TileSwapMode = 'drag' | 'select';
 export type GridItem = {
   id: string;
-  type: ItemType;
+  type: TileType;
   isMatched: boolean;
   createdIndex: number;
   turn: number;
@@ -29,3 +29,12 @@ export type GameItem = {
 };
 
 export type GameItemType = 'shovel' | 'mole' | 'bomb';
+
+export type ItemAnimation = {
+  type: GameItemType;
+  row: number;
+  col: number;
+  direction?: 'row' | 'col';
+  left?: number;
+  top?: number;
+};

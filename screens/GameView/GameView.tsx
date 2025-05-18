@@ -20,16 +20,15 @@ import {
   CHALLENGE_MODE_MOVE_COUNT,
   CONFETTI_ANIMATION_DURATION,
   GRID_SIZE,
-  MIN_MATCH_COUNT,
+  HINT_MOVE_INTERVAL_MS,
   SCORE,
   SHOW_EFFECT_TIME_MS,
   SHOW_HINT_TIME_MS,
   SHOW_STREAK_MAINTAIN_TIME_MS,
   TILE_MAX_TIER,
-  HINT_MOVE_INTERVAL_MS,
 } from '@/screens/GameView/constants/game-config';
 import { tileConfig } from '@/screens/GameView/constants/tile-config';
-import type { GameMode, GridItem, ItemType, GameState, GameItemType, TierType } from '@/types/game-types';
+import type { GameMode, GridItem, TileType, GameState, GameItemType, TierType } from '@/types/game-types';
 import { createParticles, fallVariant, swapVariant } from '@/utils/animation-helper';
 import { deepCopyGrid, calculateComboBonus } from '@/utils/game-helper';
 
@@ -45,19 +44,21 @@ export const GameView = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const gameMode = searchParams.get('mode') as GameMode;
-  const { getRandomItemType, createInitialGrid } = useMatchGame();
+  const { grid, setGrid, getRandomItemType, createInitialGrid, findMatches, findPossibleMove } = useMatchGame();
   const { tileSwapMode, setTileSwapMode, hasSeenTutorial, setHasSeenTutorial } = useGameSettings();
   const {
     gameItems,
     selectedGameItem,
-    selectGameItem,
+    setSelectedGameItem,
+    setIsItemAnimating,
+    setItemAnimation,
     executeItem,
-    removeTile,
-    removeRow,
-    removeCol,
-    removeAdjacentTiles,
+    isItemAnimating,
+    itemAnimation,
   } = useGameItem();
-  const [grid, setGrid] = useState<GridItem[][]>([]);
+
+  const [lastMatchTime, setLastMatchTime] = useState<number>(Date.now());
+
   const [selectedTile, setSelectedTile] = useState<{
     row: number;
     col: number;
@@ -78,16 +79,15 @@ export const GameView = () => {
   } | null>(null);
   const [showBackConfirmation, setShowBackConfirmation] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
-  const [tileChangeIndex, setTileChangeIndex] = useState<number>(0);
   const [showHint, setShowHint] = useState<boolean>(false);
   const [hintPosition, setHintPosition] = useState<{ row1: number; col1: number; row2: number; col2: number } | null>(
     null,
   );
+  const [tileChangeIndex, setTileChangeIndex] = useState<number>(0);
   const [showTutorial, setShowTutorial] = useState<boolean>(false);
   const [tutorialStep, setTutorialStep] = useState<number>(1);
   const [streakCount, setStreakCount] = useState<number>(0);
   const [showStreak, setShowStreak] = useState<boolean>(false);
-  const [lastMatchTime, setLastMatchTime] = useState<number>(Date.now());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -97,32 +97,7 @@ export const GameView = () => {
     x: number;
     y: number;
   } | null>(null);
-  const [isItemAnimating, setIsItemAnimating] = useState<boolean>(false);
-  const [itemAnimation, setItemAnimation] = useState<{
-    type: GameItemType;
-    row: number;
-    col: number;
-    direction?: 'row' | 'col';
-    left?: number;
-    top?: number;
-  } | null>(null);
   const tileRefs = useRef<(HTMLDivElement | null)[][]>([]);
-  const itemEffects: Record<GameItemType, (row: number, col: number) => GridItem[][]> = {
-    shovel: (row, col) => {
-      return removeTile(grid, row, col);
-    },
-    mole: (row, col) => {
-      const randomDirection = Math.random() < 0.5 ? 'row' : 'col';
-      if (randomDirection === 'row') {
-        return removeRow(grid, row);
-      } else {
-        return removeCol(grid, col);
-      }
-    },
-    bomb: (row, col) => {
-      return removeAdjacentTiles(grid, row, col);
-    },
-  };
   const t = useTranslations();
 
   const handleTileClick = (row: number, col: number) => {
@@ -270,92 +245,6 @@ export const GameView = () => {
     }
   };
 
-  const findMatches = (currentGrid: GridItem[][]): { row: number; col: number }[] => {
-    const matches: { row: number; col: number }[] = [];
-
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE - 2; col++) {
-        const currentTile = currentGrid[row][col];
-        if (
-          currentTile.type === currentGrid[row][col + 1].type &&
-          currentTile.type === currentGrid[row][col + 2].type &&
-          currentTile.tier === currentGrid[row][col + 1].tier &&
-          currentTile.tier === currentGrid[row][col + 2].tier
-        ) {
-          let matchLength = MIN_MATCH_COUNT;
-          while (
-            col + matchLength < GRID_SIZE &&
-            currentGrid[row][col + matchLength].type === currentTile.type &&
-            currentGrid[row][col + matchLength].tier === currentTile.tier
-          ) {
-            matchLength++;
-          }
-          for (let i = 0; i < matchLength; i++) {
-            matches.push({ row, col: col + i });
-          }
-          col += matchLength - 1;
-        }
-      }
-    }
-
-    for (let col = 0; col < GRID_SIZE; col++) {
-      for (let row = 0; row < GRID_SIZE - 2; row++) {
-        const currentTile = currentGrid[row][col];
-        if (
-          currentTile.type === currentGrid[row + 1][col].type &&
-          currentTile.type === currentGrid[row + 2][col].type &&
-          currentTile.tier === currentGrid[row + 1][col].tier &&
-          currentTile.tier === currentGrid[row + 2][col].tier
-        ) {
-          let matchLength = MIN_MATCH_COUNT;
-          while (
-            row + matchLength < GRID_SIZE &&
-            currentGrid[row + matchLength][col].type === currentTile.type &&
-            currentGrid[row + matchLength][col].tier === currentTile.tier
-          ) {
-            matchLength++;
-          }
-          for (let i = 0; i < matchLength; i++) {
-            matches.push({ row: row + i, col });
-          }
-          row += matchLength - 1;
-        }
-      }
-    }
-
-    return matches;
-  };
-
-  const findPossibleMove = useCallback((): { row1: number; col1: number; row2: number; col2: number } | null => {
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE; col++) {
-        if (col < GRID_SIZE - 1) {
-          const tempGrid = deepCopyGrid(grid);
-          const temp = { ...tempGrid[row][col] };
-          tempGrid[row][col] = { ...tempGrid[row][col + 1] };
-          tempGrid[row][col + 1] = temp;
-
-          if (findMatches(tempGrid).length > 0) {
-            return { row1: row, col1: col, row2: row, col2: col + 1 };
-          }
-        }
-
-        if (row < GRID_SIZE - 1) {
-          const tempGrid = deepCopyGrid(grid);
-          const temp = { ...tempGrid[row][col] };
-          tempGrid[row][col] = { ...tempGrid[row + 1][col] };
-          tempGrid[row + 1][col] = temp;
-
-          if (findMatches(tempGrid).length > 0) {
-            return { row1: row, col1: col, row2: row + 1, col2: col };
-          }
-        }
-      }
-    }
-
-    return null;
-  }, [grid]);
-
   const processMatches = async (
     matches: { row: number; col: number }[],
     currentGrid: GridItem[][],
@@ -394,7 +283,7 @@ export const GameView = () => {
       const x = (centerCol + 0.5) / GRID_SIZE;
       const y = (centerRow + 0.5) / GRID_SIZE;
       const level = (currentGrid[matches[0].row][matches[0].col].tier || 1) as TierType;
-      const itemType = (currentGrid[matches[0].row][matches[0].col].type || 1) as ItemType;
+      const itemType = (currentGrid[matches[0].row][matches[0].col].type || 1) as TileType;
       const color = tileConfig[itemType]?.color[level]?.replace('text-', '') || 'red';
       createParticles(x, y, color);
 
@@ -532,15 +421,15 @@ export const GameView = () => {
 
   const handleGameItemSelect = (itemId: GameItemType) => {
     if (selectedTile) {
-      selectGameItem(null);
+      setSelectedGameItem(null);
       return;
     }
 
     if (selectedGameItem === itemId) {
-      selectGameItem(null);
+      setSelectedGameItem(null);
       return;
     }
-    selectGameItem(itemId);
+    setSelectedGameItem(itemId);
   };
 
   const activeSelectedGameItem = async (row: number, col: number) => {
@@ -553,36 +442,15 @@ export const GameView = () => {
       left = rect.left + rect.width / 2;
       top = rect.top + rect.height / 2;
     }
-    if (selectedGameItem === 'mole') {
-      const randomDirection = Math.random() < 0.5 ? 'row' : 'col';
-      setItemAnimation({ type: selectedGameItem, row, col, direction: randomDirection, left, top });
-    } else {
-      setItemAnimation({ type: selectedGameItem, row, col, left, top });
-    }
+    const randomDirection = Math.random() < 0.5 ? 'row' : 'col';
+    setItemAnimation({ type: selectedGameItem, row, col, direction: randomDirection, left, top });
     setIsItemAnimating(true);
   };
 
   const handleItemAnimationComplete = () => {
-    if (!itemAnimation) return;
-    const { type, row, col, direction } = itemAnimation;
-    let updatedGrid: GridItem[][] = grid;
-    if (type === 'shovel') {
-      updatedGrid = itemEffects['shovel'](row, col);
-    } else if (type === 'mole') {
-      if (direction === 'row') {
-        updatedGrid = itemEffects['mole'](row, col);
-      } else {
-        updatedGrid = itemEffects['mole'](row, col);
-      }
-    } else if (type === 'bomb') {
-      updatedGrid = itemEffects['bomb'](row, col);
-    }
-    executeItem(type, () => {
-      selectGameItem(null);
-    });
+    const updatedGrid = executeItem(grid);
+    if (!updatedGrid) return;
     setGrid(updatedGrid);
-    setItemAnimation(null);
-    setIsItemAnimating(false);
 
     setTimeout(async () => {
       const afterRemovalGrid = removeMatchedTiles(updatedGrid);
@@ -651,7 +519,7 @@ export const GameView = () => {
     }
 
     return newGrid;
-  }, [grid]);
+  }, [findMatches, grid]);
 
   useEffect(() => {
     if (grid.length === 0) return;
@@ -669,7 +537,7 @@ export const GameView = () => {
         }, ANIMATION_DURATION);
       }
     }
-  }, [grid, gameState.isSwapping, gameState.isChecking, gameState.moves, findPossibleMove, shuffleGrid]);
+  }, [grid, gameState.isSwapping, gameState.isChecking, gameState.moves, findPossibleMove, shuffleGrid, setGrid]);
 
   useEffect(() => {
     setGrid(createInitialGrid());
@@ -703,13 +571,6 @@ export const GameView = () => {
   useBackButton(() => {
     setShowBackConfirmation(true);
   });
-
-  useEffect(() => {
-    return () => {
-      setIsDragging(false);
-      setDraggedTile(null);
-    };
-  }, []);
 
   if (isLoading) {
     return <LoadingView onLoadComplete={() => setIsLoading(false)} />;

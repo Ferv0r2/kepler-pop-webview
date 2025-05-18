@@ -3,27 +3,30 @@
 import { useState } from 'react';
 
 import { DIRECTIONS } from '@/screens/GameView/constants/game-config';
-import type { GameItem, GameItemType, GridItem } from '@/types/game-types';
+import type { GameItem, GameItemType, GridItem, ItemAnimation } from '@/types/game-types';
 import { deepCopyGrid } from '@/utils/game-helper';
 
 export interface UseGameItemReturn {
   gameItems: GameItem[];
   selectedGameItem: GameItemType | null;
-  selectGameItem: (itemId: GameItemType | null) => void;
-  executeItem: (itemId: GameItemType, callback: () => void) => boolean;
+  isItemAnimating: boolean;
+  itemAnimation: {
+    type: GameItemType;
+    row: number;
+    col: number;
+    direction?: 'row' | 'col';
+    left?: number;
+    top?: number;
+  } | null;
+  setSelectedGameItem: (itemId: GameItemType | null) => void;
+  setItemAnimation: (itemAnimation: ItemAnimation | null) => void;
+  setIsItemAnimating: (isAnimating: boolean) => void;
+  executeItem: (grid: GridItem[][]) => GridItem[][] | void;
   addItem: (itemId: GameItemType, amount?: number) => void;
-  // Function to remove a single tile
-  removeTile: (grid: GridItem[][], row: number, col: number) => GridItem[][];
-  // Function to remove a random row
-  removeRow: (grid: GridItem[][], row: number) => GridItem[][];
-  // Function to remove a col
-  removeCol: (grid: GridItem[][], col: number) => GridItem[][];
-  // Function to remove adjacent tiles
-  removeAdjacentTiles: (grid: GridItem[][], row: number, col: number) => GridItem[][];
+  clearItemAnimation: () => void;
 }
 
 export const useGameItem = (): UseGameItemReturn => {
-  // Initial items with counts
   const [gameItems, setGameItems] = useState<GameItem[]>([
     {
       id: 'shovel',
@@ -34,7 +37,7 @@ export const useGameItem = (): UseGameItemReturn => {
     {
       id: 'mole',
       name: '두더지',
-      count: 2,
+      count: 10,
       icon: '/icons/mole.png',
     },
     {
@@ -44,16 +47,52 @@ export const useGameItem = (): UseGameItemReturn => {
       icon: '/icons/bomb.png',
     },
   ]);
-
   const [selectedGameItem, setSelectedGameItem] = useState<GameItemType | null>(null);
+  const [isItemAnimating, setIsItemAnimating] = useState<boolean>(false);
+  const [itemAnimation, setItemAnimation] = useState<ItemAnimation | null>(null);
 
-  const selectGameItem = (itemId: GameItemType | null) => {
-    setSelectedGameItem(itemId);
+  const itemEffects: Record<
+    GameItemType,
+    (grid: GridItem[][], row: number, col: number, direction?: 'row' | 'col') => GridItem[][]
+  > = {
+    shovel: (grid, row, col) => {
+      return removeTile(grid, row, col);
+    },
+    mole: (grid, row, col, direction) => {
+      if (direction === 'row') {
+        return removeRow(grid, row);
+      } else {
+        return removeCol(grid, col);
+      }
+    },
+    bomb: (grid, row, col) => {
+      return removeAdjacentTiles(grid, row, col);
+    },
   };
 
-  const executeItem = (itemId: GameItemType, callback: () => void): boolean => {
-    const itemIndex = gameItems.findIndex((item) => item.id === itemId);
-    if (itemIndex === -1 || gameItems[itemIndex].count <= 0) return false;
+  const executeItem = (grid: GridItem[][]) => {
+    if (!itemAnimation) {
+      return;
+    }
+    const { type, row, col, direction } = itemAnimation;
+    const itemIndex = gameItems.findIndex((item) => item.id === type);
+    if (itemIndex === -1 || gameItems[itemIndex].count <= 0) {
+      return;
+    }
+
+    let updatedGrid: GridItem[][] = grid;
+
+    switch (type) {
+      case 'shovel':
+        updatedGrid = itemEffects['shovel'](updatedGrid, row, col);
+        break;
+      case 'mole':
+        updatedGrid = itemEffects['mole'](updatedGrid, row, col, direction);
+        break;
+      case 'bomb':
+        updatedGrid = itemEffects['bomb'](updatedGrid, row, col);
+        break;
+    }
 
     setGameItems((prevItems) => {
       const newItems = [...prevItems];
@@ -63,10 +102,8 @@ export const useGameItem = (): UseGameItemReturn => {
       };
       return newItems;
     });
-
-    callback();
-    setSelectedGameItem(null);
-    return true;
+    clearItemAnimation();
+    return updatedGrid;
   };
 
   const addItem = (itemId: GameItemType, amount = 1) => {
@@ -83,7 +120,6 @@ export const useGameItem = (): UseGameItemReturn => {
     });
   };
 
-  // Remove a single tile
   const removeTile = (grid: GridItem[][], row: number, col: number): GridItem[][] => {
     const newGrid = deepCopyGrid(grid);
     newGrid[row][col].isMatched = true;
@@ -121,15 +157,22 @@ export const useGameItem = (): UseGameItemReturn => {
     return newGrid;
   };
 
+  const clearItemAnimation = () => {
+    setSelectedGameItem(null);
+    setItemAnimation(null);
+    setIsItemAnimating(false);
+  };
+
   return {
     gameItems,
     selectedGameItem,
-    selectGameItem,
+    isItemAnimating,
+    itemAnimation,
+    setItemAnimation,
+    setSelectedGameItem,
+    setIsItemAnimating,
     executeItem,
     addItem,
-    removeTile,
-    removeRow,
-    removeCol,
-    removeAdjacentTiles,
+    clearItemAnimation,
   };
 };
