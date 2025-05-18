@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { GRID_SIZE } from '@/constants/game-config';
+import { GRID_SIZE } from '@/screens/GameView/constants/game-config';
 import { GridItem, ItemType } from '@/types/game-types';
 
 export const useMatchGame = () => {

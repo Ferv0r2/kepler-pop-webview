@@ -10,11 +10,10 @@ import { createElement, useState, useEffect, type TouchEvent, useCallback, useRe
 import { v4 as uuidv4 } from 'uuid';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
-import { SettingsMenu } from '@/components/logic/dialogs/SettingsMenu';
-import { TutorialDialog } from '@/components/logic/dialogs/TutorialDialog';
 import { ItemAnimationManager } from '@/components/logic/managers/ItemAnimationManager';
 import { Button } from '@/components/ui/button';
 import { Toast } from '@/components/ui/toast';
+import { useBackButton } from '@/hooks/useBackButton';
 import {
   ANIMATION_DURATION,
   CASUAL_MODE_MOVE_COUNT,
@@ -28,17 +27,19 @@ import {
   SHOW_STREAK_MAINTAIN_TIME_MS,
   TILE_MAX_TIER,
   HINT_MOVE_INTERVAL_MS,
-} from '@/constants/game-config';
-import { tileConfig } from '@/constants/tile-config';
-import { useBackButton } from '@/hooks/useBackButton';
-import { useGameItem } from '@/hooks/useGameItem';
-import { useGameSettings } from '@/hooks/useGameSettings';
-import { useMatchGame } from '@/hooks/useMatchGame';
+} from '@/screens/GameView/constants/game-config';
+import { tileConfig } from '@/screens/GameView/constants/tile-config';
 import type { GameMode, GridItem, ItemType, GameState, GameItemType, TierType } from '@/types/game-types';
 import { createParticles, fallVariant, swapVariant } from '@/utils/animation-helper';
 import { deepCopyGrid, calculateComboBonus } from '@/utils/game-helper';
 
-import { LoadingView } from './LoadingView';
+import { LoadingView } from '../LoadingView/LoadingView';
+
+import { SettingsMenu } from './components/SettingsMenu';
+import { TutorialDialog } from './components/TutorialDialog';
+import { useGameItem } from './hooks/useGameItem';
+import { useGameSettings } from './hooks/useGameSettings';
+import { useMatchGame } from './hooks/useMatchGame';
 
 export const GameView = () => {
   const router = useRouter();

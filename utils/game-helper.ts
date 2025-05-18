@@ -1,4 +1,4 @@
-import { COMBO_BONUS } from '@/constants/game-config';
+import { COMBO_BONUS } from '@/screens/GameView/constants/game-config';
 import { GridItem } from '@/types/game-types';
 
 export const deepCopyGrid = (grid: GridItem[][]): GridItem[][] => {

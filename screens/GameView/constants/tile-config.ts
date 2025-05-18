@@ -1,5 +1,6 @@
-import { ElementType } from 'react';
 import { Heart, Zap, Sparkles, Star, Diamond, Gem } from 'lucide-react';
+import { ElementType } from 'react';
+
 import type { ItemType, TierType } from '@/types/game-types';
 
 export const tileConfig: Record<

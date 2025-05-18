@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-import { GRID_SIZE } from '@/constants/game-config';
+import { GRID_SIZE } from '@/screens/GameView/constants/game-config';
 
 export const ShovelAnimation = ({
   row,

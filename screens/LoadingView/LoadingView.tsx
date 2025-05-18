@@ -15,7 +15,7 @@ import {
   LOADING_TILE_ANIMATION_DURATION,
   LOADING_TILE_ANIMATION_DELAY,
   LOADING_ANIMATION_DELAYS,
-} from '@/constants/game-config';
+} from './constants/loading-config';
 
 interface LoadingScreenProps {
   onLoadComplete?: () => void;

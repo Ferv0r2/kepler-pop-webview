@@ -18,7 +18,7 @@ import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-c
 import type { UserInfo } from '@/types/user-types';
 import { containerVariants, itemVariants } from '@/utils/animation-helper';
 
-import { LoadingView } from './LoadingView';
+import { LoadingView } from './LoadingView/LoadingView';
 
 export const MainView = () => {
   const router = useRouter();

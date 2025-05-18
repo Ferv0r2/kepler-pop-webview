@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { createElement } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { tileConfig } from '@/constants/tile-config';
+import { tileConfig } from '@/screens/GameView/constants/tile-config';
 import type { GameMode } from '@/types/game-types';
 
 interface TutorialDialogProps {

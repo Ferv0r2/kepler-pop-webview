@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { DIRECTIONS } from '@/constants/game-config';
+import { DIRECTIONS } from '@/screens/GameView/constants/game-config';
 import type { GameItem, GameItemType, GridItem } from '@/types/game-types';
 import { deepCopyGrid } from '@/utils/game-helper';
 
