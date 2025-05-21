@@ -6,11 +6,12 @@ export type UserInfo = {
   email: string;
   createdAt: Date;
   updatedAt: Date;
-  energy: number;
+  droplet: number;
   gameMoney: number;
-  gems: number;
+  gem: number;
+  score: number;
   level: number;
-  isAdFree: boolean;
+  exp: number;
   isSubscribed: boolean;
   locale: string;
   gameItems: Partial<Record<GameItemType, number>>;
