@@ -11,8 +11,8 @@ export const signInWithGoogle = async (token: string): Promise<SignInWithGoogleR
   return response.json();
 };
 
-export const getUserInfo = async (userId: string): Promise<UserInfo> => {
-  const response = await api.get(`/users/${userId}`);
+export const getUserInfo = async (): Promise<UserInfo> => {
+  const response = await api.get('/users/me');
   if (!response.ok) throw new Error('Failed to get user info');
   return response.json();
 };

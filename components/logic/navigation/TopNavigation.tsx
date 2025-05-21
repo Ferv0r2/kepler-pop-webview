@@ -8,13 +8,13 @@ import { formatNumber } from '@/utils/format-helper';
 export interface TopNavigationProps {
   name: string;
   level: number;
-  energy: number;
+  droplet: number;
   gameMoney: number;
-  gems: number;
+  gem: number;
   profileImage: string;
 }
 
-export const TopNavigation = ({ name, level, energy, gameMoney, gems, profileImage }: TopNavigationProps) => {
+export const TopNavigation = ({ name, level, droplet, gameMoney, gem, profileImage }: TopNavigationProps) => {
   return (
     <div className="grid grid-cols-[auto_1fr] justify-between items-center gap-4 px-4 pt-4 pb-2">
       <div className="flex items-center gap-3">
@@ -52,9 +52,9 @@ export const TopNavigation = ({ name, level, energy, gameMoney, gems, profileIma
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <AssetCard icon={Droplet} color="cyan" value={energy} />
+        <AssetCard icon={Droplet} color="cyan" value={droplet} />
         <AssetCard icon={Coins} color="yellow" value={gameMoney} />
-        <AssetCard icon={Star} color="purple" value={gems} />
+        <AssetCard icon={Star} color="purple" value={gem} />
       </motion.div>
     </div>
   );

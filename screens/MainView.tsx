@@ -8,56 +8,33 @@ import { useEffect, useState } from 'react';
 
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
 import { ExitModal } from '@/components/logic/dialogs/ExitModal';
-import { LoadingSpinner } from '@/components/logic/loading/LoadingSpinner';
 import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
 import { SideNavigation } from '@/components/logic/navigation/SideNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
+import { useUser } from '@/hooks/useUser';
 import { useRouter } from '@/i18n/routing';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
-import type { UserInfo } from '@/types/user-types';
 import { containerVariants, itemVariants } from '@/utils/animation-helper';
 
 import { LoadingView } from './LoadingView/LoadingView';
 
 export const MainView = () => {
   const router = useRouter();
+  const { data: userInfo, isLoading } = useUser();
   const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
   const t = useTranslations();
 
-  const [userInfo, setUserInfo] = useState<UserInfo>({
-    id: '',
-    name: '',
-    email: '',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    energy: 0,
-    gameMoney: 0,
-    gems: 0,
-    level: 1,
-    isAdFree: false,
-    isSubscribed: false,
-    locale: 'ko',
-    gameItems: {},
-  });
-
-  const [unreadMailCount, setUnreadMailCount] = useState<number>(0);
-
-  const [showEnergyModal, setShowEnergyModal] = useState<boolean>(false);
-  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showExitModal, setShowExitModal] = useState<boolean>(false);
+  const [showEnergyModal, setShowEnergyModal] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
 
   useEffect(() => {
-    // Notify React Native that web app is ready
     if (isInWebView) {
       sendMessage({
         type: WebToNativeMessageType.WEB_APP_READY,
         payload: { timestamp: new Date().toISOString() },
       });
     }
-
-    // Handle back button in main view
     const unsubscribeBackState = addMessageHandler(NativeToWebMessageType.CAN_BACK_STATE, () => {
       if (!showExitModal) {
         setShowExitModal(true);
@@ -66,87 +43,45 @@ export const MainView = () => {
       sendMessage({ type: WebToNativeMessageType.EXIT_ACTION });
       setShowExitModal(false);
     });
-
-    // TODO: Remove this after testing
-    setUserInfo((prev) => ({
-      ...prev,
-      name: t('common.userName'),
-      energy: 5,
-      gameMoney: 1500,
-      gems: 120,
-      level: 1,
-    }));
-    setUnreadMailCount(3);
-
     return () => {
       unsubscribeBackState();
     };
-  }, [isInWebView, sendMessage, addMessageHandler, showExitModal, t]);
+  }, [isInWebView, sendMessage, addMessageHandler, showExitModal]);
+
+  if (!userInfo || isLoading) {
+    return <LoadingView />;
+  }
+
+  const { name, level, droplet, gameMoney, gem, profileImage } = userInfo;
 
   const handleStartGame = () => {
-    if (userInfo.energy <= 0) {
+    if (!userInfo || userInfo.droplet <= 0) {
       setShowEnergyModal(true);
       return;
     }
-
-    setUserInfo((prev) => ({
-      ...prev,
-      energy: prev.energy - 1,
-    }));
-
     router.push('/game?mode=casual');
   };
 
   const handleChallengeStart = () => {
-    if (userInfo.energy <= 0) {
+    if (!userInfo || userInfo.droplet <= 0) {
       setShowEnergyModal(true);
       return;
     }
-
-    setUserInfo((prev) => ({
-      ...prev,
-      energy: prev.energy - 1,
-    }));
-
     router.push('/game?mode=challenge');
   };
 
   const handleWatchAd = async () => {
-    if (isLoading) return;
+    if (isLoading || !userInfo) return;
 
-    setIsLoading(true);
-    try {
-      // TODO: 광고 시청 대기 & 완료 후 물방울 충전 처리
-
-      setUserInfo((prev) => ({
-        ...prev,
-        energy: prev.energy + 1,
-      }));
-    } catch (error) {
-      console.error('광고 시청 오류:', error);
-    } finally {
-      setShowEnergyModal(false);
-      setIsLoading(false);
-    }
+    // TODO: Watch Ad
+    setShowEnergyModal(false);
   };
 
   const handlePurchase = async () => {
-    if (isLoading) return;
+    if (isLoading || !userInfo) return;
 
-    setIsLoading(true);
-    try {
-      // TODO: 결제 처리 대기 & 완료 후 물방울 충전 처리
-
-      setUserInfo((prev) => ({
-        ...prev,
-        energy: prev.energy + 5,
-      }));
-    } catch (error) {
-      console.error('결제 처리 오류:', error);
-    } finally {
-      setShowEnergyModal(false);
-      setIsLoading(false);
-    }
+    // TODO: Purchase
+    setShowEnergyModal(false);
   };
 
   const handleNavigation = (path: string) => {
@@ -162,12 +97,6 @@ export const MainView = () => {
     setShowExitModal(false);
   };
 
-  if (!userInfo || !isInitialLoading) {
-    return <LoadingView onLoadComplete={() => setIsInitialLoading(false)} />;
-  }
-
-  const { name, level, energy, gameMoney, gems, profileImage } = userInfo;
-
   return (
     <>
       <div className="grid grid-rows-[auto_1fr_auto] min-h-screen bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#334155] p-0 relative">
@@ -175,9 +104,9 @@ export const MainView = () => {
           <TopNavigation
             name={name}
             level={level}
-            energy={energy}
+            droplet={droplet}
             gameMoney={gameMoney}
-            gems={gems}
+            gem={gem}
             profileImage={profileImage || '/plants/sprout.png'}
           />
         </header>
@@ -367,8 +296,7 @@ export const MainView = () => {
         <div className="absolute top-[40%] right-[10%] w-60 h-60 rounded-full bg-blue-500/10 blur-3xl"></div>
         <div className="absolute bottom-[20%] left-[30%] w-80 h-80 rounded-full bg-pink-500/10 blur-3xl"></div>
       </div>
-      {isLoading && <LoadingSpinner />}
-      <SideNavigation unreadMailCount={unreadMailCount} />
+      <SideNavigation unreadMailCount={0} />
       <EnergyModal
         isOpen={showEnergyModal}
         onClose={() => setShowEnergyModal(false)}

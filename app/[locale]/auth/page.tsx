@@ -1,21 +1,15 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
-import { api } from '@/networks/FetchAPI';
-import type { AuthRequest, AuthResponse } from '@/networks/types/auth';
+import { signInWithGoogle } from '@/networks/KeplerBackend';
 import { useAuthStore } from '@/store/authStore';
 import { GoogleIdTokenMessage, NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
-
-const authMutation = async (token: string): Promise<AuthResponse> => {
-  const response = await api.post<AuthRequest>('/auth/google', { token });
-  return await response.json();
-};
 
 export default function AuthPage() {
   const router = useRouter();
@@ -30,12 +24,14 @@ export default function AuthPage() {
 
   const { addMessageHandler, sendMessage } = useWebViewBridgeContext();
   const { setTokens } = useAuthStore();
+  const queryClient = useQueryClient();
 
   const { mutate: handleGoogleLogin } = useMutation({
-    mutationFn: authMutation,
-    onSuccess: (data) => {
-      setTokens(data.accessToken, data.refreshToken);
-
+    mutationFn: signInWithGoogle,
+    onSuccess: async (data) => {
+      const { accessToken, refreshToken, user } = data;
+      setTokens(accessToken, refreshToken);
+      queryClient.setQueryData(['user'], user);
       const currentLocale = window.location.pathname.split('/')[1];
       router.replace(`/${currentLocale}`);
     },
