@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/store/authStore';
+import { NetworkError } from '@/utils/NetworkError';
 
 class FetchAPI {
   private static instance: FetchAPI;
@@ -37,14 +38,22 @@ class FetchAPI {
       });
 
       if (!refreshResponse.ok) {
-        console.error('Failed to refresh token');
+        let errorData: unknown = undefined;
+        try {
+          errorData = await refreshResponse.clone().json();
+        } catch {}
         clearTokens();
-        window.location.href = '/auth';
-        throw new Error('Logged out');
+        const currentLocale = window.location.pathname.split('/')[1];
+        window.location.href = `/${currentLocale}`;
+        throw new NetworkError(
+          refreshResponse.status,
+          this.getErrorMessage(errorData, 'Failed to refresh token'),
+          errorData,
+        );
       }
 
       const newData = await refreshResponse.json();
-      setTokens(newData.accessToken, refreshToken);
+      setTokens(newData.accessToken, newData.refreshToken ?? refreshToken);
 
       const retryResponse = await fetch(`${this.baseUrl}${path}`, {
         ...options,
@@ -81,6 +90,18 @@ class FetchAPI {
 
   public delete(path: string) {
     return this.request(path, { method: 'DELETE' });
+  }
+
+  private getErrorMessage(data: unknown, fallback: string): string {
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'message' in data &&
+      typeof (data as { message?: string }).message === 'string'
+    ) {
+      return (data as { message: string }).message;
+    }
+    return fallback;
   }
 }
 

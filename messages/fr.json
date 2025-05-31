@@ -62,7 +62,8 @@
     "loginFailed": "Échec de la connexion",
     "loggingIn": "Connexion en cours...",
     "pleaseLogin": "Veuillez vous connecter",
-    "termsAndPrivacy": "En vous connectant, vous acceptez les Conditions d'utilisation et la Politique de confidentialité de Kepler Pop"
+    "termsAndPrivacy": "En vous connectant, vous acceptez les Conditions d'utilisation et la Politique de confidentialité de Kepler Pop",
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter."
   },
   "validation": {
     "required": "Ce champ est obligatoire",

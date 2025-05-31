@@ -62,7 +62,8 @@
     "loginFailed": "登录失败",
     "loggingIn": "登录中...",
     "pleaseLogin": "请登录",
-    "termsAndPrivacy": "登录即表示您同意 Kepler Pop 的服务条款和隐私政策"
+    "termsAndPrivacy": "登录即表示您同意 Kepler Pop 的服务条款和隐私政策",
+    "sessionExpired": "会话已过期。请重新登录。"
   },
   "validation": {
     "required": "此字段为必填项",

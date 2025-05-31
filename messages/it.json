@@ -62,7 +62,8 @@
     "loginFailed": "Accesso fallito",
     "loggingIn": "Accesso in corso...",
     "pleaseLogin": "Per favore accedi",
-    "termsAndPrivacy": "Accedendo, accetti i Termini di servizio e l'Informativa sulla privacy di Kepler Pop"
+    "termsAndPrivacy": "Accedendo, accetti i Termini di servizio e l'Informativa sulla privacy di Kepler Pop",
+    "sessionExpired": "La tua sessione è scaduta. Effettua nuovamente l'accesso."
   },
   "validation": {
     "required": "Questo campo è obbligatorio",

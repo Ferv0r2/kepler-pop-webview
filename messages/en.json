@@ -62,7 +62,8 @@
     "loginFailed": "Login failed",
     "loggingIn": "Logging in...",
     "pleaseLogin": "Please log in",
-    "termsAndPrivacy": "By logging in, you agree to Kepler Pop's Terms of Service and Privacy Policy"
+    "termsAndPrivacy": "By logging in, you agree to Kepler Pop's Terms of Service and Privacy Policy",
+    "sessionExpired": "Your session has expired. Please log in again."
   },
   "validation": {
     "required": "This field is required",

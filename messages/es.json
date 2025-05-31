@@ -62,7 +62,8 @@
     "loginFailed": "Error al iniciar sesión",
     "loggingIn": "Iniciando sesión...",
     "pleaseLogin": "Por favor inicia sesión",
-    "termsAndPrivacy": "Al iniciar sesión, aceptas los Términos de Servicio y la Política de Privacidad de Kepler Pop"
+    "termsAndPrivacy": "Al iniciar sesión, aceptas los Términos de Servicio y la Política de Privacidad de Kepler Pop",
+    "sessionExpired": "Tu sesión ha expirado. Por favor, inicia sesión de nuevo."
   },
   "validation": {
     "required": "Este campo es obligatorio",

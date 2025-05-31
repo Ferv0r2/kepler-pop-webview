@@ -62,7 +62,8 @@
     "loginFailed": "ログインに失敗しました",
     "loggingIn": "ログイン中...",
     "pleaseLogin": "ログインしてください",
-    "termsAndPrivacy": "ログインすることで、Kepler Popの利用規約とプライバシーポリシーに同意したことになります"
+    "termsAndPrivacy": "ログインすることで、Kepler Popの利用規約とプライバシーポリシーに同意したことになります",
+    "sessionExpired": "セッションの有効期限が切れました。再度ログインしてください。"
   },
   "validation": {
     "required": "この項目は必須です",

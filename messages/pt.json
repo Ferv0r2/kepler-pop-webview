@@ -62,7 +62,8 @@
     "loginFailed": "Falha no login",
     "loggingIn": "Entrando...",
     "pleaseLogin": "Por favor, faça login",
-    "termsAndPrivacy": "Ao fazer login, você concorda com os Termos de Serviço e a Política de Privacidade do Kepler Pop"
+    "termsAndPrivacy": "Ao fazer login, você concorda com os Termos de Serviço e a Política de Privacidade do Kepler Pop",
+    "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente."
   },
   "validation": {
     "required": "Este campo é obrigatório",

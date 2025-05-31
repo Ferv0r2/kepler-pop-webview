@@ -62,7 +62,8 @@
     "loginFailed": "Anmeldung fehlgeschlagen",
     "loggingIn": "Anmeldung läuft...",
     "pleaseLogin": "Bitte anmelden",
-    "termsAndPrivacy": "Mit der Anmeldung akzeptierst du die Nutzungsbedingungen und Datenschutzrichtlinien von Kepler Pop"
+    "termsAndPrivacy": "Mit der Anmeldung akzeptierst du die Nutzungsbedingungen und Datenschutzrichtlinien von Kepler Pop",
+    "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an."
   },
   "validation": {
     "required": "Dieses Feld ist erforderlich",

@@ -57,6 +57,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (!hasAccessToken) {
+    console.log('들어왔다');
     const redirectUrl = new URL(`/${currentLocale}/auth`, request.url);
     return NextResponse.redirect(redirectUrl);
   }

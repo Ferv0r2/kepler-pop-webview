@@ -62,7 +62,8 @@
     "loginFailed": "로그인에 실패했습니다",
     "loggingIn": "로그인 중...",
     "pleaseLogin": "로그인 해주세요",
-    "termsAndPrivacy": "로그인하면 Kepler Pop의 서비스 약관 및 개인정보 처리방침에 동의하게 됩니다"
+    "termsAndPrivacy": "로그인하면 Kepler Pop의 서비스 약관 및 개인정보 처리방침에 동의하게 됩니다",
+    "sessionExpired": "세션이 만료되었습니다. 다시 로그인 해주세요."
   },
   "validation": {
     "required": "이 필드는 필수입니다",

@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
@@ -21,10 +22,12 @@ export default function AuthPage() {
       top: string;
     }>
   >([]);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const { addMessageHandler, sendMessage } = useWebViewBridgeContext();
   const { setTokens } = useAuthStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('auth');
 
   const { mutate: handleGoogleLogin } = useMutation({
     mutationFn: signInWithGoogle,
@@ -35,8 +38,19 @@ export default function AuthPage() {
       const currentLocale = window.location.pathname.split('/')[1];
       router.replace(`/${currentLocale}`);
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.error('Login failed:', error);
+      let message = t('loginFailed');
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'message' in error &&
+        typeof (error as { message?: string }).message === 'string' &&
+        (error as { message: string }).message.includes('jwt expired')
+      ) {
+        message = t('sessionExpired');
+      }
+      setErrorMsg(message);
     },
   });
 
@@ -82,7 +96,11 @@ export default function AuthPage() {
           sizes="100vw"
         />
       </div>
-
+      {errorMsg && (
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-10 bg-white/80 text-red-600 px-6 py-3 rounded shadow-lg font-semibold">
+          {errorMsg}
+        </div>
+      )}
       <div className="absolute inset-0 overflow-hidden">
         {bubbles.map((bubble, i) => (
           <motion.div
