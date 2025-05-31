@@ -21,6 +21,9 @@ export enum WebToNativeMessageType {
   // Router handler
   BACK_ACTION = 'BACK_ACTION',
   EXIT_ACTION = 'EXIT_ACTION',
+
+  // Energy control
+  ENERGY_CHANGE = 'ENERGY_CHANGE',
 }
 
 // Messages from Native to Web
@@ -32,9 +35,11 @@ export enum NativeToWebMessageType {
   // Router handler
   CAN_BACK_STATE = 'CAN_BACK_STATE',
 
+  RESUME_ACTION = 'RESUME_ACTION',
+
   GOOGLE_ID_TOKEN = 'GOOGLE_ID_TOKEN',
-  AD_RESULT = 'AD_RESULT',
-  PURCHASE_RESULT = 'PURCHASE_RESULT',
+
+  ENERGY_CHANGE = 'ENERGY_CHANGE',
 
   NATIVE_ERROR = 'NATIVE_ERROR',
   // Wildcard for all message types
@@ -61,6 +66,12 @@ export interface GoogleIdTokenPayload {
 export interface NativeErrorPayload {
   message: string;
   stack?: string;
+}
+
+export interface EnergyChangePayload {
+  status: 'success' | 'failed';
+  amount: number;
+  reason?: string; // optional: 광고, 구매 등
 }
 
 // Typed message interfaces

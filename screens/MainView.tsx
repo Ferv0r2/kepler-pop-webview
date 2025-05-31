@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Play, Calendar, Trophy, Gift, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
@@ -14,10 +15,22 @@ import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
 import { useUser } from '@/hooks/useUser';
 import { useRouter } from '@/i18n/routing';
+import { updateDroplet } from '@/networks/KeplerBackend';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
+import type { NativeToWebMessage, EnergyChangePayload } from '@/types/native-call';
 import { containerVariants, itemVariants } from '@/utils/animation-helper';
 
 import { LoadingView } from './LoadingView/LoadingView';
+
+const useUpdateDroplet = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateDroplet,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+};
 
 export const MainView = () => {
   const router = useRouter();
@@ -27,6 +40,7 @@ export const MainView = () => {
 
   const [showEnergyModal, setShowEnergyModal] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const updateDropletMutation = useUpdateDroplet();
 
   useEffect(() => {
     if (isInWebView) {
@@ -43,10 +57,26 @@ export const MainView = () => {
       sendMessage({ type: WebToNativeMessageType.EXIT_ACTION });
       setShowExitModal(false);
     });
+
+    const unsubscribeEnergyChange = addMessageHandler<NativeToWebMessage<EnergyChangePayload>>(
+      NativeToWebMessageType.ENERGY_CHANGE,
+      async (msg) => {
+        const payload = msg.payload;
+        try {
+          if (payload?.status === 'success') {
+            updateDropletMutation.mutate(payload.amount);
+          }
+        } catch (e) {
+          console.error('에너지 변경 실패:', e);
+        }
+      },
+    );
+
     return () => {
       unsubscribeBackState();
+      unsubscribeEnergyChange();
     };
-  }, [isInWebView, sendMessage, addMessageHandler, showExitModal]);
+  }, [isInWebView, sendMessage, addMessageHandler, showExitModal, updateDropletMutation]);
 
   if (!userInfo || isLoading) {
     return <LoadingView />;
@@ -54,33 +84,34 @@ export const MainView = () => {
 
   const { name, level, droplet, gameMoney, gem, profileImage } = userInfo;
 
-  const handleStartGame = () => {
+  const handleStartGame = async (mode: 'casual' | 'challenge') => {
     if (!userInfo || userInfo.droplet <= 0) {
       setShowEnergyModal(true);
       return;
     }
-    router.push('/game?mode=casual');
-  };
 
-  const handleChallengeStart = () => {
-    if (!userInfo || userInfo.droplet <= 0) {
-      setShowEnergyModal(true);
-      return;
-    }
-    router.push('/game?mode=challenge');
+    updateDropletMutation.mutate(-1, {
+      onSuccess: () => {
+        router.push(`/game?mode=${mode}`);
+      },
+    });
   };
 
   const handleWatchAd = async () => {
     if (isLoading || !userInfo) return;
-
-    // TODO: Watch Ad
+    sendMessage({
+      type: WebToNativeMessageType.ENERGY_CHANGE,
+      payload: { amount: 1, reason: 'ad' },
+    });
     setShowEnergyModal(false);
   };
 
   const handlePurchase = async () => {
     if (isLoading || !userInfo) return;
-
-    // TODO: Purchase
+    sendMessage({
+      type: WebToNativeMessageType.ENERGY_CHANGE,
+      payload: { amount: 5, reason: 'purchase' },
+    });
     setShowEnergyModal(false);
   };
 
@@ -151,7 +182,7 @@ export const MainView = () => {
               variants={itemVariants}
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              onClick={handleStartGame}
+              onClick={() => handleStartGame('casual')}
             >
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-white font-medium">{t('common.casualMode')}</h3>
@@ -169,7 +200,7 @@ export const MainView = () => {
               variants={itemVariants}
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              onClick={handleChallengeStart}
+              onClick={() => handleStartGame('challenge')}
             >
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-white font-medium">{t('common.challengeMode')}</h3>
