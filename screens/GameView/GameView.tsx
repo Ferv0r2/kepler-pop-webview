@@ -522,13 +522,11 @@ export const GameView = () => {
   }, [findMatches, grid]);
 
   useEffect(() => {
-    if (grid.length === 0) return;
-    if (gameState.moves > 0) {
+    if (grid.length > 0 && !gameState.isSwapping && !gameState.isChecking && gameState.moves > 0) {
       const possibleMove = findPossibleMove();
-      if (!possibleMove && !gameState.isSwapping && !gameState.isChecking) {
+      if (!possibleMove) {
         setGameState((prev) => ({ ...prev, isSwapping: true }));
         setShowShuffleToast(true);
-
         setTimeout(() => {
           const newGrid = shuffleGrid();
           setGrid(newGrid);
@@ -551,22 +549,20 @@ export const GameView = () => {
   }, [hasSeenTutorial]);
 
   useEffect(() => {
-    if (lastMatchTime > 0) {
+    if (lastMatchTime > 0 && !gameState.isSwapping && !gameState.isChecking && !gameState.isGameOver) {
       const timer = setTimeout(() => {
         const possibleMove = findPossibleMove();
         if (possibleMove) {
           setHintPosition(possibleMove);
           setShowHint(true);
-
           setTimeout(() => {
             setShowHint(false);
           }, SHOW_HINT_TIME_MS);
         }
       }, HINT_MOVE_INTERVAL_MS);
-
       return () => clearTimeout(timer);
     }
-  }, [lastMatchTime, findPossibleMove]);
+  }, [lastMatchTime, gameState.isSwapping, gameState.isChecking, gameState.isGameOver, findPossibleMove]);
 
   useBackButton(() => {
     setShowBackConfirmation(true);

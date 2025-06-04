@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { GRID_SIZE, MIN_MATCH_COUNT } from '@/screens/GameView/constants/game-config';
 import { GridItem, TileType } from '@/types/game-types';
-import { deepCopyGrid } from '@/utils/game-helper';
 
 export interface UseMatchGameReturn {
   grid: GridItem[][];
@@ -109,33 +108,66 @@ export const useMatchGame = (): UseMatchGameReturn => {
     return matches;
   };
 
+  // 특정 위치(row, col)에서 가로/세로로 3개 이상 연속되는지 검사
+  const findMatchesAt = (currentGrid: GridItem[][], row: number, col: number): boolean => {
+    const type = currentGrid[row][col].type;
+    const tier = currentGrid[row][col].tier;
+
+    // 가로 검사
+    let count = 1;
+    // 왼쪽
+    for (let c = col - 1; c >= 0; c--) {
+      if (currentGrid[row][c].type === type && currentGrid[row][c].tier === tier) count++;
+      else break;
+    }
+    // 오른쪽
+    for (let c = col + 1; c < GRID_SIZE; c++) {
+      if (currentGrid[row][c].type === type && currentGrid[row][c].tier === tier) count++;
+      else break;
+    }
+    if (count >= MIN_MATCH_COUNT) return true;
+
+    // 세로 검사
+    count = 1;
+    // 위
+    for (let r = row - 1; r >= 0; r--) {
+      if (currentGrid[r][col].type === type && currentGrid[r][col].tier === tier) count++;
+      else break;
+    }
+    // 아래
+    for (let r = row + 1; r < GRID_SIZE; r++) {
+      if (currentGrid[r][col].type === type && currentGrid[r][col].tier === tier) count++;
+      else break;
+    }
+    if (count >= MIN_MATCH_COUNT) return true;
+
+    return false;
+  };
+
   const findPossibleMove = useCallback((): { row1: number; col1: number; row2: number; col2: number } | null => {
+    // deepCopyGrid 없이, swap 후 검사, 원상복구
     for (let row = 0; row < GRID_SIZE; row++) {
       for (let col = 0; col < GRID_SIZE; col++) {
+        // 오른쪽과 swap
         if (col < GRID_SIZE - 1) {
-          const tempGrid = deepCopyGrid(grid);
-          const temp = { ...tempGrid[row][col] };
-          tempGrid[row][col] = { ...tempGrid[row][col + 1] };
-          tempGrid[row][col + 1] = temp;
-
-          if (findMatches(tempGrid).length > 0) {
+          [grid[row][col], grid[row][col + 1]] = [grid[row][col + 1], grid[row][col]];
+          if (findMatchesAt(grid, row, col) || findMatchesAt(grid, row, col + 1)) {
+            [grid[row][col], grid[row][col + 1]] = [grid[row][col + 1], grid[row][col]];
             return { row1: row, col1: col, row2: row, col2: col + 1 };
           }
+          [grid[row][col], grid[row][col + 1]] = [grid[row][col + 1], grid[row][col]];
         }
-
+        // 아래와 swap
         if (row < GRID_SIZE - 1) {
-          const tempGrid = deepCopyGrid(grid);
-          const temp = { ...tempGrid[row][col] };
-          tempGrid[row][col] = { ...tempGrid[row + 1][col] };
-          tempGrid[row + 1][col] = temp;
-
-          if (findMatches(tempGrid).length > 0) {
+          [grid[row][col], grid[row + 1][col]] = [grid[row + 1][col], grid[row][col]];
+          if (findMatchesAt(grid, row, col) || findMatchesAt(grid, row + 1, col)) {
+            [grid[row][col], grid[row + 1][col]] = [grid[row + 1][col], grid[row][col]];
             return { row1: row, col1: col, row2: row + 1, col2: col };
           }
+          [grid[row][col], grid[row + 1][col]] = [grid[row + 1][col], grid[row][col]];
         }
       }
     }
-
     return null;
   }, [grid]);
 
