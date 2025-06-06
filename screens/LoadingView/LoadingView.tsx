@@ -1,9 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Heart, Zap, Sparkles, Star, Diamond, Gem } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, useMemo } from 'react';
+
+import { Logo } from '@/components/logo/Logo';
+import { StarsAndSparkles } from '@/components/ui/StarsAndSparkles';
 
 import {
   DEFAULT_LOADING_TIME_MS,
@@ -12,8 +14,6 @@ import {
   LOADING_ANIMATION_DURATION,
   LOADING_TEXT_ANIMATION_DURATION,
   LOADING_DOTS_ANIMATION_DURATION,
-  LOADING_TILE_ANIMATION_DURATION,
-  LOADING_TILE_ANIMATION_DELAY,
   LOADING_ANIMATION_DELAYS,
 } from './constants/loading-config';
 
@@ -38,16 +38,6 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
     ],
     [t],
   );
-
-  // Icons for the loading animation
-  const icons = [
-    { icon: Heart, color: 'from-rose-400 to-rose-600' },
-    { icon: Zap, color: 'from-cyan-400 to-cyan-600' },
-    { icon: Sparkles, color: 'from-emerald-400 to-emerald-600' },
-    { icon: Star, color: 'from-amber-400 to-amber-600' },
-    { icon: Diamond, color: 'from-violet-400 to-violet-600' },
-    { icon: Gem, color: 'from-fuchsia-400 to-fuchsia-600' },
-  ];
 
   useEffect(() => {
     const startTime = Date.now();
@@ -94,127 +84,83 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
     };
   }, [minLoadingTime, onLoadComplete, loadingMessages]);
 
-  // Calculate how many tiles to fill based on progress
-  const filledTiles = Math.floor((icons.length * progress) / 100);
-
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-b from-[#0B0C1D] to-[#101340]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: LOADING_ANIMATION_DURATION }}
     >
-      {/* Animated background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-40 h-40 rounded-full bg-purple-500/20 blur-3xl animate-blob"></div>
-        <div className="absolute top-1/3 -right-20 w-60 h-60 rounded-full bg-pink-500/20 blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-20 left-1/4 w-40 h-40 rounded-full bg-cyan-500/20 blur-3xl animate-blob animation-delay-4000"></div>
-      </div>
+      <StarsAndSparkles />
 
-      {/* Game title */}
-      <motion.h1
-        className="text-4xl font-bold mb-12 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 font-game"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: LOADING_ANIMATION_DELAYS.TITLE, duration: LOADING_ANIMATION_DURATION }}
-      >
-        Kepler Pop
-      </motion.h1>
+      {/* 메인 컨텐츠 */}
+      <div className="relative z-10 flex flex-col items-center justify-center px-4 py-8 min-h-screen">
+        <div className="flex-1 flex flex-col items-center mt-16">
+          <Logo />
 
-      {/* Creative loading indicator using game tiles */}
-      <div className="relative mb-12">
-        <motion.div
-          className="flex gap-3 mb-8"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: LOADING_ANIMATION_DELAYS.TILES, duration: LOADING_ANIMATION_DURATION }}
-        >
-          {icons.map((item, index) => (
+          {/* 로딩 인디케이터 */}
+          <div className="relative mt-8 mb-8">
+            {/* 진행률 표시 */}
             <motion.div
-              key={index}
-              className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                index < filledTiles ? `bg-gradient-to-br ${item.color}` : 'bg-slate-800/50 border border-slate-700/50'
-              }`}
-              initial={{ rotateY: 0 }}
-              animate={{
-                rotateY: index < filledTiles ? [0, 180, 360] : 0,
-                scale: index < filledTiles ? [1, 1.1, 1] : 1,
-              }}
+              className="text-center text-white/80 text-lg font-medium"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: LOADING_ANIMATION_DELAYS.PROGRESS }}
+            >
+              {Math.round(progress)}%
+            </motion.div>
+          </div>
+
+          {/* 로딩 메시지 */}
+          <motion.div
+            className="text-white/60 text-lg mb-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: LOADING_ANIMATION_DELAYS.TEXT }}
+          >
+            <motion.span
+              key={loadingText}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: LOADING_TEXT_ANIMATION_DURATION }}
+            >
+              {loadingText}
+            </motion.span>
+            <motion.span
+              animate={{ opacity: [0, 1, 0] }}
               transition={{
-                duration: LOADING_TILE_ANIMATION_DURATION,
-                delay: index * LOADING_TILE_ANIMATION_DELAY,
-                repeat: index < filledTiles ? 0 : 0,
+                duration: LOADING_DOTS_ANIMATION_DURATION,
+                repeat: Number.POSITIVE_INFINITY,
                 repeatType: 'loop',
-                ease: 'easeInOut',
               }}
             >
-              {index < filledTiles ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <item.icon className="w-8 h-8 text-white" />
-                </motion.div>
-              ) : (
-                <div className="w-8 h-8 rounded-md bg-slate-700/30"></div>
-              )}
-            </motion.div>
-          ))}
-        </motion.div>
+              ...
+            </motion.span>
+          </motion.div>
+        </div>
 
-        {/* Numeric progress indicator */}
+        {/* 팁 메시지 */}
         <motion.div
-          className="text-center text-white/80 text-lg font-medium"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: LOADING_ANIMATION_DELAYS.PROGRESS }}
+          className="w-full max-w-md mx-auto mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: LOADING_ANIMATION_DELAYS.TIPS }}
         >
-          {Math.round(progress)}%
+          <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 border border-white/10">
+            <div className="text-yellow-300 text-sm font-medium mb-2">{t('loading.tip')}</div>
+            <p className="text-white/80 text-sm">{t('loading.challengeTip')}</p>
+          </div>
         </motion.div>
       </div>
 
-      {/* Loading text */}
-      <motion.div
-        className="text-white/60 text-lg"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: LOADING_ANIMATION_DELAYS.TEXT }}
-      >
-        <motion.span
-          key={loadingText}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: LOADING_TEXT_ANIMATION_DURATION }}
-        >
-          {loadingText}
-        </motion.span>
-        <motion.span
-          animate={{ opacity: [0, 1, 0] }}
-          transition={{
-            duration: LOADING_DOTS_ANIMATION_DURATION,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: 'loop',
-          }}
-        >
-          ...
-        </motion.span>
-      </motion.div>
-
-      {/* Tips carousel */}
-      <motion.div
-        className="absolute bottom-12 left-0 right-0 text-center px-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: LOADING_ANIMATION_DELAYS.TIPS }}
-      >
-        <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 max-w-md mx-auto border border-white/10">
-          <div className="text-yellow-300 text-sm font-medium mb-2">{t('loading.tip')}</div>
-          <p className="text-white/80 text-sm">{t('loading.challengeTip')}</p>
-        </div>
-      </motion.div>
+      {/* 장식용 배경 요소 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[10%] left-[20%] w-40 h-40 rounded-full bg-purple-600/10 blur-3xl"></div>
+        <div className="absolute top-[40%] right-[10%] w-60 h-60 rounded-full bg-blue-500/10 blur-3xl"></div>
+        <div className="absolute bottom-[20%] left-[30%] w-80 h-80 rounded-full bg-pink-500/10 blur-3xl"></div>
+      </div>
     </motion.div>
   );
 };

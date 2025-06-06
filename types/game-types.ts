@@ -19,6 +19,7 @@ export type GameState = {
   isGameOver: boolean;
   combo: number;
   turn: number;
+  isProcessingMatches: boolean;
 };
 
 export type GameItem = {

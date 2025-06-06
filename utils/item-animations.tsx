@@ -58,7 +58,7 @@ export const ShovelAnimation = ({
           >
             <Image
               src="/icons/shovel.png"
-              alt="삽 아이템"
+              alt="shovel"
               width={80}
               height={80}
               className="w-20 h-20 drop-shadow-[0_0_15px_rgba(255,255,255,0.9)]"
@@ -191,7 +191,7 @@ export const MoleAnimation = ({
           >
             <Image
               src="/icons/mole.png"
-              alt="두더지 아이템"
+              alt="mode"
               width={64}
               height={64}
               className="w-16 h-16 drop-shadow-[0_0_8px_rgba(180,83,9,0.8)]"
@@ -299,7 +299,7 @@ export const BombAnimation = ({
           >
             <Image
               src="/icons/bomb.png"
-              alt="폭탄 아이템"
+              alt="bomb"
               width={80}
               height={80}
               className="w-20 h-20 drop-shadow-[0_0_10px_rgba(0,0,0,0.7)]"

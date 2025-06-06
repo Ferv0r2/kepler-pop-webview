@@ -7,21 +7,16 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 
+import { Logo } from '@/components/logo/Logo';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
+import { StarsAndSparkles } from '@/components/ui/StarsAndSparkles';
+import { CHARACTERS } from '@/constants/characters';
 import { signInWithGoogle } from '@/networks/KeplerBackend';
 import { useAuthStore } from '@/store/authStore';
 import { GoogleIdTokenMessage, NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 
 export default function AuthPage() {
   const router = useRouter();
-  const [bubbles, setBubbles] = useState<
-    Array<{
-      width: number;
-      height: number;
-      left: string;
-      top: string;
-    }>
-  >([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const { addMessageHandler, sendMessage } = useWebViewBridgeContext();
@@ -55,15 +50,6 @@ export default function AuthPage() {
   });
 
   useEffect(() => {
-    setBubbles(
-      [...Array(20)].map(() => ({
-        width: Math.random() * 10 + 5,
-        height: Math.random() * 10 + 5,
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
-      })),
-    );
-
     sendMessage({
       type: WebToNativeMessageType.NEED_TO_LOGIN,
     });
@@ -85,45 +71,39 @@ export default function AuthPage() {
   }, [addMessageHandler, handleGoogleLogin]);
 
   return (
-    <div className="relative grid grid-rows-[1fr_auto] items-center justify-center min-h-screen overflow-hidden bg-gradient-to-b from-blue-900 to-purple-900">
-      <div className="relative w-screen h-full">
-        <Image
-          src="/banners/loading-banner.png"
-          alt="Loading..."
-          fill
-          className="object-contain w-full h-full"
-          priority
-          sizes="100vw"
-        />
-      </div>
-      {errorMsg && (
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-10 bg-white/80 text-red-600 px-6 py-3 rounded shadow-lg font-semibold">
-          {errorMsg}
+    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-[#0B0C1D] to-[#101340] flex flex-col">
+      <StarsAndSparkles />
+
+      {/* 메인 컨텐츠 */}
+      <div className="relative z-10 flex flex-col items-center justify-center px-4 py-8 mt-16">
+        <Logo />
+        <p className="text-white/60 text-center font-['Inter'] mt-8">{t('pleaseLogin')}</p>
+
+        <div className="flex flex-row w-64 justify-center items-end gap-6 mb-8 flex-wrap mt-16">
+          {CHARACTERS.map((character) => (
+            <div key={character.name} className="flex flex-col items-center">
+              <Image
+                src={character.image}
+                alt={character.name}
+                width={64}
+                height={64}
+                className="object-contain drop-shadow-lg"
+              />
+            </div>
+          ))}
         </div>
-      )}
-      <div className="absolute inset-0 overflow-hidden">
-        {bubbles.map((bubble, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-white/10"
-            style={{
-              width: bubble.width,
-              height: bubble.height,
-              left: bubble.left,
-              top: bubble.top,
-            }}
-            animate={{
-              y: [0, -1000],
-              opacity: [0, 1, 0],
-            }}
-            transition={{
-              duration: Math.random() * 10 + 20,
-              repeat: Number.POSITIVE_INFINITY,
-              delay: Math.random() * 5,
-            }}
-          />
-        ))}
       </div>
+
+      {/* 에러 메시지 */}
+      {errorMsg && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-8 left-1/2 -translate-x-1/2 z-10 bg-white/80 text-red-600 px-6 py-3 rounded-3xl shadow-lg font-semibold"
+        >
+          {errorMsg}
+        </motion.div>
+      )}
     </div>
   );
 }
