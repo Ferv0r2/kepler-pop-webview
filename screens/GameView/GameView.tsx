@@ -71,6 +71,7 @@ export const GameView = () => {
     isGameOver: false,
     combo: 1,
     turn: 1,
+    isProcessingMatches: false,
   });
   const [showScorePopup, setShowScorePopup] = useState<{
     score: number;
@@ -101,7 +102,14 @@ export const GameView = () => {
   const t = useTranslations();
 
   const handleTileClick = (row: number, col: number) => {
-    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver || isItemAnimating) return;
+    if (
+      gameState.isSwapping ||
+      gameState.isChecking ||
+      gameState.isGameOver ||
+      isItemAnimating ||
+      gameState.isProcessingMatches
+    )
+      return;
 
     if (selectedGameItem) {
       activeSelectedGameItem(row, col);
@@ -134,7 +142,13 @@ export const GameView = () => {
   };
 
   const handleDragStart = (row: number, col: number) => {
-    if (gameState.isSwapping || gameState.isChecking || gameState.isGameOver || isItemAnimating) {
+    if (
+      gameState.isSwapping ||
+      gameState.isChecking ||
+      gameState.isGameOver ||
+      isItemAnimating ||
+      gameState.isProcessingMatches
+    ) {
       setIsDragging(false);
       setDraggedTile(null);
       return;
@@ -252,6 +266,7 @@ export const GameView = () => {
     swappedTiles?: { row: number; col: number }[],
     currentCombo = gameState.combo,
   ) => {
+    setGameState((prev) => ({ ...prev, isProcessingMatches: true }));
     const nextCombo = currentCombo + 1;
     const matchScore = matches.length * SCORE * nextCombo * (streakCount > 1 ? streakCount : 1);
     const bonusMoves = calculateComboBonus(nextCombo);
@@ -353,6 +368,7 @@ export const GameView = () => {
         ...prev,
         isSwapping: false,
         isChecking: false,
+        isProcessingMatches: false,
         combo: 1,
         isGameOver,
       }));
@@ -410,6 +426,7 @@ export const GameView = () => {
       isGameOver: false,
       combo: 1,
       turn: 0,
+      isProcessingMatches: false,
     });
     setTileChangeIndex(0);
     setGrid(createInitialGrid());

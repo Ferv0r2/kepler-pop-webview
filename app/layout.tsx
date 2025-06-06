@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { Geist, Geist_Mono, Press_Start_2P } from 'next/font/google';
 import { ReactNode } from 'react';
 
+import { Logo } from '@/components/logo/Logo';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { WebViewBridgeProvider } from '@/components/providers/WebViewBridgeProvider';
 import { InitialLoaderRemover } from '@/components/ui/InitialLoader';
@@ -48,7 +49,6 @@ export default function RootLayout({
               height: 100%;
               display: flex;
               flex-direction: column;
-              justify-content: center;
               align-items: center;
               background-color: #0A1128;
               z-index: 9999;
@@ -98,27 +98,6 @@ export default function RootLayout({
                 transform: scale(0.5) rotate(360deg);
               }
             }
-            /* Title styles */
-            .title-container {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              margin-bottom: 40px;
-            }
-            .title-kepler {
-              font-family: var(--font-press-start);
-              font-size: 48px;
-              font-weight: bold;
-              color: #FFF9C4;
-              text-shadow: 2px 2px 1px #795548;
-            }
-            .title-pop {
-              font-family: var(--font-press-start);
-              font-size: 48px;
-              font-weight: bold;
-              color: #FF9800;
-              text-shadow: 2px 2px 1px #795548;
-            }
             /* Loading dots */
             .loading-container {
               position: absolute;
@@ -163,10 +142,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} antialiased`}>
         <div id="initial-loader" aria-busy="true" role="status" tabIndex={-1}>
           <StarsAndSparkles />
-          <div className="title-container">
-            <div className="title-kepler">KEPLER</div>
-            <div className="title-pop">POP</div>
-          </div>
+          <Logo className="mt-24" />
           <div className="loading-container">
             <div className="dots-container">
               <div className="dot"></div>
