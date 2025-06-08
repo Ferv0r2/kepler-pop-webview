@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import { useCallback, useMemo, useRef } from 'react';
 
 import type { GridItem } from '@/types/game-types';
@@ -110,21 +111,11 @@ export const useAnimationScheduler = () => {
 };
 
 export const useSimpleDebounce = (callback: () => void, delay: number) => {
-  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const callbackRef = useRef(callback);
-
-  // 최신 콜백 참조 유지
-  callbackRef.current = callback;
+  const debouncedCallback = useMemo(() => debounce(callback, delay), [callback, delay]);
 
   return useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      callbackRef.current();
-    }, delay);
-  }, [delay]);
+    debouncedCallback();
+  }, [debouncedCallback]);
 };
 
 // 렌더링 성능 측정

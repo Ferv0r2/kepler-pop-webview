@@ -2,6 +2,7 @@
 
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cloneDeep } from 'lodash';
 import { ArrowLeft, Settings, Home, RefreshCw, Flame, Shuffle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -29,7 +30,7 @@ import {
 import { tileConfig } from '@/screens/GameView/constants/tile-config';
 import type { GameMode, GridItem, TileType, GameState, GameItemType, TierType } from '@/types/game-types';
 import { createParticles } from '@/utils/animation-helper';
-import { deepCopyGrid, calculateComboBonus, batchUpdateTiles } from '@/utils/game-helper';
+import { calculateComboBonus, batchUpdateTiles } from '@/utils/game-helper';
 import { useOptimizedGridRendering, useRenderPerformance } from '@/utils/performance-optimization';
 
 import { LoadingView } from '../LoadingView/LoadingView';
@@ -229,7 +230,7 @@ export const GameView = () => {
 
   const swapTiles = async (row1: number, col1: number, row2: number, col2: number) => {
     setGameState((prev) => ({ ...prev, isSwapping: true }));
-    let newGrid = deepCopyGrid(grid);
+    let newGrid = cloneDeep(grid);
 
     setShowHint(false);
 
@@ -263,7 +264,7 @@ export const GameView = () => {
 
       processMatches(matches, newGrid, true, swappedTiles);
     } else {
-      newGrid = deepCopyGrid(newGrid);
+      newGrid = cloneDeep(newGrid);
       const temp2 = { ...newGrid[row1][col1] };
       newGrid[row1][col1] = { ...newGrid[row2][col2] };
       newGrid[row2][col2] = temp2;
@@ -288,7 +289,7 @@ export const GameView = () => {
 
   const removeMatchedTiles = useCallback(
     (currentGrid: GridItem[][]): GridItem[][] => {
-      const newGrid = deepCopyGrid(currentGrid);
+      const newGrid = cloneDeep(currentGrid);
 
       for (let col = 0; col < GRID_SIZE; col++) {
         const columnTiles: GridItem[] = [];
@@ -412,7 +413,7 @@ export const GameView = () => {
       });
 
       // 배치 업데이트 적용
-      const newGrid = deepCopyGrid(currentGrid);
+      const newGrid = cloneDeep(currentGrid);
       batchUpdateTiles(newGrid, tileUpdates);
       setGrid(newGrid);
 

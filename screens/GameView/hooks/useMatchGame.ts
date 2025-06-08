@@ -90,7 +90,7 @@ export const useMatchGame = (): UseMatchGameReturn => {
   };
 
   const findPossibleMove = useCallback((): { row1: number; col1: number; row2: number; col2: number } | null => {
-    // deepCopyGrid 없이, swap 후 검사, 원상복구
+    // cloneDeep 없이, swap 후 검사, 원상복구
     for (let row = 0; row < GRID_SIZE; row++) {
       for (let col = 0; col < GRID_SIZE; col++) {
         // 오른쪽과 swap

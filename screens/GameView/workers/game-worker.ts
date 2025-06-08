@@ -1,6 +1,8 @@
 // Web Worker for heavy game computations
+import { cloneDeep } from 'lodash';
+
 import type { GridItem } from '@/types/game-types';
-import { findMatches, findPossibleMoves, deepCopyGrid } from '@/utils/performance-helper';
+import { findMatches, findPossibleMoves } from '@/utils/performance-helper';
 
 export interface WorkerMessage {
   type: 'FIND_MATCHES' | 'FIND_POSSIBLE_MOVES' | 'CALCULATE_SCORE' | 'PROCESS_GRID';
@@ -63,7 +65,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
 
       case 'PROCESS_GRID':
         if (!payload.grid) throw new Error('Grid is required for PROCESS_GRID');
-        result = deepCopyGrid(payload.grid);
+        result = cloneDeep(payload.grid);
         break;
 
       default:

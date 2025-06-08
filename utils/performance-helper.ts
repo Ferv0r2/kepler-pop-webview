@@ -1,32 +1,6 @@
+import { cloneDeep } from 'lodash';
+
 import type { GridItem, TileType } from '@/types/game-types';
-
-/**
- * 그리드 깊은 복사 함수
- * 웹 워커에서도 사용 가능하도록 외부 의존성 제거
- */
-export const deepCopyGrid = (grid: GridItem[][]): GridItem[][] => {
-  const newGrid: GridItem[][] = new Array(grid.length);
-
-  for (let i = 0; i < grid.length; i++) {
-    const row = grid[i];
-    const newRow: GridItem[] = new Array(row.length);
-    for (let j = 0; j < row.length; j++) {
-      const item = row[j];
-      // 필수 필드만 복사하여 메모리 절약
-      newRow[j] = {
-        id: item.id,
-        type: item.type,
-        isMatched: item.isMatched,
-        createdIndex: item.createdIndex,
-        turn: item.turn,
-        tier: item.tier,
-      };
-    }
-    newGrid[i] = newRow;
-  }
-
-  return newGrid;
-};
 
 /**
  * 매치 탐지 알고리즘
@@ -175,7 +149,7 @@ export const createNewTile = (): GridItem => {
  * 그리드의 빈 공간을 채우는 함수
  */
 export const fillEmptySpaces = (grid: GridItem[][], emptyValue: GridItem | null = null): GridItem[][] => {
-  const newGrid = deepCopyGrid(grid);
+  const newGrid = cloneDeep(grid);
   const rows = newGrid.length;
   const cols = newGrid[0]?.length || 0;
 
@@ -235,21 +209,6 @@ export const getMemoryUsage = (): {
     };
   }
   return null;
-};
-
-/**
- * 디바운스 함수
- */
-export const debounce = <T extends (...args: unknown[]) => unknown>(
-  func: T,
-  wait: number,
-): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout;
-
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
 };
 
 /**

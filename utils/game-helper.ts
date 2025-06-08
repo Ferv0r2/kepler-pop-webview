@@ -1,8 +1,6 @@
 import { COMBO_BONUS } from '@/screens/GameView/constants/game-config';
 import { GridItem } from '@/types/game-types';
 
-export { deepCopyGrid } from '@/utils/performance-helper';
-
 // 인플레이스 그리드 수정 함수 (복사 없이)
 export const markTileAsMatched = (grid: GridItem[][], row: number, col: number): void => {
   grid[row][col].isMatched = true;
