@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { GRID_SIZE, MIN_MATCH_COUNT } from '@/screens/GameView/constants/game-config';
 import { GridItem, TileType } from '@/types/game-types';
+import { findMatches } from '@/utils/performance-helper';
 
 export interface UseMatchGameReturn {
   grid: GridItem[][];
@@ -50,62 +51,6 @@ export const useMatchGame = (): UseMatchGameReturn => {
     }
 
     return grid;
-  };
-
-  const findMatches = (currentGrid: GridItem[][]): { row: number; col: number }[] => {
-    const matches: { row: number; col: number }[] = [];
-
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE - 2; col++) {
-        const currentTile = currentGrid[row][col];
-        if (
-          currentTile.type === currentGrid[row][col + 1].type &&
-          currentTile.type === currentGrid[row][col + 2].type &&
-          currentTile.tier === currentGrid[row][col + 1].tier &&
-          currentTile.tier === currentGrid[row][col + 2].tier
-        ) {
-          let matchLength = MIN_MATCH_COUNT;
-          while (
-            col + matchLength < GRID_SIZE &&
-            currentGrid[row][col + matchLength].type === currentTile.type &&
-            currentGrid[row][col + matchLength].tier === currentTile.tier
-          ) {
-            matchLength++;
-          }
-          for (let i = 0; i < matchLength; i++) {
-            matches.push({ row, col: col + i });
-          }
-          col += matchLength - 1;
-        }
-      }
-    }
-
-    for (let col = 0; col < GRID_SIZE; col++) {
-      for (let row = 0; row < GRID_SIZE - 2; row++) {
-        const currentTile = currentGrid[row][col];
-        if (
-          currentTile.type === currentGrid[row + 1][col].type &&
-          currentTile.type === currentGrid[row + 2][col].type &&
-          currentTile.tier === currentGrid[row + 1][col].tier &&
-          currentTile.tier === currentGrid[row + 2][col].tier
-        ) {
-          let matchLength = MIN_MATCH_COUNT;
-          while (
-            row + matchLength < GRID_SIZE &&
-            currentGrid[row + matchLength][col].type === currentTile.type &&
-            currentGrid[row + matchLength][col].tier === currentTile.tier
-          ) {
-            matchLength++;
-          }
-          for (let i = 0; i < matchLength; i++) {
-            matches.push({ row: row + i, col });
-          }
-          row += matchLength - 1;
-        }
-      }
-    }
-
-    return matches;
   };
 
   // 특정 위치(row, col)에서 가로/세로로 3개 이상 연속되는지 검사

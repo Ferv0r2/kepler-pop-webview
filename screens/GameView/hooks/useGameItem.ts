@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { DIRECTIONS } from '@/screens/GameView/constants/game-config';
 import type { GameItem, GameItemType, GridItem, ItemAnimation } from '@/types/game-types';
-import { deepCopyGrid } from '@/utils/game-helper';
+import { deepCopyGrid } from '@/utils/performance-helper';
 
 export interface UseGameItemReturn {
   gameItems: GameItem[];
@@ -30,19 +30,19 @@ export const useGameItem = (): UseGameItemReturn => {
   const [gameItems, setGameItems] = useState<GameItem[]>([
     {
       id: 'shovel',
-      name: '모종삽',
+      name: 'Shovel',
       count: 3,
       icon: '/icons/shovel.png',
     },
     {
       id: 'mole',
-      name: '두더지',
+      name: 'Mole',
       count: 10,
       icon: '/icons/mole.png',
     },
     {
       id: 'bomb',
-      name: '폭탄',
+      name: 'Bomb',
       count: 1,
       icon: '/icons/bomb.png',
     },
