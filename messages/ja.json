@@ -121,6 +121,9 @@
     "help": "ヘルプ",
     "about": "概要",
     "version": "バージョン",
-    "credits": "クレジット"
+    "credits": "クレジット",
+    "previous": "前へ",
+    "next": "次へ",
+    "startPlaying": "プレイする"
   }
 }

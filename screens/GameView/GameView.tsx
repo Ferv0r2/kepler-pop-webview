@@ -557,6 +557,12 @@ export const GameView = () => {
     setHasSeenTutorial(true);
   };
 
+  const prevTutorialStep = () => {
+    if (tutorialStep > 0) {
+      setTutorialStep(tutorialStep - 1);
+    }
+  };
+
   const nextTutorialStep = () => {
     if (tutorialStep < 3) {
       setTutorialStep(tutorialStep + 1);
@@ -1012,6 +1018,7 @@ export const GameView = () => {
         isOpen={showTutorial}
         onClose={closeTutorial}
         onNextStep={nextTutorialStep}
+        onPrevStep={prevTutorialStep}
         currentStep={tutorialStep}
         gameMode={gameMode}
         gameItems={gameItems}

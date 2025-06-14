@@ -121,6 +121,9 @@
     "help": "帮助",
     "about": "关于",
     "version": "版本",
-    "credits": "制作人员"
+    "credits": "制作人员",
+    "previous": "上一页",
+    "next": "下一页",
+    "startPlaying": "开始游戏"
   }
 }

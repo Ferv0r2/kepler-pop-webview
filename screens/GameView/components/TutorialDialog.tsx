@@ -10,6 +10,7 @@ import type { GameMode } from '@/types/game-types';
 interface TutorialDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onPrevStep: () => void;
   onNextStep: () => void;
   currentStep: number;
   gameMode: GameMode;
@@ -23,6 +24,7 @@ interface TutorialDialogProps {
 export const TutorialDialog = ({
   isOpen,
   onClose,
+  onPrevStep,
   onNextStep,
   currentStep,
   gameMode,
@@ -164,12 +166,22 @@ export const TutorialDialog = ({
               <div key={step} className={`w-2 h-2 rounded-full ${currentStep === step ? 'bg-white' : 'bg-white/30'}`} />
             ))}
           </div>
-          <Button
-            onClick={onNextStep}
-            className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white"
-          >
-            {currentStep < 3 ? 'Next' : 'Start Playing'}
-          </Button>
+          <div className="flex space-x-2">
+            {currentStep > 1 && (
+              <Button
+                onClick={onPrevStep}
+                className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white"
+              >
+                Previous
+              </Button>
+            )}
+            <Button
+              onClick={onNextStep}
+              className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white"
+            >
+              {currentStep < 3 ? 'Next' : 'Start Playing'}
+            </Button>
+          </div>
         </div>
       </motion.div>
     </motion.div>

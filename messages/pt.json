@@ -121,6 +121,9 @@
     "help": "Ajuda",
     "about": "Sobre",
     "version": "Versão",
-    "credits": "Créditos"
+    "credits": "Créditos",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "startPlaying": "Começar a Jogar"
   }
 }

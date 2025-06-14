@@ -121,6 +121,9 @@
     "help": "Help",
     "about": "About",
     "version": "Version",
-    "credits": "Credits"
+    "credits": "Credits",
+    "previous": "Previous",
+    "next": "Next",
+    "startPlaying": "Start Playing"
   }
 }

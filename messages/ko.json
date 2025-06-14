@@ -121,6 +121,9 @@
     "help": "도움말",
     "about": "소개",
     "version": "버전",
-    "credits": "제작진"
+    "credits": "제작진",
+    "previous": "이전",
+    "next": "다음",
+    "startPlaying": "시작하기"
   }
 }
