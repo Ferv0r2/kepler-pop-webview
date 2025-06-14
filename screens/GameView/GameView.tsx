@@ -336,13 +336,14 @@ export const GameView = () => {
       const bonusMoves = calculateComboBonus(nextCombo);
       const shouldDecreaseMoves = isFirstMatch && !selectedGameItem;
       const movesAdjustment = shouldDecreaseMoves ? -1 : 0;
+      const newMoves = gameState.moves + movesAdjustment + bonusMoves;
 
       // 상태를 즉시 업데이트 (비동기 제거)
       updateGameState({
         isProcessingMatches: true,
         isChecking: true,
         score: gameState.score + matchScore,
-        moves: gameState.moves + movesAdjustment + bonusMoves,
+        moves: newMoves,
         turn: isFirstMatch ? gameState.turn + 1 : gameState.turn,
         combo: nextCombo,
       });
@@ -428,7 +429,7 @@ export const GameView = () => {
           if (newMatches.length > 0) {
             processMatches(newMatches, afterRemovalGrid, false, undefined, nextCombo);
           } else {
-            const isGameOver = gameState.moves <= 0;
+            const isGameOver = newMoves <= 0;
 
             updateGameState({
               isSwapping: false,
