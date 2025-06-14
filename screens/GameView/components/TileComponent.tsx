@@ -27,17 +27,60 @@ const ANIMATION_SCALE_NORMAL = 1;
 const HOVER_SCALE = 1.05;
 const TAP_SCALE = 0.95;
 
-// 최적화된 애니메이션 변형 (불변 객체)
-const OPTIMIZED_VARIANTS = Object.freeze({
-  fall: Object.freeze({
-    initial: Object.freeze({ opacity: 1, y: 0 }),
-    animate: Object.freeze({ opacity: 0, y: 50 }),
-    transition: Object.freeze({ duration: 0.2, ease: 'easeIn' }),
+const ANIMATION_VARIANTS = Object.freeze({
+  refill: Object.freeze({
+    scale: 0.8,
+    opacity: 0,
+    y: -100,
+    transition: Object.freeze({
+      duration: 0,
+    }),
   }),
-  swap: Object.freeze({
-    initial: Object.freeze({ scale: 1 }),
-    animate: Object.freeze({ scale: 1 }),
-    transition: Object.freeze({ duration: 0.15, ease: 'easeOut' }),
+  refillComplete: Object.freeze({
+    scale: 1,
+    opacity: 1,
+    y: 0,
+    transition: Object.freeze({
+      duration: 0.4,
+      ease: 'easeOut',
+      delay: 0.1,
+    }),
+  }),
+  matched: Object.freeze({
+    scale: 0,
+    opacity: 0,
+    y: 20,
+    transition: Object.freeze({
+      duration: 0.3,
+      ease: 'easeIn',
+    }),
+  }),
+  normal: Object.freeze({
+    scale: ANIMATION_SCALE_NORMAL,
+    opacity: 1,
+    y: 0,
+    transition: Object.freeze({
+      duration: 0.2,
+      ease: 'easeOut',
+    }),
+  }),
+  selected: Object.freeze({
+    scale: ANIMATION_SCALE_SELECTED,
+    opacity: 1,
+    y: 0,
+    transition: Object.freeze({
+      duration: 0.15,
+      ease: 'easeOut',
+    }),
+  }),
+  dragged: Object.freeze({
+    scale: ANIMATION_SCALE_SELECTED,
+    opacity: 1,
+    y: 0,
+    transition: Object.freeze({
+      duration: 0.1,
+      ease: 'easeOut',
+    }),
   }),
 });
 
@@ -81,7 +124,6 @@ export const TileComponent = memo<TileComponentProps>(
   }) => {
     // 이전 값들을 캐시하여 불필요한 재계산 방지
     const prevItemRef = useRef(item);
-    const prevIsSelectedRef = useRef(isSelected);
 
     // 타일 설정 캐시 (타입과 티어가 변경될 때만 재계산)
     const { tileIcon, tileBgColor } = useMemo(() => {
@@ -99,22 +141,6 @@ export const TileComponent = memo<TileComponentProps>(
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [item.type, item.tier]);
-
-    // 스케일 최적화
-    const scale = useMemo(() => {
-      if (item.isMatched) return 0;
-      if (isSelected || isDragged) return ANIMATION_SCALE_SELECTED;
-      return ANIMATION_SCALE_NORMAL;
-    }, [item.isMatched, isSelected, isDragged]);
-
-    // 회전 최적화 (선택 상태가 변경될 때만 재계산)
-    const rotation = useMemo(() => {
-      if (prevIsSelectedRef.current === isSelected) {
-        return isSelected ? [0, 5, 0, -5, 0] : 0;
-      }
-      prevIsSelectedRef.current = isSelected;
-      return isSelected ? [0, 5, 0, -5, 0] : 0;
-    }, [isSelected]);
 
     // CSS 클래스 최적화
     const cssClasses = useMemo(() => {
@@ -137,13 +163,11 @@ export const TileComponent = memo<TileComponentProps>(
 
     // 애니메이션 속성 최적화
     const animateProps = useMemo(() => {
-      const variant = item.isMatched ? OPTIMIZED_VARIANTS.fall : OPTIMIZED_VARIANTS.swap;
-      return {
-        ...variant.animate,
-        scale,
-        rotate: rotation,
-      };
-    }, [item.isMatched, scale, rotation]);
+      if (item.isMatched) return ANIMATION_VARIANTS.matched;
+      if (isSelected) return ANIMATION_VARIANTS.selected;
+      if (isDragged) return ANIMATION_VARIANTS.dragged;
+      return ANIMATION_VARIANTS.normal;
+    }, [item.isMatched, isSelected, isDragged]);
 
     // 이벤트 핸들러 최적화
     const optimizedHandlers = useMemo(
@@ -171,9 +195,8 @@ export const TileComponent = memo<TileComponentProps>(
       <motion.div
         key={item.id}
         layout
-        initial={item.isMatched ? OPTIMIZED_VARIANTS.fall.initial : OPTIMIZED_VARIANTS.swap.initial}
+        initial={ANIMATION_VARIANTS.refill}
         animate={animateProps}
-        transition={item.isMatched ? OPTIMIZED_VARIANTS.fall.transition : OPTIMIZED_VARIANTS.swap.transition}
         className={cssClasses}
         style={GPU_ACCELERATED_STYLE}
         data-row={rowIndex}
