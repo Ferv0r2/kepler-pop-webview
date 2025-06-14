@@ -103,6 +103,7 @@ export const GameView = () => {
   } | null>(null);
   const tileRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const t = useTranslations();
+  const refillPromiseRef = useRef<Promise<void> | null>(null);
 
   // 성능 최적화 훅
   const { grid: optimizedGrid, hasChanges } = useOptimizedGridRendering(grid);
@@ -228,68 +229,10 @@ export const GameView = () => {
     }
   };
 
-  const swapTiles = async (row1: number, col1: number, row2: number, col2: number) => {
-    setGameState((prev) => ({ ...prev, isSwapping: true }));
-    let newGrid = cloneDeep(grid);
-
-    setShowHint(false);
-
-    const swappedTiles = [
-      { row: row1, col: col1 },
-      { row: row2, col: col2 },
-    ];
-
-    const temp = { ...newGrid[row1][col1] };
-    newGrid[row1][col1] = { ...newGrid[row2][col2] };
-    newGrid[row2][col2] = temp;
-
-    setGrid(newGrid);
-    setSelectedTile(null);
-
-    await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
-
-    const matches = findMatches(newGrid);
-
-    await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION + 100));
-    if (matches.length > 0) {
-      const now = Date.now();
-      if (now - lastMatchTime < SHOW_STREAK_MAINTAIN_TIME_MS) {
-        setStreakCount((prev) => prev + 1);
-        setShowStreak(true);
-        setTimeout(() => setShowStreak(false), SHOW_EFFECT_TIME_MS);
-      } else {
-        setStreakCount(1);
-      }
-      setLastMatchTime(now);
-
-      processMatches(matches, newGrid, true, swappedTiles);
-    } else {
-      newGrid = cloneDeep(newGrid);
-      const temp2 = { ...newGrid[row1][col1] };
-      newGrid[row1][col1] = { ...newGrid[row2][col2] };
-      newGrid[row2][col2] = temp2;
-      setGrid(newGrid);
-      setGameState((prev) => ({
-        ...prev,
-        moves: prev.moves - 1,
-        turn: prev.turn + 1,
-        isSwapping: false,
-        isGameOver: prev.moves - 1 <= 0,
-      }));
-    }
-  };
-
-  const updateGameState = useCallback((updates: Partial<GameState>) => {
-    setGameState((prev) => ({ ...prev, ...updates }));
-  }, []);
-
-  const calculateMatchScore = useCallback((matchCount: number, combo: number, streak: number) => {
-    return matchCount * SCORE * combo * (streak > 1 ? streak : 1);
-  }, []);
-
   const removeMatchedTiles = useCallback(
-    (currentGrid: GridItem[][]): GridItem[][] => {
+    (currentGrid: GridItem[][]): { newGrid: GridItem[][]; newTileIds: string[] } => {
       const newGrid = cloneDeep(currentGrid);
+      const newTileIds: string[] = [];
 
       for (let col = 0; col < GRID_SIZE; col++) {
         const columnTiles: GridItem[] = [];
@@ -298,31 +241,45 @@ export const GameView = () => {
             columnTiles.push(newGrid[row][col]);
           }
         }
+
         const missingTiles = GRID_SIZE - columnTiles.length;
         const newTiles: GridItem[] = [];
+
         for (let i = 0; i < missingTiles; i++) {
-          newTiles.push({
-            id: `${i}-${col}-${uuidv4()}`,
+          const newTileId = `${i}-${col}-${uuidv4()}`;
+          const newTile = {
+            id: newTileId,
             type: getRandomItemType(),
             isMatched: false,
-            createdIndex: tileChangeIndex,
+            createdIndex: tileChangeIndex + 1,
             turn: gameState.turn,
-            tier: 1,
-          });
+            tier: 1 as TierType,
+          };
+          newTiles.push(newTile);
+          newTileIds.push(newTileId);
         }
+
         const updatedColumn = [...newTiles, ...columnTiles];
         for (let row = 0; row < GRID_SIZE; row++) {
           newGrid[row][col] = updatedColumn[row];
         }
       }
 
-      return newGrid;
+      return { newGrid, newTileIds };
     },
     [getRandomItemType, tileChangeIndex, gameState.turn],
   );
 
+  const calculateMatchScore = useCallback((matchCount: number, combo: number, streak: number) => {
+    return matchCount * SCORE * combo * (streak > 1 ? streak : 1);
+  }, []);
+
+  const updateGameState = useCallback((updates: Partial<GameState>) => {
+    setGameState((prev) => ({ ...prev, ...updates }));
+  }, []);
+
   const processMatches = useCallback(
-    (
+    async (
       matches: { row: number; col: number }[],
       currentGrid: GridItem[][],
       isFirstMatch = false,
@@ -338,7 +295,7 @@ export const GameView = () => {
       const movesAdjustment = shouldDecreaseMoves ? -1 : 0;
       const newMoves = gameState.moves + movesAdjustment + bonusMoves;
 
-      // 상태를 즉시 업데이트 (비동기 제거)
+      // 상태 업데이트
       updateGameState({
         isProcessingMatches: true,
         isChecking: true,
@@ -350,12 +307,11 @@ export const GameView = () => {
 
       setLastMatchTime(Date.now());
 
-      // UI 업데이트 (비동기 제거하고 즉시 처리)
+      // UI 효과 표시
       if (matches.length > 0) {
         const centerRow = matches.reduce((sum, m) => sum + m.row, 0) / matches.length;
         const centerCol = matches.reduce((sum, m) => sum + m.col, 0) / matches.length;
 
-        // 팝업 즉시 표시
         setShowScorePopup({ score: matchScore, x: centerCol, y: centerRow });
         if (bonusMoves > 0) {
           setShowBonusMovesPopup({ moves: bonusMoves, x: centerCol, y: centerRow });
@@ -369,14 +325,13 @@ export const GameView = () => {
         const color = tileConfig[itemType]?.color[level]?.replace('text-', '') || 'red';
         createParticles(x, y, color);
 
-        // 팝업 자동 숨김 (비블로킹)
         setTimeout(() => setShowScorePopup(null), SHOW_EFFECT_TIME_MS);
         if (bonusMoves > 0) {
           setTimeout(() => setShowBonusMovesPopup(null), SHOW_EFFECT_TIME_MS);
         }
       }
 
-      // 그리드 업데이트 최적화 - 인플레이스 수정
+      // 매칭된 타일 업데이트
       const tileUpdates: Array<{ row: number; col: number; changes: Partial<GridItem> }> = [];
 
       matches.forEach(({ row, col }, index) => {
@@ -413,45 +368,58 @@ export const GameView = () => {
         }
       });
 
-      // 배치 업데이트 적용
+      // 그리드 업데이트
       const newGrid = cloneDeep(currentGrid);
       batchUpdateTiles(newGrid, tileUpdates);
       setGrid(newGrid);
 
-      // 애니메이션 대기를 requestAnimationFrame으로 최적화
-      requestAnimationFrame(() => {
-        const afterRemovalGrid = removeMatchedTiles(newGrid);
-        setGrid(afterRemovalGrid);
+      // 매칭 애니메이션 대기
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
-        // 다음 프레임에서 매치 확인
-        requestAnimationFrame(() => {
-          const newMatches = findMatches(afterRemovalGrid);
-          if (newMatches.length > 0) {
-            processMatches(newMatches, afterRemovalGrid, false, undefined, nextCombo);
-          } else {
-            const isGameOver = newMoves <= 0;
+      // 타일 제거 및 리필
+      const { newGrid: afterRemovalGrid, newTileIds } = removeMatchedTiles(newGrid);
+      setGrid(afterRemovalGrid);
+      setTileChangeIndex((prev) => prev + 1);
 
-            updateGameState({
-              isSwapping: false,
-              isChecking: false,
-              isProcessingMatches: false,
-              combo: 1,
-              isGameOver,
-            });
+      // 리필 애니메이션이 있는 경우에만 대기
+      if (newTileIds.length > 0) {
+        // 리필 애니메이션 완료까지 대기
+        const refillPromise = new Promise<void>((resolve) => setTimeout(resolve, 500)); // Dummy promise
+        refillPromiseRef.current = refillPromise;
 
-            if (isGameOver) {
-              requestAnimationFrame(() => {
-                confetti({
-                  particleCount: 100,
-                  spread: 160,
-                  origin: { x: 0.5, y: 0.5 },
-                  disableForReducedMotion: true,
-                });
-              });
-            }
-          }
+        await refillPromise;
+        refillPromiseRef.current = null;
+      }
+
+      // 추가 대기 시간 (애니메이션 완전 완료 보장)
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // 다음 매칭 확인
+      const newMatches = findMatches(afterRemovalGrid);
+      if (newMatches.length > 0) {
+        // 연쇄 매칭 발견 - 재귀 호출
+        await processMatches(newMatches, afterRemovalGrid, false, undefined, nextCombo);
+      } else {
+        // 연쇄 매칭 종료
+        const isGameOver = newMoves <= 0;
+
+        updateGameState({
+          isSwapping: false,
+          isChecking: false,
+          isProcessingMatches: false,
+          combo: 1,
+          isGameOver,
         });
-      });
+
+        if (isGameOver) {
+          confetti({
+            particleCount: 100,
+            spread: 160,
+            origin: { x: 0.5, y: 0.5 },
+            disableForReducedMotion: true,
+          });
+        }
+      }
     },
     [
       gameState,
@@ -464,6 +432,65 @@ export const GameView = () => {
       removeMatchedTiles,
       setGrid,
     ],
+  );
+
+  const swapTiles = useCallback(
+    async (row1: number, col1: number, row2: number, col2: number) => {
+      setGameState((prev) => ({ ...prev, isSwapping: true }));
+      let newGrid = cloneDeep(grid);
+
+      setShowHint(false);
+
+      const swappedTiles = [
+        { row: row1, col: col1 },
+        { row: row2, col: col2 },
+      ];
+
+      const temp = { ...newGrid[row1][col1] };
+      newGrid[row1][col1] = { ...newGrid[row2][col2] };
+      newGrid[row2][col2] = temp;
+
+      setGrid(newGrid);
+      setSelectedTile(null);
+
+      // 스와핑 애니메이션 대기
+      await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
+
+      const matches = findMatches(newGrid);
+
+      // 추가 대기 시간
+      await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION + 100));
+
+      if (matches.length > 0) {
+        const now = Date.now();
+        if (now - lastMatchTime < SHOW_STREAK_MAINTAIN_TIME_MS) {
+          setStreakCount((prev) => prev + 1);
+          setShowStreak(true);
+          setTimeout(() => setShowStreak(false), SHOW_EFFECT_TIME_MS);
+        } else {
+          setStreakCount(1);
+        }
+        setLastMatchTime(now);
+
+        // 매칭 처리 (async 함수로 변경)
+        await processMatches(matches, newGrid, true, swappedTiles);
+      } else {
+        // 매칭이 없으면 되돌리기
+        newGrid = cloneDeep(newGrid);
+        const temp2 = { ...newGrid[row1][col1] };
+        newGrid[row1][col1] = { ...newGrid[row2][col2] };
+        newGrid[row2][col2] = temp2;
+        setGrid(newGrid);
+        setGameState((prev) => ({
+          ...prev,
+          moves: prev.moves - 1,
+          turn: prev.turn + 1,
+          isSwapping: false,
+          isGameOver: prev.moves - 1 <= 0,
+        }));
+      }
+    },
+    [grid, findMatches, lastMatchTime, processMatches, setGrid],
   );
 
   const restartGame = () => {
@@ -520,11 +547,11 @@ export const GameView = () => {
 
     setTimeout(async () => {
       const afterRemovalGrid = removeMatchedTiles(updatedGrid);
-      setGrid(afterRemovalGrid);
+      setGrid(afterRemovalGrid.newGrid);
       await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION * 1.5));
-      const matches = findMatches(afterRemovalGrid);
+      const matches = findMatches(afterRemovalGrid.newGrid);
       if (matches.length > 0) {
-        processMatches(matches, afterRemovalGrid, true);
+        processMatches(matches, afterRemovalGrid.newGrid, true);
       } else {
         setGameState((prev) => ({
           ...prev,
