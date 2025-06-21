@@ -95,11 +95,7 @@ export const GameView = () => {
   const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showShuffleToast, setShowShuffleToast] = useState<boolean>(false);
-  const [showBonusMovesPopup, setShowBonusMovesPopup] = useState<{
-    moves: number;
-    x: number;
-    y: number;
-  } | null>(null);
+  const [showBonusMovesAnimation, setShowBonusMovesAnimation] = useState<number>(0);
   const tileRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const t = useTranslations();
   const refillPromiseRef = useRef<Promise<void> | null>(null);
@@ -313,7 +309,7 @@ export const GameView = () => {
 
         setShowScorePopup({ score: matchScore, x: centerCol, y: centerRow });
         if (bonusMoves > 0) {
-          setShowBonusMovesPopup({ moves: bonusMoves, x: centerCol, y: centerRow });
+          setShowBonusMovesAnimation(bonusMoves);
         }
 
         // 파티클 효과
@@ -326,7 +322,7 @@ export const GameView = () => {
 
         setTimeout(() => setShowScorePopup(null), SHOW_EFFECT_TIME_MS);
         if (bonusMoves > 0) {
-          setTimeout(() => setShowBonusMovesPopup(null), SHOW_EFFECT_TIME_MS);
+          setTimeout(() => setShowBonusMovesAnimation(0), SHOW_EFFECT_TIME_MS);
         }
       }
 
@@ -571,7 +567,7 @@ export const GameView = () => {
 
       setShowScorePopup({ score: itemScore, x: centerCol, y: centerRow });
       if (bonusMoves > 0) {
-        setShowBonusMovesPopup({ moves: bonusMoves, x: centerCol, y: centerRow });
+        setShowBonusMovesAnimation(bonusMoves);
       }
 
       const x = (centerCol + 0.5) / GRID_SIZE;
@@ -580,7 +576,7 @@ export const GameView = () => {
 
       setTimeout(() => setShowScorePopup(null), SHOW_EFFECT_TIME_MS);
       if (bonusMoves > 0) {
-        setTimeout(() => setShowBonusMovesPopup(null), SHOW_EFFECT_TIME_MS);
+        setTimeout(() => setShowBonusMovesAnimation(0), SHOW_EFFECT_TIME_MS);
       }
     }
 
@@ -758,7 +754,7 @@ export const GameView = () => {
             transition={{ duration: 0.3 }}
           >
             <div className="w-full max-w-lg">
-              <div className="flex justify-between items-center mb-6 gap-2">
+              <div className="flex justify-between items-center mb-6 gap-4">
                 <motion.div
                   className="relative flex-2"
                   initial={{ x: -50, opacity: 0 }}
@@ -767,7 +763,7 @@ export const GameView = () => {
                 >
                   <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg blur opacity-30" />
                   <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
-                    <div className="text-xs text-pink-400 mb-1 tracking-widest">{t('common.score')}</div>
+                    <div className="text-pink-400 mb-1 tracking-widest">{t('common.score')}</div>
                     <motion.div
                       key={gameState.score}
                       initial={{ scale: 1.5 }}
@@ -788,15 +784,28 @@ export const GameView = () => {
                 >
                   <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg blur opacity-30" />
                   <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                    <div className="text-xs text-blue-400 mb-1 tracking-widest">{t('common.moves')}</div>
+                    <div className="text-blue-400 mb-1 tracking-widest">{t('common.moves')}</div>
                     <motion.div
                       key={gameState.moves}
                       initial={{ scale: 1.5 }}
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.3 }}
-                      className="text-2xl font-bold text-blue-400 tracking-wider"
+                      className="text-2xl font-bold text-blue-400 tracking-wider relative"
                     >
                       {Math.max(gameState.moves, 0)}
+                      <AnimatePresence>
+                        {showBonusMovesAnimation > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.5, y: 0 }}
+                            animate={{ opacity: 1, scale: 1, y: -20 }}
+                            exit={{ opacity: 0, y: -40 }}
+                            transition={{ duration: 0.8 }}
+                            className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-green-400 font-bold text-lg z-20"
+                          >
+                            +{showBonusMovesAnimation}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                   </div>
                 </motion.div>
@@ -1056,25 +1065,6 @@ export const GameView = () => {
       />
 
       <Toast isOpen={showShuffleToast} icon={Shuffle} message={t('game.shuffleMessage')} />
-
-      <AnimatePresence>
-        {showBonusMovesPopup && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5, y: 0 }}
-            animate={{ opacity: 1, scale: 1, y: -60 }}
-            exit={{ opacity: 0, y: -90 }}
-            transition={{ duration: 0.8 }}
-            className="absolute text-green-400 font-bold text-xl z-20"
-            style={{
-              left: `${(showBonusMovesPopup.x / GRID_SIZE) * 100}%`,
-              top: `${(showBonusMovesPopup.y / GRID_SIZE) * 100}%`,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            +{showBonusMovesPopup.moves} {t('game.bonusMoves')}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 };
