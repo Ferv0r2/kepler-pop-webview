@@ -83,7 +83,7 @@ export const TutorialDialog = ({
         }}
       >
         {/* Orbital rings decoration */}
-        <div className="absolute -inset-6 opacity-20">
+        <div className="absolute -inset-6 opacity-20 pointer-events-none">
           <motion.div
             className="absolute inset-0 rounded-full border border-cyan-400/30"
             animate={{ rotate: 360 }}
@@ -97,7 +97,7 @@ export const TutorialDialog = ({
         </div>
 
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 relative z-10">
           <motion.div
             className="flex items-center gap-3"
             initial={{ opacity: 0, x: -20 }}
@@ -113,7 +113,7 @@ export const TutorialDialog = ({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-10 w-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 transition-all duration-200"
+            className="h-10 w-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 transition-all duration-200 relative z-20"
           >
             <X className="h-5 w-5 text-white/80" />
           </Button>
@@ -122,7 +122,7 @@ export const TutorialDialog = ({
         {/* Content area with cosmic glow */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-black/40 to-indigo-950/40 border border-white/10 p-6 mb-6 backdrop-blur-sm">
           {/* Inner glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/5 to-purple-500/5 rounded-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/5 to-purple-500/5 rounded-2xl pointer-events-none" />
 
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
@@ -277,7 +277,7 @@ export const TutorialDialog = ({
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center relative z-20">
           {/* Progress indicators - orbital style */}
           <motion.div
             className="flex space-x-3"
@@ -317,21 +317,21 @@ export const TutorialDialog = ({
             {currentStep > 1 && (
               <Button
                 onClick={onPrevStep}
-                className="bg-gradient-to-r from-slate-600/80 to-slate-700/80 hover:from-slate-500/80 hover:to-slate-600/80 text-white border border-white/20 hover:border-white/30 transition-all duration-200 backdrop-blur-sm"
+                className="bg-gradient-to-r from-slate-600/80 to-slate-700/80 hover:from-slate-500/80 hover:to-slate-600/80 text-white border border-white/20 hover:border-white/30 transition-all duration-200 backdrop-blur-sm relative z-30"
               >
                 {t('modal.previous')}
               </Button>
             )}
             <Button
               onClick={onNextStep}
-              className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_25px_rgba(34,211,238,0.4)] transition-all duration-200"
+              className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_25px_rgba(34,211,238,0.4)] transition-all duration-200 relative z-30"
             >
               {currentStep < 3 ? t('modal.next') : t('modal.startPlaying')}
             </Button>
           </motion.div>
         </div>
 
-        {/* Subtle glow overlay */}
+        {/* Subtle glow overlay - moved to bottom and made non-interactive */}
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-white/5 to-transparent pointer-events-none" />
       </motion.div>
     </motion.div>
