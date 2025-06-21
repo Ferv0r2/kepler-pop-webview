@@ -92,7 +92,12 @@
     "streak": "连击！",
     "combo": "连击",
     "score": "得分",
-    "moves": "移动"
+    "moves": "移动",
+    "restart": "重新开始",
+    "restartConfirm": "您确定要重新开始游戏吗？",
+    "restartMessage": "重新开始将重置您当前的进度并消耗1个能量水滴。",
+    "insufficientEnergy": "能量不足",
+    "insufficientEnergyMessage": "您没有足够的能量水滴来重新开始游戏。是否要充值能量？"
   },
   "loading": {
     "tip": "💡 提示",
@@ -108,14 +113,14 @@
   "modal": {
     "confirm": "确认",
     "cancel": "取消",
-    "confirmExit": "确定要退出游戏吗？",
-    "exitMessage": "退出后进度将不会保存，已使用的道具将不予退还。",
+    "confirmExit": "您确定要退出游戏吗？",
+    "exitMessage": "您的进度将不会保存，使用的物品也不会退还。",
     "settings": "设置",
     "tutorial": "教程",
     "restart": "重新开始游戏",
     "tileSwapMode": "方块交换模式",
     "select": "选择模式",
-    "drag": "拖动模式",
+    "drag": "拖拽模式",
     "sound": "声音",
     "music": "背景音乐",
     "effects": "音效",
@@ -124,8 +129,30 @@
     "about": "关于",
     "version": "版本",
     "credits": "制作人员",
-    "previous": "上一页",
-    "next": "下一页",
-    "startPlaying": "开始游戏"
+    "previous": "上一个",
+    "next": "下一个",
+    "startPlaying": "开始游戏",
+    "watchAd": "观看广告",
+    "purchase": "购买能量",
+    "close": "关闭"
+  },
+  "tutorial": {
+    "title": "游戏玩法",
+    "step1": {
+      "description": "交换相邻的方块以创建3个或更多相同方块的匹配。"
+    },
+    "step2": {
+      "description": "使用特殊道具清除方块并创建强大的连击。",
+      "instruction": "选择一个道具，然后点击方块来激活其效果。"
+    },
+    "step3": {
+      "casual": {
+        "description": "在休闲模式中，您可以自由游戏。没有排行榜，没有获胜压力！"
+      },
+      "challenge": {
+        "description": "在挑战模式中，方块等级会提高，游戏变得更加困难！",
+        "instruction": "匹配更高等级的方块将获得更高的分数。"
+      }
+    }
   }
 }

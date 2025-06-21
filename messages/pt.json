@@ -82,7 +82,7 @@
       "bomb": "Bomba"
     },
     "shuffleMessage": "Embaralhando peças...",
-    "bonusMoves": "Movimentos extras!",
+    "bonusMoves": "Movimentos bônus!",
     "gameOver": "Fim de Jogo",
     "finalScore": "Pontuação Final",
     "highScore": "Melhor Pontuação",
@@ -92,7 +92,12 @@
     "streak": "Sequência!",
     "combo": "Combo",
     "score": "Pontuação",
-    "moves": "Movimentos"
+    "moves": "Movimentos",
+    "restart": "Reiniciar",
+    "restartConfirm": "Tem certeza de que quer reiniciar o jogo?",
+    "restartMessage": "Reiniciar irá resetar seu progresso atual e consumirá 1 gota de energia.",
+    "insufficientEnergy": "Energia Insuficiente",
+    "insufficientEnergyMessage": "Você não tem gotas de energia suficientes para reiniciar o jogo. Gostaria de recarregar sua energia?"
   },
   "loading": {
     "tip": "💡 Dica",
@@ -108,12 +113,12 @@
   "modal": {
     "confirm": "Confirmar",
     "cancel": "Cancelar",
-    "confirmExit": "Tem certeza que deseja sair do jogo?",
+    "confirmExit": "Tem certeza de que quer sair do jogo?",
     "exitMessage": "Seu progresso não será salvo e os itens usados não serão reembolsados.",
     "settings": "Configurações",
     "tutorial": "Tutorial",
     "restart": "Reiniciar Jogo",
-    "tileSwapMode": "Modo Troca de Peças",
+    "tileSwapMode": "Modo de Troca de Peças",
     "select": "Modo Seleção",
     "drag": "Modo Arrastar",
     "sound": "Som",
@@ -126,6 +131,28 @@
     "credits": "Créditos",
     "previous": "Anterior",
     "next": "Próximo",
-    "startPlaying": "Começar a Jogar"
+    "startPlaying": "Começar a Jogar",
+    "watchAd": "Assistir Anúncio",
+    "purchase": "Comprar Energia",
+    "close": "Fechar"
+  },
+  "tutorial": {
+    "title": "Como Jogar",
+    "step1": {
+      "description": "Troque peças adjacentes para criar combinações de 3 ou mais peças idênticas."
+    },
+    "step2": {
+      "description": "Use itens especiais para limpar peças e criar combos poderosos.",
+      "instruction": "Selecione um item, depois toque em uma peça para ativar seu efeito."
+    },
+    "step3": {
+      "casual": {
+        "description": "No modo Casual, você pode jogar livremente. Sem placares, sem pressão para vencer!"
+      },
+      "challenge": {
+        "description": "No modo Desafio, os níveis das peças aumentam e fica mais difícil!",
+        "instruction": "Combinar peças com níveis mais altos lhe dará uma pontuação mais alta."
+      }
+    }
   }
 }

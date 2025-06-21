@@ -92,7 +92,12 @@
     "streak": "連続！",
     "combo": "コンボ",
     "score": "スコア",
-    "moves": "移動"
+    "moves": "移動",
+    "restart": "再開",
+    "restartConfirm": "ゲームを再開しますか？",
+    "restartMessage": "再開すると現在の進行状況がリセットされ、エネルギー1個が消費されます。",
+    "insufficientEnergy": "エネルギー不足",
+    "insufficientEnergyMessage": "ゲームを再開するためのエネルギーが不足しています。エネルギーを充電しますか？"
   },
   "loading": {
     "tip": "💡 ヒント",
@@ -108,24 +113,46 @@
   "modal": {
     "confirm": "確認",
     "cancel": "キャンセル",
-    "confirmExit": "ゲームを終了してもよろしいですか？",
+    "confirmExit": "ゲームを終了しますか？",
     "exitMessage": "進行状況は保存されず、使用したアイテムは返金されません。",
     "settings": "設定",
     "tutorial": "チュートリアル",
-    "restart": "ゲームを再開",
+    "restart": "ゲーム再開",
     "tileSwapMode": "タイル交換モード",
     "select": "選択モード",
     "drag": "ドラッグモード",
     "sound": "サウンド",
-    "music": "BGM",
+    "music": "音楽",
     "effects": "効果音",
     "language": "言語",
     "help": "ヘルプ",
-    "about": "概要",
+    "about": "について",
     "version": "バージョン",
     "credits": "クレジット",
     "previous": "前へ",
     "next": "次へ",
-    "startPlaying": "プレイする"
+    "startPlaying": "プレイ開始",
+    "watchAd": "広告を見る",
+    "purchase": "エネルギー購入",
+    "close": "閉じる"
+  },
+  "tutorial": {
+    "title": "遊び方",
+    "step1": {
+      "description": "隣接するタイルを交換して、3つ以上の同じタイルをマッチさせましょう。"
+    },
+    "step2": {
+      "description": "特別なアイテムを使用してタイルをクリアし、強力なコンボを作りましょう。",
+      "instruction": "アイテムを選択してから、タイルをタップして効果を発動させてください。"
+    },
+    "step3": {
+      "casual": {
+        "description": "カジュアルモードでは自由にプレイできます。リーダーボードや勝利へのプレッシャーはありません！"
+      },
+      "challenge": {
+        "description": "チャレンジモードではタイルの階級が上がり、より難しくなります！",
+        "instruction": "より高い階級のタイルをマッチさせると、より高いスコアを獲得できます。"
+      }
+    }
   }
 }

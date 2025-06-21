@@ -1,4 +1,5 @@
 import { Droplet } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 
@@ -13,13 +14,15 @@ interface EnergyModalProps {
 }
 
 export const EnergyModal = ({ isOpen, onClose, onWatchAd, onPurchase, isLoading }: EnergyModalProps) => {
+  const t = useTranslations();
+
   return (
     <ConfirmationModal
       isOpen={isOpen}
-      title="물방울이 부족합니다"
+      title={t('game.insufficientEnergy')}
       message={
         <div className="space-y-4">
-          <p className="text-white/80">게임을 시작하기 위한 물방울이 부족합니다. 물방울을 충전하시겠습니까?</p>
+          <p className="text-white/80">{t('game.insufficientEnergyMessage')}</p>
           <div className="flex flex-col gap-3 mt-4">
             <Button
               onClick={onWatchAd}
@@ -27,7 +30,7 @@ export const EnergyModal = ({ isOpen, onClose, onWatchAd, onPurchase, isLoading 
               disabled={isLoading}
               className="flex justify-between items-center bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
             >
-              <span>광고 시청하기</span>
+              <span>{t('modal.watchAd')}</span>
               <div className="flex items-center gap-1">
                 <Droplet className="text-white w-4 h-4" />
                 <span className="text-white font-bold">+1</span>
@@ -39,7 +42,7 @@ export const EnergyModal = ({ isOpen, onClose, onWatchAd, onPurchase, isLoading 
               disabled={isLoading}
               className="flex justify-between items-center bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
             >
-              <span>물방울 구매하기</span>
+              <span>{t('modal.purchase')}</span>
               <div className="flex items-center gap-1">
                 <Droplet className="text-white w-4 h-4" />
                 <span className="text-white font-bold">+5</span>
@@ -48,8 +51,8 @@ export const EnergyModal = ({ isOpen, onClose, onWatchAd, onPurchase, isLoading 
           </div>
         </div>
       }
-      confirmText="닫기"
-      cancelText="취소"
+      confirmText={t('modal.close')}
+      cancelText={t('modal.cancel')}
       onConfirm={onClose}
       onCancel={onClose}
     />

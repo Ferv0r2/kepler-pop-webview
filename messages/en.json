@@ -92,7 +92,12 @@
     "streak": "Streak!",
     "combo": "Combo",
     "score": "Score",
-    "moves": "Moves"
+    "moves": "Moves",
+    "restart": "Restart",
+    "restartConfirm": "Are you sure you want to restart the game?",
+    "restartMessage": "Restarting will reset your current progress and consume 1 energy droplet.",
+    "insufficientEnergy": "Insufficient Energy",
+    "insufficientEnergyMessage": "You don't have enough energy droplets to restart the game. Would you like to recharge your energy?"
   },
   "loading": {
     "tip": "💡 Tip",
@@ -126,6 +131,28 @@
     "credits": "Credits",
     "previous": "Previous",
     "next": "Next",
-    "startPlaying": "Start Playing"
+    "startPlaying": "Start Playing",
+    "watchAd": "Watch Ad",
+    "purchase": "Purchase Energy",
+    "close": "Close"
+  },
+  "tutorial": {
+    "title": "How to Play",
+    "step1": {
+      "description": "Swap adjacent tiles to create matches of 3 or more identical tiles."
+    },
+    "step2": {
+      "description": "Use special items to clear tiles and create powerful combos.",
+      "instruction": "Select an item, then tap a tile to activate its effect."
+    },
+    "step3": {
+      "casual": {
+        "description": "In Casual mode, you can play freely. No leaderboards, no pressure to win!"
+      },
+      "challenge": {
+        "description": "In Challenge mode, tile tiers increase and it becomes more difficult!",
+        "instruction": "Matching tiles with higher tiers will earn you a higher score."
+      }
+    }
   }
 }

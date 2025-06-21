@@ -1,10 +1,10 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cloneDeep } from 'lodash';
-import { ArrowLeft, Settings, Home, RefreshCw, Shuffle } from 'lucide-react';
+import { ArrowLeft, Settings, Home, RefreshCw, Shuffle, AlertTriangle, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -12,12 +12,13 @@ import { useState, useEffect, type TouchEvent, useCallback, useRef, useMemo } fr
 import { v4 as uuidv4 } from 'uuid';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
+import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
 import { ItemAnimationManager } from '@/components/logic/managers/ItemAnimationManager';
 import { Button } from '@/components/ui/button';
 import { Toast } from '@/components/ui/toast';
 import { useBackButton } from '@/hooks/useBackButton';
 import { useUser } from '@/hooks/useUser';
-import { updateScore } from '@/networks/KeplerBackend';
+import { updateDroplet } from '@/networks/KeplerBackend';
 import {
   ANIMATION_DURATION,
   CASUAL_MODE_MOVE_COUNT,
@@ -46,10 +47,19 @@ import { useGameSettings } from './hooks/useGameSettings';
 import { useGameWorker } from './hooks/useGameWorker';
 import { useMatchGame } from './hooks/useMatchGame';
 
+const useUpdateDroplet = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateDroplet,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+};
+
 export const GameView = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
   const gameMode = searchParams.get('mode') as GameMode;
   const { grid, setGrid, getRandomItemType, createInitialGrid, findMatches, findPossibleMove } = useMatchGame();
   const { tileSwapMode, setTileSwapMode, hasSeenTutorial, setHasSeenTutorial } = useGameSettings();
@@ -95,12 +105,14 @@ export const GameView = () => {
   const [showTutorial, setShowTutorial] = useState<boolean>(false);
   const [tutorialStep, setTutorialStep] = useState<number>(1);
   const [streakCount, setStreakCount] = useState<number>(0);
+  const [showShuffleToast, setShowShuffleToast] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isNewHighScore, setIsNewHighScore] = useState<boolean>(false);
+  const [showRestartConfirmation, setShowRestartConfirmation] = useState(false);
+  const [showEnergyModal, setShowEnergyModal] = useState(false);
   const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [showShuffleToast, setShowShuffleToast] = useState<boolean>(false);
   const [showBonusMovesAnimation, setShowBonusMovesAnimation] = useState<number>(0);
-  const [isNewHighScore, setIsNewHighScore] = useState<boolean>(false);
   const tileRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const t = useTranslations();
   const refillPromiseRef = useRef<Promise<void> | null>(null);
@@ -122,14 +134,15 @@ export const GameView = () => {
     }
   }
 
-  const { data: user } = useUser();
+  const { data: userInfo } = useUser();
+  const updateDropletMutation = useUpdateDroplet();
 
   // 현재 모드의 최고 점수 가져오기
   const currentModeHighScore = useMemo(() => {
-    if (!user?.scores || !gameMode) return 0;
-    const modeScore = user.scores.find((score) => score.mode === gameMode);
+    if (!userInfo?.scores || !gameMode) return 0;
+    const modeScore = userInfo.scores.find((score) => score.mode === gameMode);
     return modeScore?.score || 0;
-  }, [user?.scores, gameMode]);
+  }, [userInfo?.scores, gameMode]);
 
   // 현재 점수가 최고 점수를 넘었는지 확인
   useEffect(() => {
@@ -141,17 +154,15 @@ export const GameView = () => {
   // 게임 종료 시 점수 업데이트
   const updateUserScore = useCallback(
     async (finalScore: number) => {
-      if (!user || finalScore <= currentModeHighScore) return;
+      if (!userInfo || finalScore <= currentModeHighScore) return;
 
       try {
-        await updateScore(finalScore, gameMode || 'casual');
-        // 점수 업데이트 후 사용자 정보를 다시 가져오기 위해 쿼리를 무효화
-        queryClient.invalidateQueries({ queryKey: ['user'] });
+        await updateDropletMutation.mutateAsync(finalScore);
       } catch (error) {
         console.error('Failed to update score:', error);
       }
     },
-    [user, currentModeHighScore, gameMode, queryClient],
+    [userInfo, currentModeHighScore, updateDropletMutation],
   );
 
   const handleTileClick = (row: number, col: number) => {
@@ -533,22 +544,56 @@ export const GameView = () => {
   );
 
   const restartGame = () => {
-    setGameState({
-      score: 0,
-      moves: gameMode === 'casual' ? CASUAL_MODE_MOVE_COUNT : CHALLENGE_MODE_MOVE_COUNT,
-      isSwapping: false,
-      isChecking: false,
-      isGameOver: false,
-      combo: 1,
-      turn: 0,
-      isProcessingMatches: false,
+    // 에너지 소모
+    updateDropletMutation.mutate(-1, {
+      onSuccess: () => {
+        setGameState({
+          score: 0,
+          moves: gameMode === 'casual' ? CASUAL_MODE_MOVE_COUNT : CHALLENGE_MODE_MOVE_COUNT,
+          isSwapping: false,
+          isChecking: false,
+          isGameOver: false,
+          combo: 1,
+          turn: 0,
+          isProcessingMatches: false,
+        });
+        setTileChangeIndex(0);
+        setGrid(createInitialGrid());
+        setSelectedTile(null);
+        setShowScorePopup(null);
+        setStreakCount(0);
+        setIsNewHighScore(false);
+        setShowRestartConfirmation(false);
+      },
     });
-    setTileChangeIndex(0);
-    setGrid(createInitialGrid());
-    setSelectedTile(null);
-    setShowScorePopup(null);
-    setStreakCount(0);
-    setIsNewHighScore(false);
+  };
+
+  const handleRestartConfirm = () => {
+    setShowRestartConfirmation(false);
+
+    // 에너지가 부족한 경우 에너지 모달 표시
+    if (!userInfo || userInfo.droplet <= 0) {
+      setShowEnergyModal(true);
+      return;
+    }
+
+    restartGame();
+  };
+
+  const handleRestartCancel = () => {
+    setShowRestartConfirmation(false);
+  };
+
+  const handleWatchAd = async () => {
+    if (!userInfo) return;
+    // 광고 시청 후 에너지 추가 로직은 네이티브 앱에서 처리
+    setShowEnergyModal(false);
+  };
+
+  const handlePurchase = async () => {
+    if (!userInfo) return;
+    // 구매 후 에너지 추가 로직은 네이티브 앱에서 처리
+    setShowEnergyModal(false);
   };
 
   const handleGameItemSelect = (itemId: GameItemType) => {
@@ -993,10 +1038,17 @@ export const GameView = () => {
                           transition={{ delay: 0.8, duration: 0.5 }}
                         >
                           <Button
-                            onClick={restartGame}
-                            className="flex items-center justify-center bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl text-md shadow-lg hover:shadow-xl transition-all duration-300"
+                            onClick={handleRestartConfirm}
+                            disabled={!userInfo || userInfo.droplet <= 0}
+                            className={`flex items-center justify-center font-bold py-3 px-6 rounded-xl text-md shadow-lg transition-all duration-300 ${
+                              !userInfo || userInfo.droplet <= 0
+                                ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-gray-300 cursor-not-allowed opacity-50'
+                                : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white hover:shadow-xl'
+                            }`}
                           >
-                            <RefreshCw className="w-5 h-5 mr-2" />
+                            <RefreshCw
+                              className={`w-5 h-5 mr-2 ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-300' : 'text-white'}`}
+                            />
                             {t('game.playAgain')}
                           </Button>
                           <Button
@@ -1120,22 +1172,8 @@ export const GameView = () => {
         title={t('modal.confirmExit')}
         message={
           <div className="space-y-3">
-            <p className="text-white">{t('modal.exitMessage')}</p>
             <div className="flex items-start gap-2 bg-yellow-400/10 p-2 rounded-lg">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
+              <AlertTriangle className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
               <p className="text-yellow-300 text-sm font-medium">{t('modal.exitMessage')}</p>
             </div>
           </div>
@@ -1146,17 +1184,43 @@ export const GameView = () => {
         onCancel={() => setShowBackConfirmation(false)}
       />
 
+      <ConfirmationModal
+        isOpen={showRestartConfirmation}
+        title={t('game.restartConfirm')}
+        message={
+          <div className="space-y-3">
+            <div className="flex items-start gap-2 bg-cyan-400/10 p-2 rounded-lg">
+              <Zap className="h-5 w-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+              <p className="text-cyan-300 text-sm font-medium">{t('game.restartMessage')}</p>
+            </div>
+          </div>
+        }
+        confirmText={t('modal.confirm')}
+        cancelText={t('modal.cancel')}
+        onConfirm={handleRestartConfirm}
+        onCancel={handleRestartCancel}
+      />
+
+      <EnergyModal
+        isOpen={showEnergyModal}
+        onClose={() => setShowEnergyModal(false)}
+        onWatchAd={handleWatchAd}
+        onPurchase={handlePurchase}
+        isLoading={false}
+      />
+
       <SettingsMenu
         isOpen={showSettingsMenu}
         tileSwapMode={tileSwapMode}
         onChangeTileSwapMode={setTileSwapMode}
         onClose={() => setShowSettingsMenu(false)}
-        onRestart={restartGame}
         onShowTutorial={() => {
           setShowTutorial(true);
           setTutorialStep(1);
         }}
         onShowBackConfirmation={() => setShowBackConfirmation(true)}
+        onShowRestartConfirmation={() => setShowRestartConfirmation(true)}
+        onShowEnergyModal={() => setShowEnergyModal(true)}
       />
 
       <TutorialDialog

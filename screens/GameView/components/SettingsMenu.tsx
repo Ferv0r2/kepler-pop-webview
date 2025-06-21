@@ -1,17 +1,20 @@
 import { motion } from 'framer-motion';
-import { X, Home, RefreshCw, MousePointer, Hand } from 'lucide-react';
+import { X, Home, RefreshCw, MousePointer, Hand, Droplet, HelpCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/hooks/useUser';
 import type { TileSwapMode } from '@/types/game-types';
 
 interface SettingsMenuProps {
   isOpen: boolean;
   tileSwapMode: TileSwapMode;
   onClose: () => void;
-  onRestart: () => void;
   onShowTutorial: () => void;
   onShowBackConfirmation: () => void;
   onChangeTileSwapMode: (mode: TileSwapMode) => void;
+  onShowRestartConfirmation: () => void;
+  onShowEnergyModal: () => void;
 }
 
 export const SettingsMenu = ({
@@ -19,11 +22,28 @@ export const SettingsMenu = ({
   tileSwapMode,
   onChangeTileSwapMode,
   onClose,
-  onRestart,
   onShowTutorial,
   onShowBackConfirmation,
+  onShowRestartConfirmation,
+  onShowEnergyModal,
 }: SettingsMenuProps) => {
+  const t = useTranslations();
+  const { data: userInfo } = useUser();
+
   if (!isOpen) return null;
+
+  const handleRestartClick = () => {
+    onClose();
+
+    // 에너지가 부족한 경우 에너지 모달 표시
+    if (!userInfo || userInfo.droplet <= 0) {
+      onShowEnergyModal();
+      return;
+    }
+
+    // 에너지가 충분한 경우 다시하기 확인 모달 표시
+    onShowRestartConfirmation();
+  };
 
   return (
     <motion.div
@@ -42,9 +62,7 @@ export const SettingsMenu = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
-            Settings
-          </h3>
+          <h3 className="text-2xl font-bold text-white">{t('modal.settings')}</h3>
           <Button
             variant="ghost"
             size="icon"
@@ -57,7 +75,7 @@ export const SettingsMenu = ({
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <h4 className="text-white/80 font-medium">Swap Mode</h4>
+            <h4 className="text-white/80 font-medium">{t('modal.tileSwapMode')}</h4>
             <div className="flex gap-2">
               <Button
                 variant={tileSwapMode === 'drag' ? 'default' : 'outline'}
@@ -67,7 +85,7 @@ export const SettingsMenu = ({
                 onClick={() => onChangeTileSwapMode('drag')}
               >
                 <Hand className="h-4 w-4" />
-                <span>Drag</span>
+                <span>{t('modal.drag')}</span>
               </Button>
               <Button
                 variant={tileSwapMode === 'select' ? 'default' : 'outline'}
@@ -77,10 +95,12 @@ export const SettingsMenu = ({
                 onClick={() => onChangeTileSwapMode('select')}
               >
                 <MousePointer className="h-4 w-4" />
-                <span>Select</span>
+                <span>{t('modal.select')}</span>
               </Button>
             </div>
           </div>
+
+          <div className="mt-6 pt-4 border-t border-indigo-500/30"></div>
 
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
@@ -92,21 +112,35 @@ export const SettingsMenu = ({
               }}
             >
               <Home className="h-5 w-5 text-blue-300" />
-              <span>Return to Home</span>
+              <span>{t('game.returnToHome')}</span>
             </Button>
           </motion.div>
 
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               variant="outline"
-              className="w-full flex justify-start gap-3 rounded-xl py-4 bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
-              onClick={() => {
-                onClose();
-                onRestart();
-              }}
+              className={`w-full flex justify-start gap-3 rounded-xl py-4 border-indigo-500/30 text-white ${
+                !userInfo || userInfo.droplet <= 0
+                  ? 'bg-gradient-to-r from-slate-700/40 to-slate-800/40 opacity-50 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40'
+              }`}
+              onClick={handleRestartClick}
+              disabled={!userInfo || userInfo.droplet <= 0}
             >
-              <RefreshCw className="h-5 w-5 text-green-300" />
-              <span>Restart Game</span>
+              <RefreshCw
+                className={`h-5 w-5 ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-400' : 'text-green-300'}`}
+              />
+              <span>{t('game.restart')}</span>
+              <div className="flex items-center gap-1 ml-auto">
+                <Droplet
+                  className={`h-4 w-4 ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-400' : 'text-cyan-300'}`}
+                />
+                <span
+                  className={`text-sm font-medium ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-400' : 'text-cyan-300'}`}
+                >
+                  -1
+                </span>
+              </div>
             </Button>
           </motion.div>
 
@@ -119,26 +153,13 @@ export const SettingsMenu = ({
                 onShowTutorial();
               }}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-amber-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span>How to Play</span>
+              <HelpCircle className="h-5 w-5 text-amber-300" />
+              <span>{t('modal.help')}</span>
             </Button>
           </motion.div>
 
           <div className="mt-6 pt-4 border-t border-indigo-500/30">
-            <p className="text-center text-sm text-white/60 mb-2">Kepler Pop v1.0</p>
+            <p className="text-center text-sm text-white/60 mb-2">Kepler Pop</p>
             <p className="text-center text-xs text-white/40">© 2025 Ferv0r2Labs</p>
           </div>
         </div>

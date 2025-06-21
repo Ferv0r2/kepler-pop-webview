@@ -1,6 +1,9 @@
-import { motion } from 'framer-motion';
-import { X, Clock } from 'lucide-react';
+'use client';
+
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Clock, ArrowUpDown, Sparkles } from 'lucide-react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { createElement } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -30,159 +33,306 @@ export const TutorialDialog = ({
   gameMode,
   gameItems,
 }: TutorialDialogProps) => {
+  const t = useTranslations();
+
   if (!isOpen) return null;
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg bg-black/70"
+      className="fixed inset-0 z-50 flex items-center justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
     >
+      {/* Cosmic background with animated stars */}
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-xl">
+        <div className="absolute inset-0 opacity-40">
+          {[...Array(60)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-white rounded-full"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                opacity: [0.2, 1, 0.2],
+                scale: [0.5, 1.2, 0.5],
+              }}
+              transition={{
+                duration: 2 + Math.random() * 4,
+                repeat: Number.POSITIVE_INFINITY,
+                delay: Math.random() * 3,
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
       <motion.div
-        className="bg-gradient-to-br from-slate-900/95 to-purple-900/95 border border-indigo-400/30 rounded-2xl p-6 w-[90%] max-w-md shadow-[0_0_25px_rgba(99,102,241,0.3)]"
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        transition={{ type: 'spring', damping: 25 }}
+        className="relative bg-gradient-to-br from-slate-950/95 via-indigo-950/90 to-purple-950/95 border border-indigo-400/40 rounded-3xl p-8 w-[90%] max-w-lg shadow-[0_0_40px_rgba(99,102,241,0.4)] backdrop-blur-xl"
+        initial={{ scale: 0.8, y: 50, opacity: 0, rotateX: -15 }}
+        animate={{ scale: 1, y: 0, opacity: 1, rotateX: 0 }}
+        exit={{ scale: 0.8, y: 50, opacity: 0, rotateX: 15 }}
+        transition={{
+          type: 'spring',
+          damping: 20,
+          stiffness: 300,
+          duration: 0.5,
+        }}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
-            How to Play
-          </h3>
+        {/* Orbital rings decoration */}
+        <div className="absolute -inset-6 opacity-20">
+          <motion.div
+            className="absolute inset-0 rounded-full border border-cyan-400/30"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 25, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
+          />
+          <motion.div
+            className="absolute inset-4 rounded-full border border-purple-400/20"
+            animate={{ rotate: -360 }}
+            transition={{ duration: 35, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
+          />
+        </div>
+
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <motion.div
+            className="flex items-center gap-3"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 backdrop-blur-sm">
+              <Sparkles className="h-6 w-6 text-cyan-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-white">{t('tutorial.title')}</h3>
+          </motion.div>
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            className="h-10 w-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 transition-all duration-200"
           >
             <X className="h-5 w-5 text-white/80" />
           </Button>
         </div>
 
-        <div className="relative overflow-hidden rounded-lg bg-black/30 p-4 mb-4">
-          {currentStep === 1 && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="flex flex-col items-center"
-            >
-              <div className="flex gap-2 mb-4">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className={`w-10 h-10 rounded-lg ${
-                      tileConfig[i as keyof typeof tileConfig].bgColor[1]
-                    } flex items-center justify-center`}
-                  >
-                    {createElement(tileConfig[i as keyof typeof tileConfig].icon[1], {
-                      className: 'w-6 h-6 text-white',
-                    })}
-                  </div>
-                ))}
-              </div>
-              <p className="text-white text-center mb-2">
-                Swap adjacent tiles to create matches of 3 or more identical tiles.
-              </p>
-            </motion.div>
-          )}
+        {/* Content area with cosmic glow */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-black/40 to-indigo-950/40 border border-white/10 p-6 mb-6 backdrop-blur-sm">
+          {/* Inner glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/5 to-purple-500/5 rounded-2xl" />
 
-          {currentStep === 2 && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="flex flex-col items-center"
-            >
-              <div className="flex gap-2 mb-4">
-                {gameItems.map((item, i) => (
-                  <div
-                    key={i}
-                    className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center"
-                  >
-                    <Image src={item.icon} alt={item.name} width={24} height={24} />
-                  </div>
-                ))}
-              </div>
-              <p className="text-white text-center mb-2">
-                Use special items to clear tiles and create powerful combos.
-              </p>
-              <p className="text-white/70 text-sm text-center">
-                Select an item, then tap a tile to activate its effect.
-              </p>
-            </motion.div>
-          )}
-
-          {currentStep === 3 && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="flex flex-col items-center"
-            >
-              <div className="flex gap-4 mb-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-1">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-6 h-6 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+          <AnimatePresence mode="wait">
+            {currentStep === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: -30, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 30, scale: 0.9 }}
+                transition={{ type: 'spring', damping: 20 }}
+                className="flex flex-col items-center relative z-10"
+              >
+                <motion.div
+                  className="flex gap-3 mb-6"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2, staggerChildren: 0.1 }}
+                >
+                  {[1, 2, 3].map((i, index) => (
+                    <motion.div
+                      key={i}
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ delay: 0.3 + index * 0.1, type: 'spring', damping: 15 }}
+                      className={`w-12 h-12 rounded-xl ${
+                        tileConfig[i as keyof typeof tileConfig].bgColor[1]
+                      } flex items-center justify-center shadow-lg border border-white/20 backdrop-blur-sm`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-white/70 text-xs">Casual</p>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center mb-1">
-                    <Clock className="w-6 h-6 text-white" />
-                  </div>
-                  <p className="text-white/70 text-xs">Challenge</p>
-                </div>
-              </div>
-              <p className="text-white text-center mb-2">
-                {gameMode === 'casual'
-                  ? 'In Casual mode, you can play freely. No leaderboards, no pressure to win!'
-                  : 'In Challenge mode, the tile tiers increase, and you can compete with other players on the leaderboard!'}
-              </p>
-              <p className="text-white/70 text-sm text-center">
-                {gameMode === 'challenge' && 'Matching tiles with higher tiers will earn you a higher score.'}
-              </p>
-            </motion.div>
-          )}
+                      {createElement(tileConfig[i as keyof typeof tileConfig].icon[1], {
+                        className: 'w-7 h-7 text-white',
+                      })}
+                    </motion.div>
+                  ))}
+                </motion.div>
+                <motion.p
+                  className="text-white text-center text-lg leading-relaxed"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  {t('tutorial.step1.description')}
+                </motion.p>
+              </motion.div>
+            )}
+
+            {currentStep === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: -30, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 30, scale: 0.9 }}
+                transition={{ type: 'spring', damping: 20 }}
+                className="flex flex-col items-center relative z-10"
+              >
+                <motion.div
+                  className="flex gap-3 mb-6"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  {gameItems.map((item, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ scale: 0, rotate: 180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ delay: 0.3 + i * 0.1, type: 'spring', damping: 15 }}
+                      className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700/80 to-slate-800/80 flex items-center justify-center shadow-lg border border-white/20 backdrop-blur-sm"
+                    >
+                      <Image src={item.icon || '/placeholder.svg'} alt={item.name} width={28} height={28} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+                <motion.p
+                  className="text-white text-center text-lg mb-3 leading-relaxed"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  {t('tutorial.step2.description')}
+                </motion.p>
+                <motion.p
+                  className="text-cyan-300 text-sm text-center"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  {t('tutorial.step2.instruction')}
+                </motion.p>
+              </motion.div>
+            )}
+
+            {currentStep === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: -30, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 30, scale: 0.9 }}
+                transition={{ type: 'spring', damping: 20 }}
+                className="flex flex-col items-center relative z-10"
+              >
+                <motion.div
+                  className="flex gap-6 mb-6"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <motion.div
+                    className="flex flex-col items-center"
+                    initial={{ scale: 0, rotate: -90 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.3, type: 'spring', damping: 15 }}
+                  >
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/80 to-cyan-600/80 flex items-center justify-center mb-2 shadow-lg border border-blue-400/30">
+                      <ArrowUpDown className="w-7 h-7 text-white" />
+                    </div>
+                    <p className="text-blue-300 text-xs font-medium">{t('game.modes.casual')}</p>
+                  </motion.div>
+                  <motion.div
+                    className="flex flex-col items-center"
+                    initial={{ scale: 0, rotate: 90 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.4, type: 'spring', damping: 15 }}
+                  >
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/80 to-orange-600/80 flex items-center justify-center mb-2 shadow-lg border border-amber-400/30">
+                      <Clock className="w-7 h-7 text-white" />
+                    </div>
+                    <p className="text-amber-300 text-xs font-medium">{t('game.modes.challenge')}</p>
+                  </motion.div>
+                </motion.div>
+                <motion.p
+                  className="text-white text-center text-lg mb-3 leading-relaxed"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  {gameMode === 'casual'
+                    ? t('tutorial.step3.casual.description')
+                    : t('tutorial.step3.challenge.description')}
+                </motion.p>
+                {gameMode === 'challenge' && (
+                  <motion.p
+                    className="text-orange-300 text-sm text-center"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                  >
+                    {t('tutorial.step3.challenge.instruction')}
+                  </motion.p>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        <div className="flex justify-between">
-          <div className="flex space-x-1">
+        {/* Navigation */}
+        <div className="flex justify-between items-center">
+          {/* Progress indicators - orbital style */}
+          <motion.div
+            className="flex space-x-3"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.7 }}
+          >
             {[1, 2, 3].map((step) => (
-              <div key={step} className={`w-2 h-2 rounded-full ${currentStep === step ? 'bg-white' : 'bg-white/30'}`} />
+              <motion.div
+                key={step}
+                className={`relative w-3 h-3 rounded-full transition-all duration-300 ${
+                  currentStep === step
+                    ? 'bg-gradient-to-r from-cyan-400 to-purple-400 shadow-[0_0_10px_rgba(34,211,238,0.6)]'
+                    : 'bg-white/20 border border-white/30'
+                }`}
+                animate={currentStep === step ? { scale: [1, 1.2, 1] } : { scale: 1 }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+              >
+                {currentStep === step && (
+                  <motion.div
+                    className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-400 to-purple-400"
+                    animate={{ scale: [1, 1.5, 1], opacity: [1, 0, 1] }}
+                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                  />
+                )}
+              </motion.div>
             ))}
-          </div>
-          <div className="flex space-x-2">
+          </motion.div>
+
+          {/* Action buttons */}
+          <motion.div
+            className="flex space-x-3"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.8 }}
+          >
             {currentStep > 1 && (
               <Button
                 onClick={onPrevStep}
-                className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white"
+                className="bg-gradient-to-r from-slate-600/80 to-slate-700/80 hover:from-slate-500/80 hover:to-slate-600/80 text-white border border-white/20 hover:border-white/30 transition-all duration-200 backdrop-blur-sm"
               >
-                Previous
+                {t('modal.previous')}
               </Button>
             )}
             <Button
               onClick={onNextStep}
-              className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white"
+              className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_25px_rgba(34,211,238,0.4)] transition-all duration-200"
             >
-              {currentStep < 3 ? 'Next' : 'Start Playing'}
+              {currentStep < 3 ? t('modal.next') : t('modal.startPlaying')}
             </Button>
-          </div>
+          </motion.div>
         </div>
+
+        {/* Subtle glow overlay */}
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-white/5 to-transparent pointer-events-none" />
       </motion.div>
     </motion.div>
   );

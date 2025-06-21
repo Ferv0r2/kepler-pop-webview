@@ -92,7 +92,12 @@
     "streak": "¡Racha!",
     "combo": "Combo",
     "score": "Puntuación",
-    "moves": "Movimientos"
+    "moves": "Movimientos",
+    "restart": "Reiniciar",
+    "restartConfirm": "¿Estás seguro de que quieres reiniciar el juego?",
+    "restartMessage": "Reiniciar reseteará tu progreso actual y consumirá 1 gota de energía.",
+    "insufficientEnergy": "Energía Insuficiente",
+    "insufficientEnergyMessage": "No tienes suficientes gotas de energía para reiniciar el juego. ¿Te gustaría recargar tu energía?"
   },
   "loading": {
     "tip": "💡 Consejo",
@@ -126,6 +131,28 @@
     "credits": "Créditos",
     "previous": "Anterior",
     "next": "Siguiente",
-    "startPlaying": "Comenzar a Jugar"
+    "startPlaying": "Comenzar a Jugar",
+    "watchAd": "Ver Anuncio",
+    "purchase": "Comprar Energía",
+    "close": "Cerrar"
+  },
+  "tutorial": {
+    "title": "Cómo Jugar",
+    "step1": {
+      "description": "Intercambia fichas adyacentes para crear combinaciones de 3 o más fichas idénticas."
+    },
+    "step2": {
+      "description": "Usa objetos especiales para limpiar fichas y crear combos poderosos.",
+      "instruction": "Selecciona un objeto, luego toca una ficha para activar su efecto."
+    },
+    "step3": {
+      "casual": {
+        "description": "En el modo Casual, puedes jugar libremente. ¡Sin tablas de clasificación, sin presión para ganar!"
+      },
+      "challenge": {
+        "description": "¡En el modo Desafío, los niveles de las fichas aumentan y se vuelve más difícil!",
+        "instruction": "Combinar fichas con niveles más altos te dará una puntuación más alta."
+      }
+    }
   }
 }
