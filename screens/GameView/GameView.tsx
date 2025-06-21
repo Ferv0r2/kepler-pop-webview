@@ -3,7 +3,7 @@
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cloneDeep } from 'lodash';
-import { ArrowLeft, Settings, Home, RefreshCw, Flame, Shuffle } from 'lucide-react';
+import { ArrowLeft, Settings, Home, RefreshCw, Shuffle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -91,7 +91,6 @@ export const GameView = () => {
   const [showTutorial, setShowTutorial] = useState<boolean>(false);
   const [tutorialStep, setTutorialStep] = useState<number>(1);
   const [streakCount, setStreakCount] = useState<number>(0);
-  const [showStreak, setShowStreak] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -465,8 +464,6 @@ export const GameView = () => {
         const now = Date.now();
         if (now - lastMatchTime < SHOW_STREAK_MAINTAIN_TIME_MS) {
           setStreakCount((prev) => prev + 1);
-          setShowStreak(true);
-          setTimeout(() => setShowStreak(false), SHOW_EFFECT_TIME_MS);
         } else {
           setStreakCount(1);
         }
@@ -509,7 +506,6 @@ export const GameView = () => {
     setSelectedTile(null);
     setShowScorePopup(null);
     setStreakCount(0);
-    setShowStreak(false);
   };
 
   const handleGameItemSelect = (itemId: GameItemType) => {
@@ -762,7 +758,7 @@ export const GameView = () => {
             transition={{ duration: 0.3 }}
           >
             <div className="w-full max-w-lg">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex justify-between items-center mb-6 gap-2">
                 <motion.div
                   className="relative flex-2"
                   initial={{ x: -50, opacity: 0 }}
@@ -782,27 +778,6 @@ export const GameView = () => {
                       className="text-2xl font-bold text-pink-400 font-mono tracking-wider font-game"
                     >
                       {gameState.score.toLocaleString()}
-                    </motion.div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  className="relative flex-1 mx-2"
-                  initial={{ y: -20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.5 }}
-                >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-lg blur opacity-30" />
-                  <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-violet-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                    <div className="text-xs text-violet-400 mb-1 font-mono tracking-widest">{t('common.combo')}</div>
-                    <motion.div
-                      key={gameState.combo}
-                      initial={{ scale: 1.5 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                      className="text-2xl font-bold text-violet-400 font-mono tracking-wider"
-                    >
-                      {gameState.combo}x
                     </motion.div>
                   </div>
                 </motion.div>
@@ -1027,21 +1002,6 @@ export const GameView = () => {
           </div>
         </main>
       </div>
-
-      <AnimatePresence>
-        {showStreak && streakCount > 1 && (
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute top-1/4 z-30 flex items-center justify-center bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg px-3 py-1 rounded-full shadow-lg"
-          >
-            <Flame className="inline-block mr-1 h-5 w-5" />
-            {streakCount}x {t('game.streak')}
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <ConfirmationModal
         isOpen={showBackConfirmation}
