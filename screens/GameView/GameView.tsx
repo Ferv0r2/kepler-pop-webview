@@ -767,15 +767,13 @@ export const GameView = () => {
                 >
                   <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg blur opacity-30" />
                   <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
-                    <div className="text-xs text-pink-400 mb-1 font-mono tracking-widest font-game">
-                      {t('common.score')}
-                    </div>
+                    <div className="text-xs text-pink-400 mb-1 tracking-widest">{t('common.score')}</div>
                     <motion.div
                       key={gameState.score}
                       initial={{ scale: 1.5 }}
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.3 }}
-                      className="text-2xl font-bold text-pink-400 font-mono tracking-wider font-game"
+                      className="text-2xl font-bold text-pink-400 tracking-wider"
                     >
                       {gameState.score.toLocaleString()}
                     </motion.div>
@@ -790,13 +788,13 @@ export const GameView = () => {
                 >
                   <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg blur opacity-30" />
                   <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                    <div className="text-xs text-blue-400 mb-1 font-mono tracking-widest">{t('common.moves')}</div>
+                    <div className="text-xs text-blue-400 mb-1 tracking-widest">{t('common.moves')}</div>
                     <motion.div
                       key={gameState.moves}
                       initial={{ scale: 1.5 }}
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.3 }}
-                      className="text-2xl font-bold text-blue-400 font-mono tracking-wider"
+                      className="text-2xl font-bold text-blue-400 tracking-wider"
                     >
                       {Math.max(gameState.moves, 0)}
                     </motion.div>
@@ -856,9 +854,9 @@ export const GameView = () => {
                           animate={{ scale: 1, opacity: 1 }}
                           transition={{ delay: 0.4, duration: 0.5 }}
                         >
-                          <p className="text-lg text-white/80 mb-1 font-game">{t('game.finalScore')}</p>
+                          <p className="text-lg text-white/80 mb-1">{t('game.finalScore')}</p>
                           <motion.div
-                            className="text-4xl font-bold text-yellow-300 font-game"
+                            className="text-4xl font-bold text-yellow-300"
                             initial={{ scale: 0.8 }}
                             animate={{ scale: [0.8, 1.2, 1] }}
                             transition={{ delay: 0.6, duration: 0.7, times: [0, 0.6, 1] }}

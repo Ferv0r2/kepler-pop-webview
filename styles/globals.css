@@ -1,6 +1,14 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+@font-face {
+  font-family: 'Neodgm';
+  src: url('./fonts/neodgm.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -8,6 +16,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-neodgm: 'Neodgm', monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -119,9 +128,7 @@
   body {
     user-select: none; /* 텍스트 드래그 방지 */
     @apply bg-background text-foreground;
-  }
-  .font-game {
-    font-family: var(--font-press-start);
+    font-family: var(--font-neodgm), monospace;
   }
   @keyframes blob {
     0% {

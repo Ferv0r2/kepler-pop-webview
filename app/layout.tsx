@@ -24,6 +24,11 @@ const pressStart2P = Press_Start_2P({
   subsets: ['latin'],
   variable: '--font-press-start',
 });
+
+const neodgmFont = {
+  variable: '--font-neodgm',
+};
+
 export const metadata: Metadata = {
   title: 'Kepler Pop',
   description: 'Kepler Pop with Puzzle Game',
@@ -139,7 +144,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} ${neodgmFont.variable} antialiased`}
+      >
         <div id="initial-loader" aria-busy="true" role="status" tabIndex={-1}>
           <StarsAndSparkles />
           <Logo className="mt-24" />

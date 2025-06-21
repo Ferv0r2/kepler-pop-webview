@@ -71,6 +71,7 @@ module.exports = {
       },
       fontFamily: {
         game: ['var(--font-press-start)'],
+        neodgm: ['var(--font-neodgm)'],
       },
     },
   },
