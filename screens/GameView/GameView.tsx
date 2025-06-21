@@ -543,6 +543,51 @@ export const GameView = () => {
   const handleItemAnimationComplete = () => {
     const updatedGrid = executeItem(grid);
     if (!updatedGrid) return;
+
+    // 아이템으로 제거된 타일 수 계산
+    let removedTileCount = 0;
+    for (let row = 0; row < GRID_SIZE; row++) {
+      for (let col = 0; col < GRID_SIZE; col++) {
+        // 아이템 사용 전에는 타일이 매칭되지 않았고, 사용 후에는 매칭된 경우
+        const originalTile = grid[row][col];
+        const updatedTile = updatedGrid[row][col];
+        if (!originalTile.isMatched && updatedTile.isMatched) {
+          removedTileCount++;
+        }
+      }
+    }
+
+    // 아이템으로 제거된 타일들에 대한 점수 계산 및 추가
+    if (removedTileCount > 0) {
+      const itemScore = calculateMatchScore(removedTileCount, gameState.combo, streakCount);
+      const bonusMoves = calculateComboBonus(gameState.combo);
+
+      // 상태 업데이트
+      updateGameState({
+        score: gameState.score + itemScore,
+        moves: gameState.moves + bonusMoves,
+        combo: gameState.combo + 1,
+      });
+
+      // UI 효과 표시
+      const centerRow = GRID_SIZE / 2;
+      const centerCol = GRID_SIZE / 2;
+
+      setShowScorePopup({ score: itemScore, x: centerCol, y: centerRow });
+      if (bonusMoves > 0) {
+        setShowBonusMovesPopup({ moves: bonusMoves, x: centerCol, y: centerRow });
+      }
+
+      const x = (centerCol + 0.5) / GRID_SIZE;
+      const y = (centerRow + 0.5) / GRID_SIZE;
+      createParticles(x, y, 'purple');
+
+      setTimeout(() => setShowScorePopup(null), SHOW_EFFECT_TIME_MS);
+      if (bonusMoves > 0) {
+        setTimeout(() => setShowBonusMovesPopup(null), SHOW_EFFECT_TIME_MS);
+      }
+    }
+
     setGrid(updatedGrid);
 
     setTimeout(async () => {
