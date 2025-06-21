@@ -2,10 +2,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Play, Calendar, Trophy, Gift, ChevronRight } from 'lucide-react';
+import { Play, Calendar, Trophy, Gift, ChevronRight, Flame } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
 import { ExitModal } from '@/components/logic/dialogs/ExitModal';
@@ -41,6 +41,16 @@ export const MainView = () => {
   const [showEnergyModal, setShowEnergyModal] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const updateDropletMutation = useUpdateDroplet();
+
+  // 각 모드의 최고점수 계산
+  const highScores = useMemo(() => {
+    if (!userInfo?.scores) return { casual: 0, challenge: 0 };
+
+    const casualScore = userInfo.scores.find((score) => score.mode === 'casual')?.score || 0;
+    const challengeScore = userInfo.scores.find((score) => score.mode === 'challenge')?.score || 0;
+
+    return { casual: casualScore, challenge: challengeScore };
+  }, [userInfo?.scores]);
 
   useEffect(() => {
     if (isInWebView) {
@@ -167,7 +177,7 @@ export const MainView = () => {
                   quality={85}
                   loading="eager"
                   placeholder="blur"
-                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjg0PjU4Ojo4OjU4Ojo4Ojo4Ojo4Ojo4Ojo4Ojr/2wBDAR4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjg0PjU4Ojo4OjU4Ojo4Ojo4Ojo4Ojo4Ojo4Ojr/2wBDAR4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                 />
               </div>
             </div>
@@ -193,6 +203,14 @@ export const MainView = () => {
                 <Play className="w-5 h-5 text-purple-400" />
               </div>
               <p className="text-gray-300 text-sm mb-3">{t('common.casualDescription')}</p>
+              {highScores.casual > 0 && (
+                <div className="flex items-center gap-1 mb-2">
+                  <Trophy className="w-3 h-3 text-yellow-400" />
+                  <span className="text-yellow-400 text-xs font-medium">
+                    {t('game.highScore')}: {highScores.casual.toLocaleString()}
+                  </span>
+                </div>
+              )}
               <ul className="text-gray-400 text-xs space-y-1">
                 <li>{t('common.casualFeature1')}</li>
                 <li>{t('common.casualFeature2')}</li>
@@ -208,9 +226,17 @@ export const MainView = () => {
             >
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-white font-medium">{t('common.challengeMode')}</h3>
-                <Trophy className="w-5 h-5 text-amber-400" />
+                <Flame className="w-5 h-5 text-amber-400" />
               </div>
               <p className="text-gray-300 text-sm mb-3">{t('common.challengeDescription')}</p>
+              {highScores.challenge > 0 && (
+                <div className="flex items-center gap-1 mb-2">
+                  <Trophy className="w-3 h-3 text-yellow-400" />
+                  <span className="text-yellow-400 text-xs font-medium">
+                    {t('game.highScore')}: {highScores.challenge.toLocaleString()}
+                  </span>
+                </div>
+              )}
               <ul className="text-gray-400 text-xs space-y-1">
                 <li>{t('common.challengeFeature1')}</li>
                 <li>{t('common.challengeFeature2')}</li>

@@ -1,5 +1,14 @@
 import type { GameItemType } from './game-types';
 
+export type UserScore = {
+  id: string;
+  userId: string;
+  mode: 'casual' | 'challenge';
+  score: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type UserInfo = {
   id: string;
   name: string;
@@ -9,11 +18,11 @@ export type UserInfo = {
   droplet: number;
   gameMoney: number;
   gem: number;
-  score: number;
   level: number;
   exp: number;
   isSubscribed: boolean;
   locale: string;
   gameItems: Partial<Record<GameItemType, number>>;
   profileImage?: string;
+  scores: UserScore[];
 };

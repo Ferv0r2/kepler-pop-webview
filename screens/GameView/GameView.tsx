@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cloneDeep } from 'lodash';
@@ -7,7 +8,7 @@ import { ArrowLeft, Settings, Home, RefreshCw, Shuffle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState, useEffect, type TouchEvent, useCallback, useRef } from 'react';
+import { useState, useEffect, type TouchEvent, useCallback, useRef, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
@@ -15,6 +16,8 @@ import { ItemAnimationManager } from '@/components/logic/managers/ItemAnimationM
 import { Button } from '@/components/ui/button';
 import { Toast } from '@/components/ui/toast';
 import { useBackButton } from '@/hooks/useBackButton';
+import { useUser } from '@/hooks/useUser';
+import { updateScore } from '@/networks/KeplerBackend';
 import {
   ANIMATION_DURATION,
   CASUAL_MODE_MOVE_COUNT,
@@ -46,6 +49,7 @@ import { useMatchGame } from './hooks/useMatchGame';
 export const GameView = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const gameMode = searchParams.get('mode') as GameMode;
   const { grid, setGrid, getRandomItemType, createInitialGrid, findMatches, findPossibleMove } = useMatchGame();
   const { tileSwapMode, setTileSwapMode, hasSeenTutorial, setHasSeenTutorial } = useGameSettings();
@@ -96,6 +100,7 @@ export const GameView = () => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showShuffleToast, setShowShuffleToast] = useState<boolean>(false);
   const [showBonusMovesAnimation, setShowBonusMovesAnimation] = useState<number>(0);
+  const [isNewHighScore, setIsNewHighScore] = useState<boolean>(false);
   const tileRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const t = useTranslations();
   const refillPromiseRef = useRef<Promise<void> | null>(null);
@@ -116,6 +121,38 @@ export const GameView = () => {
       console.warn('[Performance] Web Worker is not available, falling back to main thread');
     }
   }
+
+  const { data: user } = useUser();
+
+  // 현재 모드의 최고 점수 가져오기
+  const currentModeHighScore = useMemo(() => {
+    if (!user?.scores || !gameMode) return 0;
+    const modeScore = user.scores.find((score) => score.mode === gameMode);
+    return modeScore?.score || 0;
+  }, [user?.scores, gameMode]);
+
+  // 현재 점수가 최고 점수를 넘었는지 확인
+  useEffect(() => {
+    if (gameState.score > currentModeHighScore && currentModeHighScore > 0) {
+      setIsNewHighScore(true);
+    }
+  }, [gameState.score, currentModeHighScore]);
+
+  // 게임 종료 시 점수 업데이트
+  const updateUserScore = useCallback(
+    async (finalScore: number) => {
+      if (!user || finalScore <= currentModeHighScore) return;
+
+      try {
+        await updateScore(finalScore, gameMode || 'casual');
+        // 점수 업데이트 후 사용자 정보를 다시 가져오기 위해 쿼리를 무효화
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+      } catch (error) {
+        console.error('Failed to update score:', error);
+      }
+    },
+    [user, currentModeHighScore, gameMode, queryClient],
+  );
 
   const handleTileClick = (row: number, col: number) => {
     if (
@@ -413,6 +450,9 @@ export const GameView = () => {
             origin: { x: 0.5, y: 0.5 },
             disableForReducedMotion: true,
           });
+
+          // 게임 종료 시 점수 업데이트
+          updateUserScore(gameState.score + matchScore);
         }
       }
     },
@@ -426,6 +466,7 @@ export const GameView = () => {
       findMatches,
       removeMatchedTiles,
       setGrid,
+      updateUserScore,
     ],
   );
 
@@ -481,9 +522,14 @@ export const GameView = () => {
           isSwapping: false,
           isGameOver: prev.moves - 1 <= 0,
         }));
+
+        // 게임 종료 시 점수 업데이트
+        if (gameState.moves - 1 <= 0) {
+          updateUserScore(gameState.score);
+        }
       }
     },
-    [grid, findMatches, lastMatchTime, processMatches, setGrid],
+    [grid, findMatches, lastMatchTime, processMatches, setGrid, gameState.moves, gameState.score, updateUserScore],
   );
 
   const restartGame = () => {
@@ -502,6 +548,7 @@ export const GameView = () => {
     setSelectedTile(null);
     setShowScorePopup(null);
     setStreakCount(0);
+    setIsNewHighScore(false);
   };
 
   const handleGameItemSelect = (itemId: GameItemType) => {
@@ -761,19 +808,87 @@ export const GameView = () => {
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.2, duration: 0.5 }}
                 >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg blur opacity-30" />
-                  <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
-                    <div className="text-pink-400 mb-1 tracking-widest">{t('common.score')}</div>
+                  <motion.div
+                    className={`absolute -inset-1 rounded-lg blur opacity-30 transition-all duration-500 ${
+                      isNewHighScore
+                        ? 'bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400'
+                        : 'bg-gradient-to-r from-pink-500 to-purple-500'
+                    }`}
+                    animate={
+                      isNewHighScore
+                        ? {
+                            opacity: [0.3, 0.6, 0.3],
+                          }
+                        : {}
+                    }
+                    transition={
+                      isNewHighScore
+                        ? {
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }
+                        : {}
+                    }
+                  />
+                  <motion.div
+                    className={`relative w-full backdrop-blur-sm px-4 py-2 rounded-lg border shadow-[0_0_15px_rgba(236,72,153,0.3)] transition-all duration-500 ${
+                      isNewHighScore
+                        ? 'bg-black/90 border-yellow-500/50 shadow-[0_0_20px_rgba(250,204,21,0.5)]'
+                        : 'bg-black/90 border-pink-500/30'
+                    }`}
+                    animate={
+                      isNewHighScore
+                        ? {
+                            scale: [1, 1.02, 1],
+                            boxShadow: [
+                              '0 0 20px rgba(250,204,21,0.5)',
+                              '0 0 30px rgba(250,204,21,0.8)',
+                              '0 0 20px rgba(250,204,21,0.5)',
+                            ],
+                          }
+                        : {}
+                    }
+                    transition={
+                      isNewHighScore
+                        ? {
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }
+                        : {}
+                    }
+                  >
+                    <div className="text-pink-400 mb-1 tracking-widest">
+                      {t('common.score')}{' '}
+                      <span
+                        className={`transition-all duration-300 ${isNewHighScore ? 'text-yellow-400 font-bold' : 'text-white/50'}`}
+                      >
+                        {currentModeHighScore > 0 ? `(${currentModeHighScore})` : ''}
+                      </span>
+                      {isNewHighScore && (
+                        <motion.span
+                          initial={{ scale: 0, rotate: 0 }}
+                          animate={{ scale: 1, rotate: 360 }}
+                          transition={{ duration: 0.5, type: 'spring' }}
+                          className="inline-block ml-1 text-yellow-400"
+                        >
+                          ⭐
+                        </motion.span>
+                      )}
+                    </div>
                     <motion.div
                       key={gameState.score}
                       initial={{ scale: 1.5 }}
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.3 }}
-                      className="text-2xl font-bold text-pink-400 tracking-wider"
+                      className={`text-2xl font-bold tracking-wider transition-all duration-300 relative ${
+                        isNewHighScore ? 'text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : 'text-pink-400'
+                      }`}
                     >
                       {gameState.score.toLocaleString()}
                     </motion.div>
-                  </div>
+                  </motion.div>
                 </motion.div>
 
                 <motion.div
@@ -837,7 +952,7 @@ export const GameView = () => {
                       transition={{ type: 'spring', damping: 25, delay: 0.1 }}
                     >
                       <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-2xl opacity-70 blur-md animate-pulse" />
-                      <div className="relative bg-gradient-to-b from-slate-900/95 to-purple-900/95 rounded-2xl p-8 border border-indigo-400/30 shadow-[0_0_30px_rgba(139,92,246,0.5)]">
+                      <div className="relative bg-gradient-to-b from-slate-900/95 to-purple-900/95 rounded-2xl p-4 border border-indigo-400/30 shadow-[0_0_30px_rgba(139,92,246,0.5)]">
                         <div className="absolute -top-10 -right-10 text-yellow-300 text-4xl animate-pulse opacity-70">
                           ✨
                         </div>
@@ -848,17 +963,15 @@ export const GameView = () => {
                           ✨
                         </div>
                         <motion.div
-                          className="flex justify-center mb-6"
-                          initial={{ y: -20, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ delay: 0.2, duration: 0.5 }}
+                          className="flex justify-center p-4"
+                          initial={{ scale: 0, rotate: 180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ delay: 0.7, type: 'spring', stiffness: 200 }}
                         >
-                          <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
-                            {t('game.gameOver')}
-                          </h2>
+                          <div className="text-5xl text-yellow-400">🏆</div>
                         </motion.div>
                         <motion.div
-                          className="text-center mb-6 bg-slate-800/60 p-4 rounded-xl"
+                          className="text-center mb-6 bg-slate-800/40 p-4 rounded-xl border border-yellow-500/30"
                           initial={{ scale: 0.9, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           transition={{ delay: 0.4, duration: 0.5 }}
@@ -872,14 +985,6 @@ export const GameView = () => {
                           >
                             {gameState.score.toLocaleString()}
                           </motion.div>
-                        </motion.div>
-                        <motion.div
-                          className="flex justify-center mb-6"
-                          initial={{ scale: 0, rotate: 180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          transition={{ delay: 0.7, type: 'spring', stiffness: 200 }}
-                        >
-                          <div className="text-5xl text-yellow-400">🏆</div>
                         </motion.div>
                         <motion.div
                           className="flex flex-col gap-3"

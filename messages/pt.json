@@ -82,9 +82,11 @@
       "bomb": "Bomba"
     },
     "shuffleMessage": "Embaralhando peças...",
-    "bonusMoves": "Movimentos bônus!",
-    "gameOver": "Fim de jogo!",
+    "bonusMoves": "Movimentos extras!",
+    "gameOver": "Fim de Jogo",
     "finalScore": "Pontuação Final",
+    "highScore": "Melhor Pontuação",
+    "newRecord": "Novo Recorde",
     "playAgain": "Jogar Novamente",
     "returnToHome": "Voltar ao Início",
     "streak": "Sequência!",

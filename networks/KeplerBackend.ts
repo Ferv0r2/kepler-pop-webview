@@ -21,3 +21,8 @@ export const updateDroplet = async (amount: number): Promise<void> => {
   const response = await api.post('/users/me/droplet/update', { amount });
   if (!response.ok) throw new Error('Failed to update droplet');
 };
+
+export const updateScore = async (score: number, mode: 'casual' | 'challenge'): Promise<void> => {
+  const response = await api.post('/users/me/score/update', { score, mode });
+  if (!response.ok) throw new Error('Failed to update score');
+};
