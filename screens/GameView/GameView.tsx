@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Toast } from '@/components/ui/toast';
 import { useBackButton } from '@/hooks/useBackButton';
 import { useUser } from '@/hooks/useUser';
-import { updateDroplet } from '@/networks/KeplerBackend';
+import { updateDroplet, updateScore } from '@/networks/KeplerBackend';
 import {
   ANIMATION_DURATION,
   CASUAL_MODE_MOVE_COUNT,
@@ -51,6 +51,16 @@ const useUpdateDroplet = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateDroplet,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+};
+
+const useUpdateScore = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ score, mode }: { score: number; mode: GameMode }) => updateScore(score, mode),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
@@ -136,6 +146,7 @@ export const GameView = () => {
 
   const { data: userInfo } = useUser();
   const updateDropletMutation = useUpdateDroplet();
+  const updateScoreMutation = useUpdateScore();
 
   // 현재 모드의 최고 점수 가져오기
   const currentModeHighScore = useMemo(() => {
@@ -157,12 +168,12 @@ export const GameView = () => {
       if (!userInfo || finalScore <= currentModeHighScore) return;
 
       try {
-        await updateDropletMutation.mutateAsync(finalScore);
+        await updateScoreMutation.mutateAsync({ score: finalScore, mode: gameMode });
       } catch (error) {
         console.error('Failed to update score:', error);
       }
     },
-    [userInfo, currentModeHighScore, updateDropletMutation],
+    [userInfo, currentModeHighScore, updateScoreMutation, gameMode],
   );
 
   const handleTileClick = (row: number, col: number) => {
@@ -417,7 +428,7 @@ export const GameView = () => {
       setGrid(newGrid);
 
       // 매칭 애니메이션 대기
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // 타일 제거 및 리필
       const { newGrid: afterRemovalGrid, newTileIds } = removeMatchedTiles(newGrid);
@@ -427,7 +438,7 @@ export const GameView = () => {
       // 리필 애니메이션이 있는 경우에만 대기
       if (newTileIds.length > 0) {
         // 리필 애니메이션 완료까지 대기
-        const refillPromise = new Promise<void>((resolve) => setTimeout(resolve, 500)); // Dummy promise
+        const refillPromise = new Promise<void>((resolve) => setTimeout(resolve, 300)); // Dummy promise
         refillPromiseRef.current = refillPromise;
 
         await refillPromise;
@@ -435,7 +446,7 @@ export const GameView = () => {
       }
 
       // 추가 대기 시간 (애니메이션 완전 완료 보장)
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // 다음 매칭 확인
       const newMatches = findMatches(afterRemovalGrid);
@@ -506,7 +517,7 @@ export const GameView = () => {
       const matches = findMatches(newGrid);
 
       // 추가 대기 시간
-      await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION + 100));
+      await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION + 50));
 
       if (matches.length > 0) {
         const now = Date.now();
@@ -677,7 +688,7 @@ export const GameView = () => {
     setTimeout(async () => {
       const afterRemovalGrid = removeMatchedTiles(updatedGrid);
       setGrid(afterRemovalGrid.newGrid);
-      await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION * 1.5));
+      await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
       const matches = findMatches(afterRemovalGrid.newGrid);
       if (matches.length > 0) {
         processMatches(matches, afterRemovalGrid.newGrid, true);
@@ -1049,7 +1060,10 @@ export const GameView = () => {
                             <RefreshCw
                               className={`w-5 h-5 mr-2 ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-300' : 'text-white'}`}
                             />
-                            {t('game.playAgain')}
+                            <div className="flex items-center gap-1">
+                              <span>{t('game.playAgain')}</span>
+                              <span>{-1}</span>
+                            </div>
                           </Button>
                           <Button
                             onClick={() => router.back()}

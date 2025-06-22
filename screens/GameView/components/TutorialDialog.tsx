@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, ArrowUpDown, Sparkles } from 'lucide-react';
+import { X, Sparkles, Flame, Play } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { createElement } from 'react';
@@ -74,7 +74,6 @@ export const TutorialDialog = ({
         className="relative bg-gradient-to-br from-slate-950/95 via-indigo-950/90 to-purple-950/95 border border-indigo-400/40 rounded-3xl p-8 w-[90%] max-w-lg shadow-[0_0_40px_rgba(99,102,241,0.4)] backdrop-blur-xl"
         initial={{ scale: 0.8, y: 50, opacity: 0, rotateX: -15 }}
         animate={{ scale: 1, y: 0, opacity: 1, rotateX: 0 }}
-        exit={{ scale: 0.8, y: 50, opacity: 0, rotateX: 15 }}
         transition={{
           type: 'spring',
           damping: 20,
@@ -98,12 +97,7 @@ export const TutorialDialog = ({
 
         {/* Header */}
         <div className="flex justify-between items-center mb-6 relative z-10">
-          <motion.div
-            className="flex items-center gap-3"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-          >
+          <motion.div className="flex items-center gap-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 backdrop-blur-sm">
               <Sparkles className="h-6 w-6 text-cyan-400" />
             </div>
@@ -126,14 +120,7 @@ export const TutorialDialog = ({
 
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: -30, scale: 0.9 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 30, scale: 0.9 }}
-                transition={{ type: 'spring', damping: 20 }}
-                className="flex flex-col items-center relative z-10"
-              >
+              <motion.div key="step1" className="flex flex-col items-center relative z-10">
                 <motion.div
                   className="flex gap-3 mb-6"
                   initial={{ y: 20, opacity: 0 }}
@@ -168,14 +155,7 @@ export const TutorialDialog = ({
             )}
 
             {currentStep === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: -30, scale: 0.9 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 30, scale: 0.9 }}
-                transition={{ type: 'spring', damping: 20 }}
-                className="flex flex-col items-center relative z-10"
-              >
+              <motion.div key="step2" className="flex flex-col items-center relative z-10">
                 <motion.div
                   className="flex gap-3 mb-6"
                   initial={{ y: 20, opacity: 0 }}
@@ -190,7 +170,7 @@ export const TutorialDialog = ({
                       transition={{ delay: 0.3 + i * 0.1, type: 'spring', damping: 15 }}
                       className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700/80 to-slate-800/80 flex items-center justify-center shadow-lg border border-white/20 backdrop-blur-sm"
                     >
-                      <Image src={item.icon || '/placeholder.svg'} alt={item.name} width={28} height={28} />
+                      <Image src={item.icon || '/placeholder.svg'} alt={item.name} width={36} height={36} />
                     </motion.div>
                   ))}
                 </motion.div>
@@ -214,14 +194,7 @@ export const TutorialDialog = ({
             )}
 
             {currentStep === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: -30, scale: 0.9 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 30, scale: 0.9 }}
-                transition={{ type: 'spring', damping: 20 }}
-                className="flex flex-col items-center relative z-10"
-              >
+              <motion.div key="step3" className="flex flex-col items-center relative z-10">
                 <motion.div
                   className="flex gap-6 mb-6"
                   initial={{ y: 20, opacity: 0 }}
@@ -234,8 +207,8 @@ export const TutorialDialog = ({
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ delay: 0.3, type: 'spring', damping: 15 }}
                   >
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/80 to-cyan-600/80 flex items-center justify-center mb-2 shadow-lg border border-blue-400/30">
-                      <ArrowUpDown className="w-7 h-7 text-white" />
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/80 to-cyan-600/80 flex items-center justify-center mb-2 shadow-lg border border-blue-400/30">
+                      <Play className="w-7 h-7 text-white" />
                     </div>
                     <p className="text-blue-300 text-xs font-medium">{t('game.modes.casual')}</p>
                   </motion.div>
@@ -245,8 +218,8 @@ export const TutorialDialog = ({
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ delay: 0.4, type: 'spring', damping: 15 }}
                   >
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/80 to-orange-600/80 flex items-center justify-center mb-2 shadow-lg border border-amber-400/30">
-                      <Clock className="w-7 h-7 text-white" />
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/80 to-orange-600/80 flex items-center justify-center mb-2 shadow-lg border border-amber-400/30">
+                      <Flame className="w-7 h-7 text-white" />
                     </div>
                     <p className="text-amber-300 text-xs font-medium">{t('game.modes.challenge')}</p>
                   </motion.div>
