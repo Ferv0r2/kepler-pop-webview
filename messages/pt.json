@@ -81,7 +81,11 @@
       "mole": "Toupeira",
       "bomb": "Bomba"
     },
-    "shuffleMessage": "Embaralhando peças...",
+    "shuffleMessage": "Peças embaralhadas consumindo 5 movimentos",
+    "shuffleConfirm": "Embaralhar peças?",
+    "shuffleCostMessage": "Isso consumirá 5 movimentos",
+    "noMovesAvailable": "Nenhum movimento disponível. Embaralhar peças?",
+    "shuffle": "Embaralhar",
     "bonusMoves": "Movimentos bônus!",
     "gameOver": "Fim de Jogo",
     "finalScore": "Pontuação Final",
@@ -101,7 +105,7 @@
   },
   "loading": {
     "tip": "💡 Dica",
-    "challengeTip": "No modo Desafio, combine 4 ou mais peças para ganhar tempo bônus!",
+    "challengeTip": "No modo Desafio, combine peças com níveis mais altos para ganhar pontuações mais altas!",
     "messages": {
       "loadingAssets": "Carregando recursos do jogo",
       "preparingTiles": "Preparando peças",

@@ -81,7 +81,11 @@
       "mole": "Mole",
       "bomb": "Bomb"
     },
-    "shuffleMessage": "Shuffling tiles...",
+    "shuffleMessage": "Shuffled tiles by consuming 5 moves",
+    "shuffleConfirm": "Shuffle tiles?",
+    "shuffleCostMessage": "This will consume 5 moves",
+    "noMovesAvailable": "No moves available. Shuffle tiles?",
+    "shuffle": "Shuffle",
     "bonusMoves": "Bonus moves!",
     "gameOver": "Game Over",
     "finalScore": "Final Score",
@@ -101,7 +105,7 @@
   },
   "loading": {
     "tip": "💡 Tip",
-    "challengeTip": "Match 4 or more tiles in Challenge mode to get bonus time!",
+    "challengeTip": "Match tiles with higher tiers in Challenge mode to get higher scores!",
     "messages": {
       "loadingAssets": "Loading game assets",
       "preparingTiles": "Preparing tiles",

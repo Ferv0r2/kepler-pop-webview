@@ -81,7 +81,11 @@
       "mole": "Topo",
       "bomb": "Bomba"
     },
-    "shuffleMessage": "Mezclando fichas...",
+    "shuffleMessage": "Fichas mezcladas consumiendo 5 movimientos",
+    "shuffleConfirm": "¿Mezclar fichas?",
+    "shuffleCostMessage": "Esto consumirá 5 movimientos",
+    "noMovesAvailable": "No hay movimientos disponibles. ¿Mezclar fichas?",
+    "shuffle": "Mezclar",
     "bonusMoves": "¡Movimientos extra!",
     "gameOver": "Fin del Juego",
     "finalScore": "Puntuación Final",
@@ -101,7 +105,7 @@
   },
   "loading": {
     "tip": "💡 Consejo",
-    "challengeTip": "¡En el modo Desafío, combina 4 o más fichas para obtener tiempo extra!",
+    "challengeTip": "¡En el modo Desafío, combina fichas con niveles más altos para obtener puntuaciones más altas!",
     "messages": {
       "loadingAssets": "Cargando recursos del juego",
       "preparingTiles": "Preparando fichas",

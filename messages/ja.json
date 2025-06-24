@@ -81,7 +81,11 @@
       "mole": "モグラ",
       "bomb": "爆弾"
     },
-    "shuffleMessage": "タイルをシャッフル中...",
+    "shuffleMessage": "移動回数5回を消費してタイルをシャッフルしました",
+    "shuffleConfirm": "タイルをシャッフルしますか？",
+    "shuffleCostMessage": "移動回数5回が消費されます",
+    "noMovesAvailable": "移動可能なタイルがありません。タイルをシャッフルしますか？",
+    "shuffle": "シャッフル",
     "bonusMoves": "ボーナス移動！",
     "gameOver": "ゲームオーバー",
     "finalScore": "最終スコア",
@@ -101,7 +105,7 @@
   },
   "loading": {
     "tip": "💡 ヒント",
-    "challengeTip": "チャレンジモードで4つ以上のタイルをマッチさせてボーナスタイムを獲得しよう！",
+    "challengeTip": "チャレンジモードで高い階級のタイルをマッチさせてより高いスコアを獲得しよう！",
     "messages": {
       "loadingAssets": "ゲームアセットを読み込み中",
       "preparingTiles": "タイルを準備中",

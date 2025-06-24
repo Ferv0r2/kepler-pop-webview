@@ -4,7 +4,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cloneDeep } from 'lodash';
-import { ArrowLeft, Settings, Home, RefreshCw, Shuffle, AlertTriangle, Zap } from 'lucide-react';
+import { ArrowLeft, Settings, Home, RefreshCw, Shuffle, AlertTriangle, Zap, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -120,6 +120,8 @@ export const GameView = () => {
   const [isNewHighScore, setIsNewHighScore] = useState<boolean>(false);
   const [showRestartConfirmation, setShowRestartConfirmation] = useState(false);
   const [showEnergyModal, setShowEnergyModal] = useState(false);
+  const [showShuffleConfirmation, setShowShuffleConfirmation] = useState(false);
+  const [showShuffleButton, setShowShuffleButton] = useState(false);
   const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showBonusMovesAnimation, setShowBonusMovesAnimation] = useState<number>(0);
@@ -699,6 +701,13 @@ export const GameView = () => {
           isChecking: false,
           combo: 1,
         }));
+
+        // 아이템 사용 후 매칭 가능 여부 확인
+        const possibleMove = findPossibleMove();
+        if (possibleMove && (showShuffleConfirmation || showShuffleButton)) {
+          setShowShuffleConfirmation(false);
+          setShowShuffleButton(false);
+        }
       }
     }, ANIMATION_DURATION);
   };
@@ -763,18 +772,24 @@ export const GameView = () => {
   useEffect(() => {
     if (grid.length > 0 && !gameState.isSwapping && !gameState.isChecking && gameState.moves > 0) {
       const possibleMove = findPossibleMove();
-      if (!possibleMove) {
-        setGameState((prev) => ({ ...prev, isSwapping: true }));
-        setShowShuffleToast(true);
-        setTimeout(() => {
-          const newGrid = shuffleGrid();
-          setGrid(newGrid);
-          setGameState((prev) => ({ ...prev, isSwapping: false }));
-          setTimeout(() => setShowShuffleToast(false), 2000);
-        }, ANIMATION_DURATION);
+      if (!possibleMove && !showShuffleConfirmation && !showShuffleButton) {
+        // 가능한 이동이 없고 셔플 관련 UI가 표시되지 않았을 때만 표시
+        setShowShuffleConfirmation(true);
+      } else if (possibleMove && (showShuffleConfirmation || showShuffleButton)) {
+        // 가능한 이동이 생기면 셔플 관련 UI 모두 숨기기
+        setShowShuffleConfirmation(false);
+        setShowShuffleButton(false);
       }
     }
-  }, [grid, gameState.isSwapping, gameState.isChecking, gameState.moves, findPossibleMove, shuffleGrid, setGrid]);
+  }, [
+    grid,
+    gameState.isSwapping,
+    gameState.isChecking,
+    gameState.moves,
+    findPossibleMove,
+    showShuffleConfirmation,
+    showShuffleButton,
+  ]);
 
   useEffect(() => {
     setGrid(createInitialGrid());
@@ -806,6 +821,35 @@ export const GameView = () => {
   useBackButton(() => {
     setShowBackConfirmation(true);
   });
+
+  const handleShuffleConfirm = () => {
+    setShowShuffleConfirmation(false);
+    setShowShuffleButton(false);
+
+    // 이동 횟수를 5회 소모
+    const shuffleCost = 5;
+    const newMoves = Math.max(0, gameState.moves - shuffleCost);
+    const isGameOver = newMoves <= 0;
+
+    setGameState((prev) => ({
+      ...prev,
+      moves: newMoves,
+      turn: prev.turn + 1,
+      isGameOver,
+    }));
+
+    setShowShuffleToast(true);
+    setTimeout(() => {
+      const newGrid = shuffleGrid();
+      setGrid(newGrid);
+      setTimeout(() => setShowShuffleToast(false), 2000);
+    }, ANIMATION_DURATION);
+
+    // 게임 종료 시 점수 업데이트
+    if (isGameOver) {
+      updateUserScore(gameState.score);
+    }
+  };
 
   if (isLoading) {
     return <LoadingView onLoadComplete={() => setIsLoading(false)} />;
@@ -1214,6 +1258,73 @@ export const GameView = () => {
         onConfirm={handleRestartConfirm}
         onCancel={handleRestartCancel}
       />
+
+      {/* 셔플 확인 알림 */}
+      <AnimatePresence>
+        {showShuffleConfirmation && (
+          <motion.div
+            className="fixed top-22 left-8 right-8 z-50"
+            initial={{ opacity: 0, x: 40, scale: 0.8 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 40, scale: 0.8 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+          >
+            <div className="bg-slate-800/90 backdrop-blur-xl border border-slate-600/50 rounded-xl p-4 shadow-lg max-w-sm">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <Shuffle className="h-4 w-4 text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-white font-medium text-sm">{t('game.noMovesAvailable')}</h4>
+                  <p className="mt-1 text-slate-300 text-sm">{t('game.shuffleCostMessage')}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowShuffleConfirmation(false);
+                    setShowShuffleButton(true);
+                  }}
+                  className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <Button
+                size="sm"
+                onClick={handleShuffleConfirm}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2"
+              >
+                {t('game.shuffle')}
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 섞기 버튼 */}
+      <AnimatePresence>
+        {showShuffleButton && (
+          <motion.div
+            className="fixed right-4 top-16 flex justify-center z-10"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setShowShuffleConfirmation(true);
+                setShowShuffleButton(false);
+              }}
+              className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-full"
+            >
+              <Shuffle className="h-6 w-6" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <EnergyModal
         isOpen={showEnergyModal}

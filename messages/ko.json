@@ -81,7 +81,11 @@
       "mole": "두더지",
       "bomb": "폭탄"
     },
-    "shuffleMessage": "타일을 섞는 중...",
+    "shuffleMessage": "이동 횟수 5회를 소모하여 타일을 섞었습니다",
+    "shuffleConfirm": "타일을 섞으시겠습니까?",
+    "shuffleCostMessage": "이동 횟수 5회가 소모됩니다",
+    "noMovesAvailable": "움직일 수 있는 타일이 없습니다. 타일을 섞으시겠습니까?",
+    "shuffle": "섞기",
     "bonusMoves": "보너스 이동!",
     "gameOver": "게임 종료",
     "finalScore": "최종 점수",
@@ -101,7 +105,7 @@
   },
   "loading": {
     "tip": "💡 팁",
-    "challengeTip": "챌린지 모드에서 4개 이상의 타일을 매치하여 보너스 시간을 얻으세요!",
+    "challengeTip": "챌린지 모드에서 높은 등급의 타일을 매치하여 더 높은 점수를 얻으세요!",
     "messages": {
       "loadingAssets": "게임 에셋 로딩 중",
       "preparingTiles": "타일 준비 중",

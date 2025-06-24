@@ -100,7 +100,7 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
           <Logo />
 
           {/* 로딩 인디케이터 */}
-          <div className="relative mt-8 mb-8">
+          <div className="relative my-20">
             {/* 진행률 표시 */}
             <motion.div
               className="text-center text-white/80 text-lg font-medium"
