@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
-import { X, Home, RefreshCw, MousePointer, Hand, Droplet, HelpCircle } from 'lucide-react';
+import { X, Home, RefreshCw, MousePointer, Hand, Droplet, HelpCircle, Volume2, VolumeX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
+import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import type { TileSwapMode } from '@/types/game-types';
 
@@ -29,6 +30,7 @@ export const SettingsMenu = ({
 }: SettingsMenuProps) => {
   const t = useTranslations();
   const { data: userInfo } = useUser();
+  const { settings: soundSettings, toggleSound, setVolume } = useSound();
 
   if (!isOpen) return null;
 
@@ -97,6 +99,46 @@ export const SettingsMenu = ({
                 <MousePointer className="h-4 w-4" />
                 <span>{t('modal.select')}</span>
               </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="text-white/80 font-medium">{t('modal.effects')}</h4>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleSound}
+                className={`border-indigo-500/30 ${
+                  soundSettings.enabled
+                    ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-300'
+                    : 'bg-gradient-to-r from-red-500/20 to-pink-500/20 text-red-300'
+                }`}
+              >
+                {soundSettings.enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
+              <div className="flex-1">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={soundSettings.volume}
+                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  disabled={!soundSettings.enabled}
+                  className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${
+                    soundSettings.enabled
+                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                      : 'bg-gray-600 cursor-not-allowed'
+                  }`}
+                  style={{
+                    background: soundSettings.enabled
+                      ? `linear-gradient(to right, rgb(99, 102, 241) 0%, rgb(99, 102, 241) ${soundSettings.volume * 100}%, rgb(75, 85, 99) ${soundSettings.volume * 100}%, rgb(75, 85, 99) 100%)`
+                      : 'rgb(75, 85, 99)',
+                  }}
+                />
+              </div>
+              <span className="text-white/60 text-sm w-8 text-center">{Math.round(soundSettings.volume * 100)}%</span>
             </div>
           </div>
 

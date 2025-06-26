@@ -17,6 +17,7 @@ import { ItemAnimationManager } from '@/components/logic/managers/ItemAnimationM
 import { Button } from '@/components/ui/button';
 import { Toast } from '@/components/ui/toast';
 import { useBackButton } from '@/hooks/useBackButton';
+import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import { updateDroplet, updateScore } from '@/networks/KeplerBackend';
 import {
@@ -36,6 +37,14 @@ import type { GameMode, GridItem, TileType, GameState, GameItemType, TierType } 
 import { createParticles } from '@/utils/animation-helper';
 import { calculateComboBonus, batchUpdateTiles } from '@/utils/game-helper';
 import { useOptimizedGridRendering, useRenderPerformance } from '@/utils/performance-optimization';
+import {
+  playMatchSound,
+  playComboSound,
+  playItemSound,
+  playShuffleSound,
+  playGameOverSound,
+  preloadAllSounds,
+} from '@/utils/sound-helper';
 
 import { LoadingView } from '../LoadingView/LoadingView';
 
@@ -83,6 +92,7 @@ export const GameView = () => {
     isItemAnimating,
     itemAnimation,
   } = useGameItem();
+  const { settings: soundSettings } = useSound();
 
   const [lastMatchTime, setLastMatchTime] = useState<number>(Date.now());
 
@@ -363,6 +373,17 @@ export const GameView = () => {
 
       setLastMatchTime(Date.now());
 
+      // 효과음 재생
+      if (matches.length > 0) {
+        if (nextCombo > 1) {
+          // 콤보 효과음 재생
+          playComboSound(soundSettings);
+        } else {
+          // 일반 매치 효과음 재생
+          playMatchSound(soundSettings);
+        }
+      }
+
       // UI 효과 표시
       if (matches.length > 0) {
         const centerRow = matches.reduce((sum, m) => sum + m.row, 0) / matches.length;
@@ -474,6 +495,9 @@ export const GameView = () => {
             origin: { x: 0.5, y: 0.5 },
             disableForReducedMotion: true,
           });
+
+          // 게임 오버 효과음 재생
+          playGameOverSound(soundSettings);
 
           // 게임 종료 시 점수 업데이트
           updateUserScore(gameState.score + matchScore);
@@ -641,6 +665,9 @@ export const GameView = () => {
     const updatedGrid = executeItem(grid);
     if (!updatedGrid) return;
 
+    // 아이템 효과음 재생
+    playItemSound(soundSettings);
+
     // 아이템으로 제거된 타일 수 계산
     let removedTileCount = 0;
     for (let row = 0; row < GRID_SIZE; row++) {
@@ -802,6 +829,20 @@ export const GameView = () => {
     }
   }, [hasSeenTutorial]);
 
+  // 효과음 미리 로드 확인 및 추가 로드
+  useEffect(() => {
+    const ensureSoundsLoaded = async () => {
+      try {
+        await preloadAllSounds();
+        console.log('GameView: 효과음 로드 확인 완료');
+      } catch (error) {
+        console.warn('GameView: 효과음 로드 실패:', error);
+      }
+    };
+
+    ensureSoundsLoaded();
+  }, []);
+
   useEffect(() => {
     if (lastMatchTime > 0 && !gameState.isSwapping && !gameState.isChecking && !gameState.isGameOver) {
       const timer = setTimeout(() => {
@@ -826,6 +867,9 @@ export const GameView = () => {
     setShowShuffleConfirmation(false);
     setShowShuffleButton(false);
 
+    // 셔플 효과음 재생
+    playShuffleSound(soundSettings);
+
     // 이동 횟수를 5회 소모
     const shuffleCost = 5;
     const newMoves = Math.max(0, gameState.moves - shuffleCost);
@@ -847,6 +891,16 @@ export const GameView = () => {
 
     // 게임 종료 시 점수 업데이트
     if (isGameOver) {
+      confetti({
+        particleCount: 100,
+        spread: 160,
+        origin: { x: 0.5, y: 0.5 },
+        disableForReducedMotion: true,
+      });
+
+      // 게임 오버 효과음 재생
+      playGameOverSound(soundSettings);
+
       updateUserScore(gameState.score);
     }
   };

@@ -13,12 +13,14 @@ import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation
 import { SideNavigation } from '@/components/logic/navigation/SideNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
+import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import { useRouter } from '@/i18n/routing';
 import { updateDroplet } from '@/networks/KeplerBackend';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import type { NativeToWebMessage, EnergyChangePayload } from '@/types/native-call';
 import { containerVariants, itemVariants } from '@/utils/animation-helper';
+import { playButtonSound } from '@/utils/sound-helper';
 
 import { LoadingView } from './LoadingView/LoadingView';
 
@@ -41,6 +43,8 @@ export const MainView = () => {
   const [showEnergyModal, setShowEnergyModal] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const updateDropletMutation = useUpdateDroplet();
+
+  const { settings: soundSettings } = useSound();
 
   // 각 모드의 최고점수 계산
   const highScores = useMemo(() => {
@@ -100,6 +104,7 @@ export const MainView = () => {
       return;
     }
 
+    playButtonSound(soundSettings);
     updateDropletMutation.mutate(-1, {
       onSuccess: () => {
         router.push(`/game?mode=${mode}`);

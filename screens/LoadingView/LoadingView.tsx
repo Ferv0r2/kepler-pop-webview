@@ -6,6 +6,7 @@ import { useEffect, useState, useMemo } from 'react';
 
 import { Logo } from '@/components/logo/Logo';
 import { StarsAndSparkles } from '@/components/ui/StarsAndSparkles';
+import { preloadAllSounds } from '@/utils/sound-helper';
 
 import {
   DEFAULT_LOADING_TIME_MS,
@@ -24,10 +25,9 @@ interface LoadingScreenProps {
 
 export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_TIME_MS }: LoadingScreenProps) => {
   const [progress, setProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState('Loading game assets');
+  const [loadingText, setLoadingText] = useState('');
   const t = useTranslations();
 
-  // Array of loading messages to cycle through
   const loadingMessages = useMemo(
     () => [
       t('loading.messages.loadingAssets'),
@@ -39,34 +39,43 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
     [t],
   );
 
+  // 효과음 미리 로드
+  useEffect(() => {
+    const loadSounds = async () => {
+      try {
+        await preloadAllSounds();
+      } catch (error) {
+        console.warn('LoadingView: 효과음 로드 실패:', error);
+      }
+    };
+
+    loadSounds();
+  }, []);
+
   useEffect(() => {
     const startTime = Date.now();
     let animationFrame: number;
+    let isComplete = false;
 
     // Simulate loading progress
     const simulateLoading = () => {
-      setProgress((prevProgress) => {
-        // Calculate how much time has passed as a percentage of minLoadingTime
-        const timeProgress = Math.min(100, ((Date.now() - startTime) / minLoadingTime) * 100);
+      const timeProgress = Math.min(100, ((Date.now() - startTime) / minLoadingTime) * 100);
 
-        // Ensure progress is at least as far as time progress, but not too fast
-        const newProgress = Math.max(prevProgress + 0.5, timeProgress);
+      if (timeProgress >= 100 && !isComplete) {
+        isComplete = true;
+        cancelAnimationFrame(animationFrame);
+        setTimeout(() => {
+          onLoadComplete?.();
+        }, LOADING_COMPLETE_DELAY_MS);
+        return;
+      }
 
-        if (newProgress >= 100) {
-          cancelAnimationFrame(animationFrame);
-          setTimeout(() => {
-            onLoadComplete?.();
-          }, LOADING_COMPLETE_DELAY_MS);
-          return 100;
-        }
-
-        animationFrame = requestAnimationFrame(simulateLoading);
-        return newProgress;
-      });
+      setProgress(timeProgress);
+      animationFrame = requestAnimationFrame(simulateLoading);
     };
 
-    // Start the loading simulation
-    animationFrame = requestAnimationFrame(simulateLoading);
+    // Start loading simulation
+    simulateLoading();
 
     // Cycle through loading messages
     const messageInterval = setInterval(() => {
@@ -77,7 +86,9 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
       });
     }, LOADING_MESSAGE_INTERVAL_MS);
 
-    // Clean up
+    // Set initial message
+    setLoadingText(loadingMessages[0]);
+
     return () => {
       cancelAnimationFrame(animationFrame);
       clearInterval(messageInterval);
