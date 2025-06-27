@@ -32,6 +32,14 @@ const neodgmFont = {
 export const metadata: Metadata = {
   title: 'Kepler Pop',
   description: 'Kepler Pop with Puzzle Game',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    minimumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover',
+  },
 };
 export default function RootLayout({
   children,
@@ -141,6 +149,70 @@ export default function RootLayout({
               }
             }
           `,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // 웹뷰 확대/축소 및 스크롤 방지
+              (function() {
+                // 확대/축소 방지
+                document.addEventListener('gesturestart', function(e) {
+                  e.preventDefault();
+                });
+                
+                document.addEventListener('gesturechange', function(e) {
+                  e.preventDefault();
+                });
+                
+                document.addEventListener('gestureend', function(e) {
+                  e.preventDefault();
+                });
+                
+                // 더블탭 확대 방지
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', function(event) {
+                  const now = (new Date()).getTime();
+                  if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                  }
+                  lastTouchEnd = now;
+                }, false);
+                
+                // 스크롤 방지 (가로 스크롤만 방지)
+                document.addEventListener('touchmove', function(e) {
+                  if (e.touches.length > 1) {
+                    e.preventDefault();
+                  }
+                  // 가로 스크롤 방지
+                  if (Math.abs(e.touches[0].clientX - e.touches[0].screenX) > 10) {
+                    e.preventDefault();
+                  }
+                }, { passive: false });
+                
+                // 컨텍스트 메뉴 방지
+                document.addEventListener('contextmenu', function(e) {
+                  e.preventDefault();
+                });
+                
+                // 선택 방지
+                document.addEventListener('selectstart', function(e) {
+                  e.preventDefault();
+                });
+                
+                // 드래그 방지
+                document.addEventListener('dragstart', function(e) {
+                  e.preventDefault();
+                });
+                
+                // 키보드 확대/축소 방지
+                document.addEventListener('keydown', function(e) {
+                  if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0')) {
+                    e.preventDefault();
+                  }
+                });
+              })();
+            `,
           }}
         />
       </head>

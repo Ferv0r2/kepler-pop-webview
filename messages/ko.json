@@ -101,7 +101,9 @@
     "restartConfirm": "게임을 다시 시작하시겠습니까?",
     "restartMessage": "다시 시작하면 현재 진행 상황이 초기화되며 물방울 1개가 소모됩니다.",
     "insufficientEnergy": "물방울이 부족합니다",
-    "insufficientEnergyMessage": "게임을 다시 시작하기 위한 물방울이 부족합니다. 물방울을 충전하시겠습니까?"
+    "insufficientEnergyMessage": "게임을 다시 시작하기 위한 물방울이 부족합니다. 물방울을 충전하시겠습니까?",
+    "shuffling": "타일을 섞는 중...",
+    "pleaseWait": "잠시만 기다려주세요"
   },
   "loading": {
     "tip": "💡 팁",

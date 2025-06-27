@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cloneDeep } from 'lodash';
 import { ArrowLeft, Settings, Home, RefreshCw, Shuffle, AlertTriangle, Zap, X } from 'lucide-react';
@@ -15,6 +14,7 @@ import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal'
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
 import { ItemAnimationManager } from '@/components/logic/managers/ItemAnimationManager';
 import { Button } from '@/components/ui/button';
+import { PerformanceMonitor } from '@/components/ui/PerformanceMonitor';
 import { Toast } from '@/components/ui/toast';
 import { useBackButton } from '@/hooks/useBackButton';
 import { useSound } from '@/hooks/useSound';
@@ -34,9 +34,13 @@ import {
 } from '@/screens/GameView/constants/game-config';
 import { tileConfig } from '@/screens/GameView/constants/tile-config';
 import type { GameMode, GridItem, TileType, GameState, GameItemType, TierType } from '@/types/game-types';
-import { createParticles } from '@/utils/animation-helper';
+import { createParticles, createOptimizedParticles, createGameOverConfetti } from '@/utils/animation-helper';
 import { calculateComboBonus, batchUpdateTiles } from '@/utils/game-helper';
-import { useOptimizedGridRendering, useRenderPerformance } from '@/utils/performance-optimization';
+import {
+  useOptimizedGridRendering,
+  useRenderPerformance,
+  useConfettiOptimizer,
+} from '@/utils/performance-optimization';
 import {
   playMatchSound,
   playComboSound,
@@ -132,6 +136,7 @@ export const GameView = () => {
   const [showEnergyModal, setShowEnergyModal] = useState(false);
   const [showShuffleConfirmation, setShowShuffleConfirmation] = useState(false);
   const [showShuffleButton, setShowShuffleButton] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
   const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showBonusMovesAnimation, setShowBonusMovesAnimation] = useState<number>(0);
@@ -142,6 +147,7 @@ export const GameView = () => {
   // 성능 최적화 훅
   const { grid: optimizedGrid, hasChanges } = useOptimizedGridRendering(grid);
   const { renderCount } = useRenderPerformance('GameView');
+  const runConfetti = useConfettiOptimizer();
 
   // Web Worker 훅
   const { isWorkerAvailable } = useGameWorker({ enabled: true });
@@ -194,7 +200,8 @@ export const GameView = () => {
       gameState.isChecking ||
       gameState.isGameOver ||
       isItemAnimating ||
-      gameState.isProcessingMatches
+      gameState.isProcessingMatches ||
+      isShuffling
     )
       return;
 
@@ -234,7 +241,8 @@ export const GameView = () => {
       gameState.isChecking ||
       gameState.isGameOver ||
       isItemAnimating ||
-      gameState.isProcessingMatches
+      gameState.isProcessingMatches ||
+      isShuffling
     ) {
       setIsDragging(false);
       setDraggedTile(null);
@@ -258,7 +266,8 @@ export const GameView = () => {
       gameState.isSwapping ||
       gameState.isChecking ||
       gameState.isGameOver ||
-      isItemAnimating
+      isItemAnimating ||
+      isShuffling
     ) {
       setIsDragging(false);
       setDraggedTile(null);
@@ -400,7 +409,9 @@ export const GameView = () => {
         const level = (currentGrid[matches[0].row][matches[0].col].tier || 1) as TierType;
         const itemType = (currentGrid[matches[0].row][matches[0].col].type || 1) as TileType;
         const color = tileConfig[itemType]?.color[level]?.replace('text-', '') || 'red';
-        createParticles(x, y, color);
+        runConfetti(() => {
+          createOptimizedParticles(x, y, color);
+        });
 
         setTimeout(() => setShowScorePopup(null), SHOW_EFFECT_TIME_MS);
         if (bonusMoves > 0) {
@@ -489,11 +500,8 @@ export const GameView = () => {
         });
 
         if (isGameOver) {
-          confetti({
-            particleCount: 100,
-            spread: 160,
-            origin: { x: 0.5, y: 0.5 },
-            disableForReducedMotion: true,
+          runConfetti(() => {
+            createGameOverConfetti();
           });
 
           // 게임 오버 효과음 재생
@@ -571,13 +579,31 @@ export const GameView = () => {
           isGameOver: prev.moves - 1 <= 0,
         }));
 
-        // 게임 종료 시 점수 업데이트
+        // 게임 종료 시 점수 업데이트 및 효과
         if (gameState.moves - 1 <= 0) {
+          runConfetti(() => {
+            createGameOverConfetti();
+          });
+
+          // 게임 오버 효과음 재생
+          playGameOverSound(soundSettings);
+
           updateUserScore(gameState.score);
         }
       }
     },
-    [grid, findMatches, lastMatchTime, processMatches, setGrid, gameState.moves, gameState.score, updateUserScore],
+    [
+      grid,
+      setGrid,
+      findMatches,
+      lastMatchTime,
+      processMatches,
+      gameState.moves,
+      gameState.score,
+      runConfetti,
+      soundSettings,
+      updateUserScore,
+    ],
   );
 
   const restartGame = () => {
@@ -797,7 +823,7 @@ export const GameView = () => {
   }, [findMatches, grid]);
 
   useEffect(() => {
-    if (grid.length > 0 && !gameState.isSwapping && !gameState.isChecking && gameState.moves > 0) {
+    if (grid.length > 0 && !gameState.isSwapping && !gameState.isChecking && gameState.moves > 0 && !isShuffling) {
       const possibleMove = findPossibleMove();
       if (!possibleMove && !showShuffleConfirmation && !showShuffleButton) {
         // 가능한 이동이 없고 셔플 관련 UI가 표시되지 않았을 때만 표시
@@ -813,10 +839,19 @@ export const GameView = () => {
     gameState.isSwapping,
     gameState.isChecking,
     gameState.moves,
+    isShuffling,
     findPossibleMove,
     showShuffleConfirmation,
     showShuffleButton,
   ]);
+
+  // 섞기 중일 때 기존 섞기 팝업들 숨기기
+  useEffect(() => {
+    if (isShuffling) {
+      setShowShuffleConfirmation(false);
+      setShowShuffleButton(false);
+    }
+  }, [isShuffling]);
 
   useEffect(() => {
     setGrid(createInitialGrid());
@@ -882,20 +917,22 @@ export const GameView = () => {
       isGameOver,
     }));
 
-    setShowShuffleToast(true);
+    // 섞기 중 상태 활성화
+    setIsShuffling(true);
+
+    // 섞기 로딩 시간 (1.5초)
     setTimeout(() => {
       const newGrid = shuffleGrid();
       setGrid(newGrid);
+      setIsShuffling(false);
+      setShowShuffleToast(true);
       setTimeout(() => setShowShuffleToast(false), 2000);
-    }, ANIMATION_DURATION);
+    }, 1500);
 
     // 게임 종료 시 점수 업데이트
     if (isGameOver) {
-      confetti({
-        particleCount: 100,
-        spread: 160,
-        origin: { x: 0.5, y: 0.5 },
-        disableForReducedMotion: true,
+      runConfetti(() => {
+        createGameOverConfetti();
       });
 
       // 게임 오버 효과음 재생
@@ -1413,6 +1450,57 @@ export const GameView = () => {
       />
 
       <Toast isOpen={showShuffleToast} icon={Shuffle} message={t('game.shuffleMessage')} />
+
+      <PerformanceMonitor enabled={process.env.NODE_ENV === 'development'} />
+
+      {/* 섞기 중 로딩 화면 */}
+      <AnimatePresence>
+        {isShuffling && (
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-xl z-20 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <motion.div
+              className="relative w-5/6 max-w-md"
+              initial={{ scale: 0.8, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 20 }}
+              transition={{ type: 'spring', damping: 25, delay: 0.1 }}
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500 rounded-2xl opacity-70 blur-md animate-pulse" />
+              <div className="relative bg-gradient-to-b from-slate-900/95 to-blue-900/95 rounded-2xl p-4 border border-blue-400/30 shadow-[0_0_30px_rgba(59,130,246,0.5)]">
+                <motion.div
+                  className="flex justify-center p-4"
+                  initial={{ scale: 0, rotate: 0 }}
+                  animate={{ scale: 1, rotate: 360 }}
+                  transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+                >
+                  <div className="text-5xl text-blue-400">🎲</div>
+                </motion.div>
+                <motion.div
+                  className="text-center mb-6 bg-slate-800/40 p-4 rounded-xl border border-blue-500/30"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                >
+                  <p className="text-lg text-white/80 mb-1">{t('game.shuffling')}</p>
+                  <motion.div
+                    className="text-2xl font-bold text-blue-300"
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: [0.8, 1.1, 0.8] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    {t('game.pleaseWait')}
+                  </motion.div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

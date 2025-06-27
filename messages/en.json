@@ -99,9 +99,11 @@
     "moves": "Moves",
     "restart": "Restart",
     "restartConfirm": "Are you sure you want to restart the game?",
-    "restartMessage": "Restarting will reset your current progress and consume 1 energy droplet.",
+    "restartMessage": "Restarting will reset your current progress and consume 1 droplet.",
     "insufficientEnergy": "Insufficient Energy",
-    "insufficientEnergyMessage": "You don't have enough energy droplets to restart the game. Would you like to recharge your energy?"
+    "insufficientEnergyMessage": "You don't have enough droplets to restart the game. Would you like to recharge your droplets?",
+    "shuffling": "Shuffling tiles...",
+    "pleaseWait": "Please wait a moment"
   },
   "loading": {
     "tip": "💡 Tip",

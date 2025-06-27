@@ -170,3 +170,97 @@ export const createMemoCache = <T>() => {
     size: (): number => cache.size,
   };
 };
+
+// Confetti 성능 최적화 훅
+export const useConfettiOptimizer = () => {
+  const isConfettiRunningRef = useRef(false);
+  const confettiQueueRef = useRef<Array<() => void>>([]);
+
+  const runConfetti = useCallback((confettiFn: () => void) => {
+    if (isConfettiRunningRef.current) {
+      // 이미 confetti가 실행 중이면 큐에 추가
+      confettiQueueRef.current.push(confettiFn);
+      return;
+    }
+
+    isConfettiRunningRef.current = true;
+
+    // 메인 스레드 블로킹 방지를 위해 requestIdleCallback 사용
+    const runWithIdleCallback = () => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(
+          () => {
+            confettiFn();
+
+            // 다음 프레임에서 큐 처리
+            requestAnimationFrame(() => {
+              isConfettiRunningRef.current = false;
+
+              // 큐에 있는 다음 confetti 실행
+              const nextConfetti = confettiQueueRef.current.shift();
+              if (nextConfetti) {
+                runConfetti(nextConfetti);
+              }
+            });
+          },
+          { timeout: 100 },
+        );
+      } else {
+        // requestIdleCallback이 지원되지 않는 경우 requestAnimationFrame 사용
+        requestAnimationFrame(() => {
+          confettiFn();
+
+          setTimeout(() => {
+            isConfettiRunningRef.current = false;
+
+            const nextConfetti = confettiQueueRef.current.shift();
+            if (nextConfetti) {
+              runConfetti(nextConfetti);
+            }
+          }, 50);
+        });
+      }
+    };
+
+    runWithIdleCallback();
+  }, []);
+
+  return runConfetti;
+};
+
+// 렌더링 우선순위 관리 훅
+export const useRenderPriority = () => {
+  const priorityQueueRef = useRef<Array<{ callback: () => void; priority: number; id: string }>>([]);
+  const isProcessingRef = useRef(false);
+
+  const scheduleRender = useCallback((callback: () => void, priority = 0, id = '') => {
+    priorityQueueRef.current.push({ callback, priority, id });
+    priorityQueueRef.current.sort((a, b) => b.priority - a.priority);
+
+    if (!isProcessingRef.current) {
+      isProcessingRef.current = true;
+
+      const processQueue = () => {
+        const start = performance.now();
+        const FRAME_BUDGET = 8; // 8ms로 줄여서 더 빠른 처리
+
+        while (priorityQueueRef.current.length > 0 && performance.now() - start < FRAME_BUDGET) {
+          const item = priorityQueueRef.current.shift();
+          if (item) {
+            item.callback();
+          }
+        }
+
+        if (priorityQueueRef.current.length > 0) {
+          requestAnimationFrame(processQueue);
+        } else {
+          isProcessingRef.current = false;
+        }
+      };
+
+      requestAnimationFrame(processQueue);
+    }
+  }, []);
+
+  return scheduleRender;
+};

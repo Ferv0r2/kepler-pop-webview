@@ -101,7 +101,9 @@
     "restartConfirm": "ゲームを再開しますか？",
     "restartMessage": "再開すると現在の進行状況がリセットされ、エネルギー1個が消費されます。",
     "insufficientEnergy": "エネルギー不足",
-    "insufficientEnergyMessage": "ゲームを再開するためのエネルギーが不足しています。エネルギーを充電しますか？"
+    "insufficientEnergyMessage": "ゲームを再開するためのエネルギーが不足しています。エネルギーを充電しますか？",
+    "shuffling": "タイルをシャッフルしています...",
+    "pleaseWait": "少々お待ちください"
   },
   "loading": {
     "tip": "💡 ヒント",
