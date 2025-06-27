@@ -1,5 +1,5 @@
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { Metadata } from 'next';
+import { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono, Press_Start_2P } from 'next/font/google';
 import { ReactNode } from 'react';
 
@@ -32,15 +32,17 @@ const neodgmFont = {
 export const metadata: Metadata = {
   title: 'Kepler Pop',
   description: 'Kepler Pop with Puzzle Game',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    minimumScale: 1,
-    userScalable: false,
-    viewportFit: 'cover',
-  },
 };
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  minimumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
