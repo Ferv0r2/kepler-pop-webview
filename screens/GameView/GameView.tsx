@@ -143,6 +143,7 @@ function applyAutoRemoveArtifacts(
 export const GameView = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const gameMode = searchParams.get('mode') as GameMode;
   const { grid, setGrid, getRandomItemType, createInitialGrid, findMatches, findPossibleMove } = useMatchGame();
   const { tileSwapMode, setTileSwapMode, hasSeenTutorial, setHasSeenTutorial } = useGameSettings();
@@ -709,6 +710,14 @@ export const GameView = () => {
   );
 
   const restartGame = () => {
+    // 에너지 상태를 최신으로 업데이트
+    try {
+      queryClient.invalidateQueries({ queryKey: ['droplet-status'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    } catch (error) {
+      console.warn('Failed to refresh energy status:', error);
+    }
+
     // 에너지 소모
     updateDropletMutation.mutate(-ENERGY_CONSUME_AMOUNT, {
       onSuccess: () => {
@@ -1298,7 +1307,7 @@ export const GameView = () => {
                           animate={{ scale: 1, rotate: 0 }}
                           transition={{ delay: 0.7, type: 'spring', stiffness: 200 }}
                         >
-                          <div className="text-5xl text-yellow-400">🏆</div>
+                          <Image src="/icons/trophy.png" alt="Trophy" width={64} height={64} />
                         </motion.div>
                         <motion.div
                           className="text-center mb-6 bg-slate-800/40 p-4 rounded-xl border border-yellow-500/30"
@@ -1340,7 +1349,10 @@ export const GameView = () => {
                             </div>
                           </Button>
                           <Button
-                            onClick={() => router.back()}
+                            onClick={() => {
+                              router.back();
+                              playButtonSound(soundSettings);
+                            }}
                             variant="outline"
                             className="flex items-center justify-center bg-slate-800/30 border-indigo-500/50 text-white hover:bg-slate-800/50 rounded-xl py-3 text-md"
                           >

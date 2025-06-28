@@ -44,7 +44,8 @@
     "2DaysLeft": "2일 남음",
     "friendsActivity": "친구 활동",
     "friendsPlaying": "친구 4명이 지금 게임 중입니다",
-    "close": "닫기"
+    "close": "닫기",
+    "startGame": "게임 시작"
   },
   "navigation": {
     "home": "홈",

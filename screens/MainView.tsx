@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Play, Calendar, Trophy, Gift, ChevronRight, Flame } from 'lucide-react';
+import { Play } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, useMemo } from 'react';
@@ -10,16 +10,16 @@ import { useEffect, useState, useMemo } from 'react';
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
 import { ExitModal } from '@/components/logic/dialogs/ExitModal';
 import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
-import { SideNavigation } from '@/components/logic/navigation/SideNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
+import { EnergyDisplay } from '@/components/ui/EnergyDisplay';
 import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import { useRouter } from '@/i18n/routing';
 import { updateDroplet } from '@/networks/KeplerBackend';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import type { NativeToWebMessage, EnergyChangePayload } from '@/types/native-call';
-import { containerVariants, itemVariants } from '@/utils/animation-helper';
+import { itemVariants } from '@/utils/animation-helper';
 import { playButtonSound } from '@/utils/sound-helper';
 
 import { AD_ENERGY_REWARD_AMOUNT, ENERGY_CONSUME_AMOUNT } from './GameView/constants/game-config';
@@ -37,6 +37,7 @@ const useUpdateDroplet = () => {
 
 export const MainView = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: userInfo, isLoading } = useUser();
   const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
   const t = useTranslations();
@@ -97,10 +98,19 @@ export const MainView = () => {
     return <LoadingView />;
   }
 
-  const { name, level, droplet, gameMoney, gem, profileImage } = userInfo;
+  const { name, level, gameMoney, gem, profileImage } = userInfo;
 
   const handleStartGame = async (mode: 'casual' | 'challenge') => {
     playButtonSound(soundSettings);
+
+    // 에너지 상태를 최신으로 업데이트
+    try {
+      await queryClient.invalidateQueries({ queryKey: ['droplet-status'] });
+      await queryClient.invalidateQueries({ queryKey: ['user'] });
+    } catch (error) {
+      console.warn('Failed to refresh energy status:', error);
+    }
+
     if (!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT) {
       setShowEnergyModal(true);
       return;
@@ -130,10 +140,6 @@ export const MainView = () => {
     setShowEnergyModal(false);
   };
 
-  const handleNavigation = (path: string) => {
-    router.push(path);
-  };
-
   const handleExitConfirm = () => {
     sendMessage({ type: WebToNativeMessageType.EXIT_ACTION });
     setShowExitModal(false);
@@ -150,206 +156,89 @@ export const MainView = () => {
           <TopNavigation
             name={name}
             level={level}
-            droplet={droplet}
             gameMoney={gameMoney}
             gem={gem}
             profileImage={profileImage || '/plants/sprout.png'}
           />
         </header>
 
-        <main className="flex-1 flex flex-col mt-16 px-4 py-2 overflow-hidden">
-          {/* Game Logo and Title */}
+        <main className="flex-1 flex flex-col mt-6 px-4 py-2 overflow-hidden">
+          {highScores.challenge > 0 && (
+            <motion.div
+              className="max-w-56 mx-auto w-full flex items-center justify-center gap-3 p-3 bg-gradient-to-r from-yellow-500/20 via-amber-500/20 to-orange-500/20 backdrop-blur-md rounded-xl border border-yellow-500/30 shadow-lg mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <div className="relative">
+                <Image src="/icons/trophy.png" alt="Trophy" width={32} height={32} />
+                <div className="absolute -inset-1 bg-gradient-to-br from-yellow-400/20 to-amber-400/20 rounded-full blur-sm"></div>
+              </div>
+              <div className="text-center">
+                <p className="text-yellow-300 text-xs font-medium">{t('game.highScore')}</p>
+                <p className="text-yellow-400 text-lg font-bold">{highScores.challenge.toLocaleString()}</p>
+              </div>
+              <div className="relative">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                <div className="absolute -inset-1 bg-yellow-400/30 rounded-full blur-sm animate-pulse"></div>
+              </div>
+            </motion.div>
+          )}
+
           <motion.div
-            className="flex flex-col items-center justify-center mb-6 mt-2"
+            className="flex flex-col items-center justify-center mb-6"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <div className="relative w-28 h-28 mb-3">
+            <div className="relative w-48 h-48 mb-3">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full animate-pulse"></div>
               <div
-                className="absolute inset-2 bg-gradient-to-br from-purple-600/30 to-pink-600/30 rounded-full animate-pulse"
+                className="absolute inset-0 bg-gradient-to-br from-purple-600/30 to-pink-600/30 rounded-full animate-pulse"
                 style={{ animationDelay: '0.5s' }}
               ></div>
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute m-6 inset-0 flex items-center justify-center">
                 <Image
-                  src="/icons/logo.png"
-                  alt="Game Logo"
-                  className="rounded-full object-cover"
+                  src="/icons/map.png"
+                  alt="Map"
                   fill
                   priority
-                  sizes="112px"
                   quality={85}
                   loading="eager"
                   placeholder="blur"
-                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjg0PjU4Ojo4OjU4Ojo4Ojo4Ojo4Ojo4Ojo4Ojr/2wBDAR4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjg0PjU4Ojo4OjU4Ojo4Ojo4Ojo4Ojo4Ojo4Ojr/2wBDAR4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                 />
               </div>
             </div>
             <p className="text-gray-300 text-sm mt-1">{t('common.today')}</p>
           </motion.div>
 
-          {/* Game Modes and Features */}
-          <motion.div
-            className="grid grid-cols-2 gap-3 mb-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <motion.div
-              className="bg-gradient-to-br from-purple-900/60 to-indigo-900/60 backdrop-blur-md rounded-2xl p-3 shadow-lg border border-purple-800/30"
-              variants={itemVariants}
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleStartGame('casual')}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-medium">{t('common.casualMode')}</h3>
-                <Play className="w-5 h-5 text-purple-400" />
-              </div>
-              <p className="text-gray-300 text-sm mb-3">{t('common.casualDescription')}</p>
-              {highScores.casual > 0 && (
-                <div className="flex items-center gap-1 mb-2">
-                  <Trophy className="w-3 h-3 text-yellow-400" />
-                  <span className="text-yellow-400 text-xs font-medium">
-                    {t('game.highScore')}: {highScores.casual.toLocaleString()}
-                  </span>
-                </div>
-              )}
-              <ul className="text-gray-400 text-xs space-y-1">
-                <li>{t('common.casualFeature1')}</li>
-                <li>{t('common.casualFeature2')}</li>
-              </ul>
-            </motion.div>
+          <div className="max-w-80 mx-auto w-full flex justify-center mb-4">
+            <EnergyDisplay />
+          </div>
 
+          {/* 게임 모드 선택 */}
+          <div className="max-w-80 mx-auto w-full flex flex-col gap-4 mb-4">
             <motion.div
-              className="bg-gradient-to-br from-amber-900/60 to-orange-900/60 backdrop-blur-md rounded-2xl p-3 shadow-lg border border-amber-800/30"
+              className="relative bg-gradient-to-br from-amber-900/60 to-orange-900/60 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-amber-800/30 hover:border-amber-600/50 transition-all duration-300"
               variants={itemVariants}
-              whileHover={{ scale: 1.03, y: -2 }}
+              whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleStartGame('challenge')}
             >
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-medium">{t('common.challengeMode')}</h3>
-                <Flame className="w-5 h-5 text-amber-400" />
-              </div>
-              <p className="text-gray-300 text-sm mb-3">{t('common.challengeDescription')}</p>
-              {highScores.challenge > 0 && (
-                <div className="flex items-center gap-1 mb-2">
-                  <Trophy className="w-3 h-3 text-yellow-400" />
-                  <span className="text-yellow-400 text-xs font-medium">
-                    {t('game.highScore')}: {highScores.challenge.toLocaleString()}
-                  </span>
-                </div>
-              )}
-              <ul className="text-gray-400 text-xs space-y-1">
-                <li>{t('common.challengeFeature1')}</li>
-                <li>{t('common.challengeFeature2')}</li>
-              </ul>
-            </motion.div>
-          </motion.div>
-
-          {/* Daily Rewards and Events */}
-          <motion.div
-            className="mb-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.3 }}
-          >
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-white font-bold text-sm">{t('common.eventsAndRewards')}</h2>
-              <button className="text-gray-400 text-xs flex items-center" onClick={() => handleNavigation('/events')}>
-                {t('common.more')} <ChevronRight className="w-3 h-3 ml-0.5" />
-              </button>
-            </div>
-
-            <motion.div
-              className="bg-gradient-to-br from-pink-900/60 to-red-900/60 backdrop-blur-md rounded-2xl p-3 shadow-lg border border-pink-800/30 mb-3"
-              variants={itemVariants}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleNavigation('/attendance')}
-            >
-              <div className="flex items-center gap-3">
-                <div className="bg-pink-500/30 p-2 rounded-lg">
-                  <Calendar className="text-pink-300 w-5 h-5" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-white font-bold text-sm">{t('common.todayAttendance')}</h3>
-                  <p className="text-gray-300 text-xs">{t('common.attendanceDescription')}</p>
-                </div>
-                <div className="bg-pink-500/20 rounded-lg px-2 py-1">
-                  <span className="text-pink-300 text-xs font-medium">{t('common.day5')}</span>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="bg-gradient-to-br from-amber-900/60 to-orange-900/60 backdrop-blur-md rounded-2xl p-3 shadow-lg border border-amber-800/30"
-              variants={itemVariants}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleNavigation('/events/special')}
-            >
-              <div className="flex items-center gap-3">
-                <div className="bg-amber-500/30 p-2 rounded-lg">
-                  <Gift className="text-amber-300 w-5 h-5" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center">
-                    <h3 className="text-white font-bold text-sm">{t('common.specialEvent')}</h3>
-                    <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">
-                      {t('common.new')}
-                    </span>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="relative">
+                  <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg">
+                    <Play className="w-4 h-4 text-white" fill="currentColor" />
                   </div>
-                  <p className="text-gray-300 text-xs">{t('common.spaceExplorationEvent')}</p>
                 </div>
-                <div className="bg-amber-500/20 rounded-lg px-2 py-1">
-                  <span className="text-amber-300 text-xs font-medium">{t('common.2DaysLeft')}</span>
+                <div>
+                  <span className="text-white font-semibold text-lg">{t('common.startGame')}</span>
+                  <p className="text-gray-300 text-sm">{t('common.challengeDescription')}</p>
                 </div>
               </div>
             </motion.div>
-          </motion.div>
-
-          {/* Friends Activity */}
-          <motion.div
-            className="mb-2"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.5 }}
-          >
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-white font-bold text-sm">{t('common.friendsActivity')}</h2>
-              <button className="text-gray-400 text-xs flex items-center" onClick={() => handleNavigation('/friends')}>
-                {t('common.more')} <ChevronRight className="w-3 h-3 ml-0.5" />
-              </button>
-            </div>
-
-            <div className="flex -space-x-2 mb-1">
-              {['sunflower', 'tulip', 'mushroom', 'crystal-cactus'].map((plant, i) => (
-                <motion.div
-                  key={plant}
-                  className="w-8 h-8 rounded-full border-2 border-gray-800 overflow-hidden"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + i * 0.1 }}
-                >
-                  <Image src={`/plants/${plant}.png`} alt={plant} width={50} height={50} priority />
-                </motion.div>
-              ))}
-              <motion.div
-                className="w-8 h-8 rounded-full border-2 border-gray-800 bg-gray-700 flex items-center justify-center text-xs text-white font-medium"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.1 }}
-              >
-                +3
-              </motion.div>
-            </div>
-            <p className="text-gray-400 text-xs">{t('common.friendsPlaying')}</p>
-          </motion.div>
+          </div>
         </main>
 
         <footer className="sticky left-0 bottom-0 z-10">
@@ -362,7 +251,6 @@ export const MainView = () => {
         <div className="absolute top-[40%] right-[10%] w-60 h-60 rounded-full bg-blue-500/10 blur-3xl"></div>
         <div className="absolute bottom-[20%] left-[30%] w-80 h-80 rounded-full bg-pink-500/10 blur-3xl"></div>
       </div>
-      <SideNavigation unreadMailCount={0} />
       <EnergyModal
         isOpen={showEnergyModal}
         onClose={() => setShowEnergyModal(false)}

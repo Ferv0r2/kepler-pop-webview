@@ -9,6 +9,11 @@ export type UserScore = {
   updatedAt: Date;
 };
 
+export type DropletStatus = {
+  droplet: number;
+  nextChargeAt: number | null;
+};
+
 export type UserInfo = {
   id: string;
   name: string;

@@ -11,7 +11,7 @@ interface ArtifactPanelProps {
 }
 
 export const ArtifactPanel = ({ artifacts }: ArtifactPanelProps) => {
-  const t = useTranslations('game');
+  const t = useTranslations();
   const [isExpanded, setIsExpanded] = useState(false);
   const [hoveredArtifact, setHoveredArtifact] = useState<string | null>(null);
 
@@ -125,7 +125,7 @@ export const ArtifactPanel = ({ artifacts }: ArtifactPanelProps) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              {t('game.close')}
+              {t('common.close')}
             </motion.button>
           </motion.div>
         )}

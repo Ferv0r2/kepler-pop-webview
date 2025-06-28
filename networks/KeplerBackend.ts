@@ -17,6 +17,12 @@ export const getUserInfo = async (): Promise<UserInfo> => {
   return response.json();
 };
 
+export const getDropletStatus = async (): Promise<{ droplet: number; nextChargeAt: number | null }> => {
+  const response = await api.get('/users/me/droplet');
+  if (!response.ok) throw new Error('Failed to get droplet status');
+  return response.json();
+};
+
 export const updateDroplet = async (amount: number): Promise<void> => {
   const response = await api.post('/users/me/droplet/update', { amount });
   if (!response.ok) throw new Error('Failed to update droplet');

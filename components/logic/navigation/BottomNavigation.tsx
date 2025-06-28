@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Store, User, Sparkles } from 'lucide-react';
+import { Store, Settings, Sparkles } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { createElement, ElementType, useMemo } from 'react';
@@ -17,7 +17,7 @@ export const BottomNavigation = () => {
     () => [
       { icon: Store, label: t('common.store'), path: `/${locale}/store` },
       { icon: Sparkles, label: t('common.play'), path: `/${locale}` },
-      { icon: User, label: t('common.profile'), path: `/${locale}/profile` },
+      { icon: Settings, label: t('common.settings'), path: `/${locale}/profile` },
     ],
     [t, locale],
   );

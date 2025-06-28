@@ -1,4 +1,5 @@
-import { Droplet, Store } from 'lucide-react';
+import { Store } from 'lucide-react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -29,11 +30,11 @@ export const EnergyModal = ({ isOpen, onClose, onWatchAd, onPurchase, isLoading 
               onClick={onWatchAd}
               variant="default"
               disabled={isLoading}
-              className="flex justify-between items-center bg-gradient-to-r from-blue-700 to-cyan-700 hover:from-blue-800 hover:to-cyan-800 text-white"
+              className="flex justify-between items-center bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
             >
               <span>{t('modal.watchAd')}</span>
               <div className="flex items-center gap-1">
-                <Droplet className="text-white w-4 h-4" />
+                <Image src="/icons/droplet.png" alt="droplet" width={24} height={24} />
                 <span className="text-white font-bold">{`+${AD_ENERGY_REWARD_AMOUNT}`}</span>
               </div>
             </Button>
@@ -41,7 +42,7 @@ export const EnergyModal = ({ isOpen, onClose, onWatchAd, onPurchase, isLoading 
               onClick={onPurchase}
               variant="secondary"
               disabled={isLoading}
-              className="flex justify-between items-center bg-gradient-to-r from-purple-700 to-pink-700 hover:from-purple-800 hover:to-pink-800 text-white"
+              className="flex justify-between items-center bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white"
             >
               <span>{t('modal.purchase')}</span>
               <div className="flex items-center gap-1">

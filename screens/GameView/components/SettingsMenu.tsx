@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { X, Home, RefreshCw, MousePointer, Hand, Droplet, HelpCircle, Settings } from 'lucide-react';
+import { X, Home, RefreshCw, MousePointer, Hand, HelpCircle, Settings } from 'lucide-react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -182,14 +183,18 @@ export const SettingsMenu = ({
                 className={`h-5 w-5 ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-400' : 'text-green-300'}`}
               />
               <span>{t('game.restart')}</span>
-              <div className="flex items-center gap-1 ml-auto">
-                <Droplet
-                  className={`h-4 w-4 ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-400' : 'text-cyan-300'}`}
+              <div className="flex items-center ml-auto">
+                <Image
+                  src="/icons/droplet.png"
+                  alt="droplet"
+                  width={24}
+                  height={24}
+                  className={`${!userInfo || userInfo.droplet <= 0 ? 'text-gray-400' : 'text-cyan-300'}`}
                 />
                 <span
-                  className={`text-sm font-medium ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-400' : 'text-cyan-300'}`}
+                  className={`mt-1 font-medium ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-400' : 'text-cyan-300'}`}
                 >
-                  {`-${ENERGY_CONSUME_AMOUNT}`}
+                  {`x${ENERGY_CONSUME_AMOUNT}`}
                 </span>
               </div>
             </Button>
