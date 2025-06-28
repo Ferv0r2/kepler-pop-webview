@@ -43,7 +43,8 @@
     "spaceExplorationEvent": "Space Exploration Event in Progress",
     "2DaysLeft": "2 Days Left",
     "friendsActivity": "Friends Activity",
-    "friendsPlaying": "4 friends are playing now"
+    "friendsPlaying": "4 friends are playing now",
+    "close": "Close"
   },
   "navigation": {
     "home": "Home",
@@ -81,9 +82,9 @@
       "mole": "Mole",
       "bomb": "Bomb"
     },
-    "shuffleMessage": "Shuffled tiles by consuming 5 moves",
+    "shuffleMessage": "Shuffled tiles by consuming {count} moves",
     "shuffleConfirm": "Shuffle tiles?",
-    "shuffleCostMessage": "This will consume 5 moves",
+    "shuffleCostMessage": "This will consume {count} moves",
     "noMovesAvailable": "No moves available. Shuffle tiles?",
     "shuffle": "Shuffle",
     "bonusMoves": "Bonus moves!",
@@ -103,7 +104,25 @@
     "insufficientEnergy": "Insufficient Energy",
     "insufficientEnergyMessage": "You don't have enough droplets to restart the game. Would you like to recharge your droplets?",
     "shuffling": "Shuffling tiles...",
-    "pleaseWait": "Please wait a moment"
+    "pleaseWait": "Please wait a moment",
+    "reward": {
+      "title": "Reward Received!",
+      "subtitle": "Select the reward you want",
+      "timeRemaining": "Time Remaining",
+      "autoSelectMessage": "The first reward will be automatically selected if the time runs out",
+      "moves": "Additional moves",
+      "items": "Item received",
+      "artifact": "Artifact received",
+      "moves_title": "Moves +{count}",
+      "moves_description": "Add {count} moves",
+      "items_title": "{name} x{count}",
+      "items_description": "Get {count} {name}"
+    },
+    "artifactPanel": {
+      "title": "Active Artifacts",
+      "subtitle": "{count} active",
+      "description": "Only applies to the current game session"
+    }
   },
   "loading": {
     "tip": "💡 Tip",
@@ -160,5 +179,26 @@
         "instruction": "Matching tiles with higher tiers will earn you a higher score."
       }
     }
+  },
+  "artifact": {
+    "seed_spore": "Seed Spore",
+    "seed_spore_description": "Reduce shuffle cost from 5 to 3",
+    "seed_spore_effect": "Reduce shuffle cost from 5 to 3",
+    "leaf_balance": "Leaf Balance",
+    "leaf_balance_description": "Reduce shuffle cost from 5 to 2",
+    "vine_link": "Vine Link",
+    "vine_link_description": "Add 1 additional move per combo",
+    "blossom_burst": "Blossom Burst",
+    "blossom_burst_description": "Add 2 additional moves per combo",
+    "stellar_broom": "Stellar Broom",
+    "stellar_broom_description": "Automatically remove the highest tier tile every 5 turns",
+    "primal_cleanser": "Primal Cleanser",
+    "primal_cleanser_description": "Automatically remove the highest tier tile every 3 turns",
+    "starlight_core": "Starlight Core",
+    "starlight_core_description": "Increase all match scores by 10%",
+    "twin_core": "Twin Core",
+    "twin_core_description": "Increase all match scores by 20%",
+    "comet_blessing": "Comet Blessing",
+    "comet_blessing_description": "1st tier tile match: 10% chance to upgrade to 3rd tier"
   }
 }

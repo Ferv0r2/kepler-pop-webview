@@ -3,7 +3,7 @@
  */
 
 // 효과음 타입 정의
-export type SoundType = 'match' | 'combo' | 'item' | 'shuffle' | 'gameOver' | 'button';
+export type SoundType = 'match' | 'combo' | 'item' | 'shuffle' | 'gameOver' | 'button' | 'reward' | 'artifact';
 
 // 효과음 설정 인터페이스
 export interface SoundSettings {
@@ -25,6 +25,8 @@ const SOUND_PATHS: Record<SoundType, string> = {
   shuffle: '/sounds/effect/match.mp3',
   gameOver: '/sounds/effect/game-over.wav',
   button: '/sounds/effect/button.mp3',
+  reward: '/sounds/effect/reward.wav',
+  artifact: '/sounds/effect/artifact.wav',
 };
 
 // 효과음 인스턴스 캐시
@@ -253,6 +255,20 @@ export const playGameOverSound = (settings: SoundSettings = defaultSettings): vo
  */
 export const playButtonSound = (settings: SoundSettings = defaultSettings): void => {
   playSound('button', settings);
+};
+
+/**
+ * 보상 효과음을 재생합니다.
+ */
+export const playRewardSound = (settings: SoundSettings = defaultSettings): void => {
+  playSound('reward', settings);
+};
+
+/**
+ * 유물 효과음을 재생합니다.
+ */
+export const playArtifactSound = (settings: SoundSettings = defaultSettings): void => {
+  playSound('artifact', settings);
 };
 
 /**

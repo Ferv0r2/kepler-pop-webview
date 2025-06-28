@@ -33,7 +33,16 @@ import {
   TILE_MAX_TIER,
 } from '@/screens/GameView/constants/game-config';
 import { tileConfig } from '@/screens/GameView/constants/tile-config';
-import type { GameMode, GridItem, TileType, GameState, GameItemType, TierType } from '@/types/game-types';
+import type {
+  GameMode,
+  GridItem,
+  TileType,
+  GameState,
+  GameItemType,
+  TierType,
+  Reward,
+  Artifact,
+} from '@/types/game-types';
 import { createParticles, createOptimizedParticles, createGameOverConfetti } from '@/utils/animation-helper';
 import { calculateComboBonus, batchUpdateTiles } from '@/utils/game-helper';
 import {
@@ -48,10 +57,15 @@ import {
   playShuffleSound,
   playGameOverSound,
   preloadAllSounds,
+  playRewardSound,
+  SoundSettings,
+  playArtifactSound,
 } from '@/utils/sound-helper';
 
 import { LoadingView } from '../LoadingView/LoadingView';
 
+import { ArtifactPanel } from './components/ArtifactPanel';
+import { RewardModal } from './components/RewardModal';
 import { SettingsMenu } from './components/SettingsMenu';
 import { TileComponent } from './components/TileComponent';
 import { TutorialDialog } from './components/TutorialDialog';
@@ -59,6 +73,7 @@ import { useGameItem } from './hooks/useGameItem';
 import { useGameSettings } from './hooks/useGameSettings';
 import { useGameWorker } from './hooks/useGameWorker';
 import { useMatchGame } from './hooks/useMatchGame';
+import { useRewardSystem } from './hooks/useRewardSystem';
 
 const useUpdateDroplet = () => {
   const queryClient = useQueryClient();
@@ -80,6 +95,48 @@ const useUpdateScore = () => {
   });
 };
 
+function applyAutoRemoveArtifacts(
+  artifacts: Artifact[],
+  grid: GridItem[][],
+  turn: number,
+  soundSettings: SoundSettings,
+  setGrid: (g: GridItem[][]) => void,
+  removeMatchedTiles: (g: GridItem[][]) => { newGrid: GridItem[][] },
+) {
+  const autoRemoveArtifacts = artifacts.filter(
+    (artifact) => artifact.isActive && artifact.effect.type === 'auto_remove',
+  );
+  autoRemoveArtifacts.forEach((artifact) => {
+    if (turn > 0 && turn % artifact.effect.value === 0) {
+      let maxTier = 1;
+      let maxTiles: { row: number; col: number }[] = [];
+      for (let row = 0; row < GRID_SIZE; row++) {
+        for (let col = 0; col < GRID_SIZE; col++) {
+          const tile = grid[row][col];
+          if (tile.tier > maxTier) {
+            maxTier = tile.tier;
+            maxTiles = [{ row, col }];
+          } else if (tile.tier === maxTier) {
+            maxTiles.push({ row, col });
+          }
+        }
+      }
+      if (maxTiles.length > 0) {
+        const { row, col } = maxTiles[Math.floor(Math.random() * maxTiles.length)];
+        const newGrid = cloneDeep(grid);
+        newGrid[row][col].isMatched = true;
+        setGrid(newGrid);
+        setTimeout(() => {
+          const { newGrid: afterRemovalGrid } = removeMatchedTiles(newGrid);
+          setGrid(afterRemovalGrid);
+
+          playArtifactSound(soundSettings);
+        }, 200);
+      }
+    }
+  });
+}
+
 export const GameView = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -95,8 +152,22 @@ export const GameView = () => {
     executeItem,
     isItemAnimating,
     itemAnimation,
+    addItem,
   } = useGameItem();
   const { settings: soundSettings } = useSound();
+
+  // 보상 시스템 훅
+  const {
+    rewardState,
+    showRewardModal,
+    availableRewards,
+    timeRemaining,
+    selectReward: selectRewardBase,
+    checkScoreReward,
+    applyArtifactEffects,
+    getShuffleCost,
+    resetRewardState,
+  } = useRewardSystem(gameItems);
 
   const [lastMatchTime, setLastMatchTime] = useState<number>(Date.now());
 
@@ -140,6 +211,7 @@ export const GameView = () => {
   const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showBonusMovesAnimation, setShowBonusMovesAnimation] = useState<number>(0);
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
   const tileRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const t = useTranslations();
   const refillPromiseRef = useRef<Promise<void> | null>(null);
@@ -199,6 +271,7 @@ export const GameView = () => {
       gameState.isSwapping ||
       gameState.isChecking ||
       gameState.isGameOver ||
+      isInitializing ||
       isItemAnimating ||
       gameState.isProcessingMatches ||
       isShuffling
@@ -240,6 +313,7 @@ export const GameView = () => {
       gameState.isSwapping ||
       gameState.isChecking ||
       gameState.isGameOver ||
+      isInitializing ||
       isItemAnimating ||
       gameState.isProcessingMatches ||
       isShuffling
@@ -266,6 +340,7 @@ export const GameView = () => {
       gameState.isSwapping ||
       gameState.isChecking ||
       gameState.isGameOver ||
+      isInitializing ||
       isItemAnimating ||
       isShuffling
     ) {
@@ -364,23 +439,27 @@ export const GameView = () => {
       if (matches.length === 0) return;
 
       const nextCombo = currentCombo + 1;
-      const matchScore = calculateMatchScore(matches.length, nextCombo, streakCount);
+      let matchScore = calculateMatchScore(matches.length, nextCombo, streakCount);
+
+      // 유물 효과 적용
+      const { score: modifiedScore } = applyArtifactEffects(currentGrid, nextCombo, matchScore);
+      matchScore = modifiedScore;
+
       const bonusMoves = calculateComboBonus(nextCombo);
       const shouldDecreaseMoves = isFirstMatch && !selectedGameItem;
       const movesAdjustment = shouldDecreaseMoves ? -1 : 0;
       const newMoves = gameState.moves + movesAdjustment + bonusMoves;
+      const newScore = gameState.score + matchScore;
 
       // 상태 업데이트
       updateGameState({
         isProcessingMatches: true,
         isChecking: true,
-        score: gameState.score + matchScore,
+        score: newScore,
         moves: newMoves,
         turn: isFirstMatch ? gameState.turn + 1 : gameState.turn,
         combo: nextCombo,
       });
-
-      setLastMatchTime(Date.now());
 
       // 효과음 재생
       if (matches.length > 0) {
@@ -488,9 +567,24 @@ export const GameView = () => {
         // 연쇄 매칭 발견 - 재귀 호출
         await processMatches(newMatches, afterRemovalGrid, false, undefined, nextCombo);
       } else {
-        // 연쇄 매칭 종료
-        const isGameOver = newMoves <= 0;
+        // 연쇄 매칭이 완전히 끝났을 때만 보상 체크 (첫 번째 매치에서만)
+        if (isFirstMatch && newMoves > 0) {
+          checkScoreReward(newScore);
+        }
 
+        // auto_remove 유물 효과
+        const thisTurn = isFirstMatch ? gameState.turn + 1 : gameState.turn;
+        applyAutoRemoveArtifacts(
+          rewardState.activeArtifacts,
+          grid,
+          thisTurn,
+          soundSettings,
+          setGrid,
+          removeMatchedTiles,
+        );
+
+        // 상태 업데이트 및 게임 오버 처리
+        const isGameOver = newMoves <= 0;
         updateGameState({
           isSwapping: false,
           isChecking: false,
@@ -503,25 +597,30 @@ export const GameView = () => {
           runConfetti(() => {
             createGameOverConfetti();
           });
-
-          // 게임 오버 효과음 재생
           playGameOverSound(soundSettings);
-
-          // 게임 종료 시 점수 업데이트
-          updateUserScore(gameState.score + matchScore);
+          updateUserScore(newScore);
         }
       }
     },
     [
-      gameState,
-      streakCount,
-      selectedGameItem,
-      gameMode,
+      gameState.combo,
+      gameState.moves,
+      gameState.score,
+      gameState.turn,
       calculateMatchScore,
+      streakCount,
+      applyArtifactEffects,
+      selectedGameItem,
       updateGameState,
-      findMatches,
-      removeMatchedTiles,
       setGrid,
+      removeMatchedTiles,
+      findMatches,
+      soundSettings,
+      runConfetti,
+      gameMode,
+      rewardState.activeArtifacts,
+      grid,
+      checkScoreReward,
       updateUserScore,
     ],
   );
@@ -627,6 +726,10 @@ export const GameView = () => {
         setStreakCount(0);
         setIsNewHighScore(false);
         setShowRestartConfirmation(false);
+        setIsInitializing(true);
+
+        // 보상 상태 초기화
+        resetRewardState();
       },
     });
   };
@@ -855,6 +958,12 @@ export const GameView = () => {
 
   useEffect(() => {
     setGrid(createInitialGrid());
+    // 초기화 완료 후 isInitializing을 false로 설정
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+    }, SHOW_EFFECT_TIME_MS);
+
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -905,8 +1014,8 @@ export const GameView = () => {
     // 셔플 효과음 재생
     playShuffleSound(soundSettings);
 
-    // 이동 횟수를 5회 소모
-    const shuffleCost = 5;
+    // 유물 효과를 고려한 섞기 비용 계산
+    const shuffleCost = getShuffleCost();
     const newMoves = Math.max(0, gameState.moves - shuffleCost);
     const isGameOver = newMoves <= 0;
 
@@ -941,6 +1050,29 @@ export const GameView = () => {
       updateUserScore(gameState.score);
     }
   };
+
+  // 보상 선택 핸들러
+  const handleRewardSelect = useCallback(
+    (reward: Reward) => {
+      selectRewardBase(reward);
+
+      // 보상 타입에 따른 처리
+      if (reward.type === 'moves') {
+        // 이동 횟수 추가
+        setGameState((prev) => ({
+          ...prev,
+          moves: prev.moves + reward.value,
+        }));
+      } else if (reward.type === 'items') {
+        // 아이템 추가
+        const itemId = reward.id.split('_')[1] as GameItemType;
+        addItem(itemId, reward.value);
+      }
+      playRewardSound(soundSettings);
+      // artifact는 이미 selectRewardBase에서 처리됨
+    },
+    [selectRewardBase, addItem, soundSettings],
+  );
 
   if (isLoading) {
     return <LoadingView onLoadComplete={() => setIsLoading(false)} />;
@@ -1073,7 +1205,7 @@ export const GameView = () => {
                       initial={{ scale: 1.5 }}
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.3 }}
-                      className={`text-2xl font-bold tracking-wider transition-all duration-300 relative ${
+                      className={`text-2xl font-bold tracking-wider relative ${
                         isNewHighScore ? 'text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : 'text-pink-400'
                       }`}
                     >
@@ -1367,7 +1499,9 @@ export const GameView = () => {
                 </div>
                 <div className="flex-1">
                   <h4 className="text-white font-medium text-sm">{t('game.noMovesAvailable')}</h4>
-                  <p className="mt-1 text-slate-300 text-sm">{t('game.shuffleCostMessage')}</p>
+                  <p className="mt-1 text-slate-300 text-sm">
+                    {t('game.shuffleCostMessage', { count: getShuffleCost() })}
+                  </p>
                 </div>
                 <Button
                   variant="ghost"
@@ -1397,7 +1531,7 @@ export const GameView = () => {
       <AnimatePresence>
         {showShuffleButton && (
           <motion.div
-            className="fixed right-4 top-16 flex justify-center z-10"
+            className="fixed left-4 top-16 flex justify-center z-10"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
@@ -1449,9 +1583,20 @@ export const GameView = () => {
         gameItems={gameItems}
       />
 
-      <Toast isOpen={showShuffleToast} icon={Shuffle} message={t('game.shuffleMessage')} />
+      <Toast isOpen={showShuffleToast} icon={Shuffle} message={t('game.shuffleMessage', { count: getShuffleCost() })} />
 
       <PerformanceMonitor enabled={process.env.NODE_ENV === 'development'} />
+
+      {/* 보상 모달 */}
+      <RewardModal
+        isOpen={showRewardModal}
+        rewards={availableRewards}
+        timeRemaining={timeRemaining}
+        onSelectReward={handleRewardSelect}
+      />
+
+      {/* 유물 패널 */}
+      <ArtifactPanel artifacts={rewardState.activeArtifacts} />
 
       {/* 섞기 중 로딩 화면 */}
       <AnimatePresence>

@@ -43,7 +43,8 @@
     "spaceExplorationEvent": "宇宙探検イベント開催中",
     "2DaysLeft": "あと2日",
     "friendsActivity": "フレンドの活動",
-    "friendsPlaying": "4人のフレンドがプレイ中です"
+    "friendsPlaying": "4人のフレンドがプレイ中です",
+    "close": "閉じる"
   },
   "navigation": {
     "home": "ホーム",
@@ -81,9 +82,9 @@
       "mole": "モグラ",
       "bomb": "爆弾"
     },
-    "shuffleMessage": "移動回数5回を消費してタイルをシャッフルしました",
+    "shuffleMessage": "移動回数{count}回を消費してタイルをシャッフルしました",
     "shuffleConfirm": "タイルをシャッフルしますか？",
-    "shuffleCostMessage": "移動回数5回が消費されます",
+    "shuffleCostMessage": "移動回数{count}回が消費されます",
     "noMovesAvailable": "移動可能なタイルがありません。タイルをシャッフルしますか？",
     "shuffle": "シャッフル",
     "bonusMoves": "ボーナス移動！",
@@ -103,7 +104,25 @@
     "insufficientEnergy": "エネルギー不足",
     "insufficientEnergyMessage": "ゲームを再開するためのエネルギーが不足しています。エネルギーを充電しますか？",
     "shuffling": "タイルをシャッフルしています...",
-    "pleaseWait": "少々お待ちください"
+    "pleaseWait": "少々お待ちください",
+    "reward": {
+      "title": "報酬を受け取りました！",
+      "subtitle": "お望みの報酬を選択してください",
+      "timeRemaining": "残り時間",
+      "autoSelectMessage": "時間が経過した場合、最初の報酬が自動的に選択されます",
+      "moves": "追加移動",
+      "items": "アイテムを受け取りました",
+      "artifact": "アーティファクトを受け取りました",
+      "moves_title": "移動 +{count}",
+      "moves_description": "{count}回の追加移動",
+      "items_title": "{name} x{count}",
+      "items_description": "{name}を{count}個獲得"
+    },
+    "artifactPanel": {
+      "title": "アクティブなアーティファクト",
+      "subtitle": "{count}個アクティブ",
+      "description": "現在のゲームセッションにのみ適用されます"
+    }
   },
   "loading": {
     "tip": "💡 ヒント",
@@ -160,5 +179,26 @@
         "instruction": "より高い階級のタイルをマッチさせると、より高いスコアを獲得できます。"
       }
     }
+  },
+  "artifact": {
+    "seed_spore": "種子の孢子",
+    "seed_spore_description": "シャッフルコストを5から3に減らす",
+    "seed_spore_effect": "シャッフルコストを5から3に減らす",
+    "leaf_balance": "葉の平衡",
+    "leaf_balance_description": "シャッフルコストを5から2に減らす",
+    "vine_link": "藤のリンク",
+    "vine_link_description": "コンボごとに1回の追加移動",
+    "blossom_burst": "花の爆発",
+    "blossom_burst_description": "コンボごとに2回の追加移動",
+    "stellar_broom": "ステラブルーム",
+    "stellar_broom_description": "5ターンごとに最も高い階級のタイルを自動的に削除",
+    "primal_cleanser": "原始のクリーナー",
+    "primal_cleanser_description": "3ターンごとに最も高い階級のタイルを自動的に削除",
+    "starlight_core": "星のコア",
+    "starlight_core_description": "すべてのマッチスコアを10%増加",
+    "twin_core": "双子のコア",
+    "twin_core_description": "すべてのマッチスコアを20%増加",
+    "comet_blessing": "彗星の祝福",
+    "comet_blessing_description": "1階級のタイルマッチ: 10%の確率で3階級にアップグレード"
   }
 }

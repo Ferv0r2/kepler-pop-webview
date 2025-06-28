@@ -39,3 +39,61 @@ export type ItemAnimation = {
   left?: number;
   top?: number;
 };
+
+// 보상 시스템 타입들
+export type RewardType = 'moves' | 'items' | 'artifact';
+
+export type Reward = {
+  type: RewardType;
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  value: number;
+  color: string;
+};
+
+export type ArtifactId =
+  | 'seed_spore'
+  | 'leaf_balance'
+  | 'vine_link'
+  | 'blossom_burst'
+  | 'stellar_broom'
+  | 'primal_cleanser'
+  | 'starlight_core'
+  | 'twin_core'
+  | 'comet_blessing';
+
+export type Artifact = {
+  id: ArtifactId;
+  name: string;
+  description: string;
+  effect: ArtifactEffect;
+  isActive: boolean;
+  icon: string;
+  color: string;
+};
+
+export type ArtifactEffect = {
+  type: 'cost_reduction' | 'combo_boost' | 'auto_remove' | 'score_boost' | 'special';
+  value: number;
+  condition?: string;
+};
+
+export type RewardState = {
+  achievedScores: Set<number>;
+  activeArtifacts: Artifact[];
+  rewardHistory: RewardHistory[];
+};
+
+export type RewardHistory = {
+  score: number;
+  selectedReward: Reward;
+  timestamp: Date;
+};
+
+export type RewardThreshold = {
+  score: number;
+  moves: number;
+  items: number;
+};

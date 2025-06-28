@@ -43,7 +43,8 @@
     "spaceExplorationEvent": "Evento de Exploración Espacial en Curso",
     "2DaysLeft": "Quedan 2 días",
     "friendsActivity": "Actividad de Amigos",
-    "friendsPlaying": "4 amigos están jugando"
+    "friendsPlaying": "4 amigos están jugando",
+    "close": "Cerrar"
   },
   "navigation": {
     "home": "Inicio",
@@ -81,9 +82,9 @@
       "mole": "Topo",
       "bomb": "Bomba"
     },
-    "shuffleMessage": "Fichas mezcladas consumiendo 5 movimientos",
+    "shuffleMessage": "Fichas mezcladas consumiendo {count} movimientos",
     "shuffleConfirm": "¿Mezclar fichas?",
-    "shuffleCostMessage": "Esto consumirá 5 movimientos",
+    "shuffleCostMessage": "Esto consumirá {count} movimientos",
     "noMovesAvailable": "No hay movimientos disponibles. ¿Mezclar fichas?",
     "shuffle": "Mezclar",
     "bonusMoves": "¡Movimientos extra!",
@@ -103,7 +104,25 @@
     "insufficientEnergy": "Energía Insuficiente",
     "insufficientEnergyMessage": "No tienes suficientes gotas de energía para reiniciar el juego. ¿Te gustaría recargar tu energía?",
     "shuffling": "Mezclando fichas...",
-    "pleaseWait": "Por favor espera un momento"
+    "pleaseWait": "Por favor espera un momento",
+    "reward": {
+      "title": "Recompensa obtenida!",
+      "subtitle": "Selecciona la recompensa que deseas",
+      "timeRemaining": "Tiempo restante",
+      "autoSelectMessage": "Si el tiempo termina, se seleccionará la primera recompensa",
+      "moves": "Movimientos adicionales",
+      "items": "Objeto obtenido",
+      "artifact": "Artefacto obtenido",
+      "moves_title": "Movimientos +{count}",
+      "moves_description": "Añade {count} movimientos",
+      "items_title": "{name} x{count}",
+      "items_description": "Obtén {count} {name}"
+    },
+    "artifactPanel": {
+      "title": "Artefactos activos",
+      "subtitle": "{count} activos",
+      "description": "Solo se aplica a la sesión de juego actual"
+    }
   },
   "loading": {
     "tip": "💡 Consejo",
@@ -160,5 +179,26 @@
         "instruction": "Combinar fichas con niveles más altos te dará una puntuación más alta."
       }
     }
+  },
+  "artifact": {
+    "seed_spore": "Semilla de espora",
+    "seed_spore_description": "Reduce el costo de mezcla de 5 a 3",
+    "seed_spore_effect": "Reduce el costo de mezcla de 5 a 3",
+    "leaf_balance": "Balance de hojas",
+    "leaf_balance_description": "Reduce el costo de mezcla de 5 a 2",
+    "vine_link": "Vínculo de enredadera",
+    "vine_link_description": "Añade 1 movimiento adicional por combinación",
+    "blossom_burst": "Explosión de flores",
+    "blossom_burst_description": "Añade 2 movimientos adicionales por combinación",
+    "stellar_broom": "Cepo de estrellas",
+    "stellar_broom_description": "Elimina automáticamente la ficha de mayor nivel cada 5 turnos",
+    "primal_cleanser": "Limpiador primigenio",
+    "primal_cleanser_description": "Elimina automáticamente la ficha de mayor nivel cada 3 turnos",
+    "starlight_core": "Núcleo de luz estelar",
+    "starlight_core_description": "Aumenta todas las puntuaciones de combinación en un 10%",
+    "twin_core": "Núcleo gemelo",
+    "twin_core_description": "Aumenta todas las puntuaciones de combinación en un 20%",
+    "comet_blessing": "Bendición de cometa",
+    "comet_blessing_description": "Combinación de ficha de nivel 1: 10% de probabilidad de subir al nivel 3"
   }
 }

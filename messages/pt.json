@@ -43,7 +43,8 @@
     "spaceExplorationEvent": "Evento de Exploração Espacial em Andamento",
     "2DaysLeft": "2 dias restantes",
     "friendsActivity": "Atividade dos Amigos",
-    "friendsPlaying": "4 amigos estão jogando"
+    "friendsPlaying": "4 amigos estão jogando",
+    "close": "Fechar"
   },
   "navigation": {
     "home": "Início",
@@ -81,9 +82,9 @@
       "mole": "Toupeira",
       "bomb": "Bomba"
     },
-    "shuffleMessage": "Peças embaralhadas consumindo 5 movimentos",
+    "shuffleMessage": "Peças embaralhadas consumindo {count} movimentos",
     "shuffleConfirm": "Embaralhar peças?",
-    "shuffleCostMessage": "Isso consumirá 5 movimentos",
+    "shuffleCostMessage": "Isso consumirá {count} movimentos",
     "noMovesAvailable": "Nenhum movimento disponível. Embaralhar peças?",
     "shuffle": "Embaralhar",
     "bonusMoves": "Movimentos bônus!",
@@ -103,7 +104,25 @@
     "insufficientEnergy": "Energia Insuficiente",
     "insufficientEnergyMessage": "Você não tem gotas de energia suficientes para reiniciar o jogo. Gostaria de recarregar sua energia?",
     "shuffling": "Misturando peças...",
-    "pleaseWait": "Por favor, aguarde um momento"
+    "pleaseWait": "Por favor, aguarde um momento",
+    "reward": {
+      "title": "Recompensa obtida!",
+      "subtitle": "Selecione a recompensa que deseja",
+      "timeRemaining": "Tempo restante",
+      "autoSelectMessage": "Se o tempo terminar, a primeira recompensa será selecionada automaticamente",
+      "moves": "Movimentos adicionais",
+      "items": "Item recebido",
+      "artifact": "Artefato recebido",
+      "moves_title": "Movimentos +{count}",
+      "moves_description": "Adiciona {count} movimentos",
+      "items_title": "{name} x{count}",
+      "items_description": "Obtém {count} {name}"
+    },
+    "artifactPanel": {
+      "title": "Artefatos ativos",
+      "subtitle": "{count} ativos",
+      "description": "Aplica-se apenas à sessão de jogo atual"
+    }
   },
   "loading": {
     "tip": "💡 Dica",
@@ -160,5 +179,26 @@
         "instruction": "Combinar peças com níveis mais altos lhe dará uma pontuação mais alta."
       }
     }
+  },
+  "artifact": {
+    "seed_spore": "Semente de espora",
+    "seed_spore_description": "Reduz o custo de embaralhar de 5 para 3",
+    "seed_spore_effect": "Reduz o custo de embaralhar de 5 para 3",
+    "leaf_balance": "Folha de equilíbrio",
+    "leaf_balance_description": "Reduz o custo de embaralhar de 5 para 2",
+    "vine_link": "Vínculo de videira",
+    "vine_link_description": "Adiciona 1 movimento adicional por combinação",
+    "blossom_burst": "Explosão de flor",
+    "blossom_burst_description": "Adiciona 2 movimentos adicionais por combinação",
+    "stellar_broom": "Cepo de estrelas",
+    "stellar_broom_description": "Remove automaticamente a peça de nível mais alto a cada 5 turnos",
+    "primal_cleanser": "Limpeza primária",
+    "primal_cleanser_description": "Remove automaticamente a peça de nível mais alto a cada 3 turnos",
+    "starlight_core": "Núcleo de luz estelar",
+    "starlight_core_description": "Aumenta todas as pontuações de combinação em 10%",
+    "twin_core": "Núcleo duplo",
+    "twin_core_description": "Aumenta todas as pontuações de combinação em 20%",
+    "comet_blessing": "Bendito de cometa",
+    "comet_blessing_description": "Combinação de peça de nível 1: 10% de chance de atualizar para nível 3"
   }
 }

@@ -43,7 +43,8 @@
     "spaceExplorationEvent": "우주 탐험 이벤트 진행 중",
     "2DaysLeft": "2일 남음",
     "friendsActivity": "친구 활동",
-    "friendsPlaying": "친구 4명이 지금 게임 중입니다"
+    "friendsPlaying": "친구 4명이 지금 게임 중입니다",
+    "close": "닫기"
   },
   "navigation": {
     "home": "홈",
@@ -81,9 +82,9 @@
       "mole": "두더지",
       "bomb": "폭탄"
     },
-    "shuffleMessage": "이동 횟수 5회를 소모하여 타일을 섞었습니다",
+    "shuffleMessage": "이동 횟수 {count}회를 소모하여 타일을 섞었습니다",
     "shuffleConfirm": "타일을 섞으시겠습니까?",
-    "shuffleCostMessage": "이동 횟수 5회가 소모됩니다",
+    "shuffleCostMessage": "이동 횟수 {count}회가 소모됩니다",
     "noMovesAvailable": "움직일 수 있는 타일이 없습니다. 타일을 섞으시겠습니까?",
     "shuffle": "섞기",
     "bonusMoves": "보너스 이동!",
@@ -103,7 +104,25 @@
     "insufficientEnergy": "물방울이 부족합니다",
     "insufficientEnergyMessage": "게임을 다시 시작하기 위한 물방울이 부족합니다. 물방울을 충전하시겠습니까?",
     "shuffling": "타일을 섞는 중...",
-    "pleaseWait": "잠시만 기다려주세요"
+    "pleaseWait": "잠시만 기다려주세요",
+    "reward": {
+      "title": "보상 획득!",
+      "subtitle": "원하는 보상을 선택하세요",
+      "timeRemaining": "남은 시간",
+      "autoSelectMessage": "시간이 초과되면 첫 번째 보상이 자동 선택됩니다",
+      "moves": "추가 이동",
+      "items": "아이템 획득",
+      "artifact": "유물 획득",
+      "moves_title": "이동 +{count}",
+      "moves_description": "이동 횟수를 {count}회 추가합니다",
+      "items_title": "{name} x{count}",
+      "items_description": "{name}을 {count}개 획득합니다"
+    },
+    "artifactPanel": {
+      "title": "활성 유물",
+      "subtitle": "{count}개 활성화",
+      "description": "현재 게임 세션에만 적용됩니다"
+    }
   },
   "loading": {
     "tip": "💡 팁",
@@ -160,5 +179,26 @@
         "instruction": "더 높은 등급의 타일을 매치하면 더 높은 점수를 얻을 수 있습니다."
       }
     }
+  },
+  "artifact": {
+    "seed_spore": "생존의 포자",
+    "seed_spore_description": "섞기 비용을 5회에서 3회로 감소",
+    "seed_spore_effect": "섞기 비용을 5회에서 3회로 감소",
+    "leaf_balance": "균형의 잎맥",
+    "leaf_balance_description": "섞기 비용을 5회에서 2회로 감소",
+    "vine_link": "연결의 덩굴",
+    "vine_link_description": "콤보 시 추가 이동 횟수 +1",
+    "blossom_burst": "꽃망울의 폭주",
+    "blossom_burst_description": "콤보 시 추가 이동 횟수 +2",
+    "stellar_broom": "우주의 빗자루",
+    "stellar_broom_description": "매 5턴마다 가장 높은 등급 타일 1개 자동 제거",
+    "primal_cleanser": "태초의 정화자",
+    "primal_cleanser_description": "매 3턴마다 가장 높은 등급 타일 1개 자동 제거",
+    "starlight_core": "별빛 축전기",
+    "starlight_core_description": "모든 매치 점수 10% 증가",
+    "twin_core": "쌍성 축전기",
+    "twin_core_description": "모든 매치 점수 20% 증가",
+    "comet_blessing": "유성의 축복",
+    "comet_blessing_description": "1등급 타일 매치 시 10% 확률로 3등급으로 승급"
   }
 }

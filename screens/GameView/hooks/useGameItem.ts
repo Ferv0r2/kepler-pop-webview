@@ -31,19 +31,19 @@ export const useGameItem = (): UseGameItemReturn => {
     {
       id: 'shovel',
       name: 'Shovel',
-      count: 3,
+      count: 0,
       icon: '/icons/shovel.png',
     },
     {
       id: 'mole',
       name: 'Mole',
-      count: 10,
+      count: 0,
       icon: '/icons/mole.png',
     },
     {
       id: 'bomb',
       name: 'Bomb',
-      count: 1,
+      count: 0,
       icon: '/icons/bomb.png',
     },
   ]);

@@ -43,7 +43,8 @@
     "spaceExplorationEvent": "太空探索活动进行中",
     "2DaysLeft": "剩余2天",
     "friendsActivity": "好友动态",
-    "friendsPlaying": "4位好友正在游戏中"
+    "friendsPlaying": "4位好友正在游戏中",
+    "close": "关闭"
   },
   "navigation": {
     "home": "首页",
@@ -81,9 +82,9 @@
       "mole": "鼹鼠",
       "bomb": "炸弹"
     },
-    "shuffleMessage": "消耗5次移动次数重新排列方块",
+    "shuffleMessage": "消耗{count}次移动次数重新排列方块",
     "shuffleConfirm": "重新排列方块？",
-    "shuffleCostMessage": "这将消耗5次移动次数",
+    "shuffleCostMessage": "这将消耗{count}次移动次数",
     "noMovesAvailable": "没有可移动的方块。重新排列方块？",
     "shuffle": "重新排列",
     "bonusMoves": "额外移动！",
@@ -103,7 +104,25 @@
     "insufficientEnergy": "能量不足",
     "insufficientEnergyMessage": "您没有足够的能量水滴来重新开始游戏。是否要充值能量？",
     "shuffling": "正在重新排列方块...",
-    "pleaseWait": "请稍等"
+    "pleaseWait": "请稍等",
+    "reward": {
+      "title": "奖励已获得！",
+      "subtitle": "选择您想要的奖励",
+      "timeRemaining": "剩余时间",
+      "autoSelectMessage": "如果时间结束，将自动选择第一个奖励",
+      "moves": "额外移动",
+      "items": "物品已获得",
+      "artifact": "奖励已获得",
+      "moves_title": "移动 +{count}",
+      "moves_description": "移动次数增加{count}次",
+      "items_title": "{name} x{count}",
+      "items_description": "获得{count}个{name}"
+    },
+    "artifactPanel": {
+      "title": "激活的奖励",
+      "subtitle": "{count}个激活",
+      "description": "仅适用于当前游戏会话"
+    }
   },
   "loading": {
     "tip": "💡 提示",
@@ -160,5 +179,26 @@
         "instruction": "匹配更高等级的方块将获得更高的分数。"
       }
     }
+  },
+  "artifact": {
+    "seed_spore": "种子孢子",
+    "seed_spore_description": "将洗牌成本从5次减少到3次",
+    "seed_spore_effect": "将洗牌成本从5次减少到3次",
+    "leaf_balance": "叶平衡",
+    "leaf_balance_description": "将洗牌成本从5次减少到2次",
+    "vine_link": "藤蔓链接",
+    "vine_link_description": "每个连击增加1次额外移动",
+    "blossom_burst": "花爆裂",
+    "blossom_burst_description": "每个连击增加2次额外移动",
+    "stellar_broom": "星尘扫帚",
+    "stellar_broom_description": "每5回合自动移除最高等级方块",
+    "primal_cleanser": "原始清洁剂",
+    "primal_cleanser_description": "每3回合自动移除最高等级方块",
+    "starlight_core": "星光核心",
+    "starlight_core_description": "所有匹配分数增加10%",
+    "twin_core": "双子核心",
+    "twin_core_description": "所有匹配分数增加20%",
+    "comet_blessing": "彗星祝福",
+    "comet_blessing_description": "1级方块匹配: 10%概率升级到3级"
   }
 }
