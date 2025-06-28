@@ -15,9 +15,9 @@ import { EnergyDisplay } from '@/components/ui/EnergyDisplay';
 import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import { useRouter } from '@/i18n/routing';
-import { updateDroplet } from '@/networks/KeplerBackend';
+import { updateDroplet, updateGem } from '@/networks/KeplerBackend';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
-import type { NativeToWebMessage, EnergyUpdatePayload } from '@/types/native-call';
+import type { NativeToWebMessage, EnergyUpdatePayload, PurchaseResultPayload } from '@/types/native-call';
 import { itemVariants } from '@/utils/animation-helper';
 import { playButtonSound } from '@/utils/sound-helper';
 
@@ -28,6 +28,17 @@ const useUpdateDroplet = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateDroplet,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['droplet-status'] });
+    },
+  });
+};
+
+const useUpdateGem = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateGem,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
@@ -44,6 +55,7 @@ export const MainView = () => {
   const [showEnergyModal, setShowEnergyModal] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const updateDropletMutation = useUpdateDroplet();
+  const updateGemMutation = useUpdateGem();
 
   const { settings: soundSettings } = useSound();
 
@@ -87,11 +99,26 @@ export const MainView = () => {
       },
     );
 
+    const unsubscribePurchaseResult = addMessageHandler<NativeToWebMessage<PurchaseResultPayload>>(
+      NativeToWebMessageType.PURCHASE_RESULT,
+      async (msg) => {
+        const payload = msg.payload;
+        try {
+          if (payload?.status === 'success' && payload.amount) {
+            updateGemMutation.mutate(payload.amount);
+          }
+        } catch (e) {
+          console.error('구매 결과 처리 실패:', e);
+        }
+      },
+    );
+
     return () => {
       unsubscribeBackState();
       unsubscribeEnergyChange();
+      unsubscribePurchaseResult();
     };
-  }, [isInWebView, sendMessage, addMessageHandler, showExitModal, updateDropletMutation]);
+  }, [isInWebView, sendMessage, addMessageHandler, showExitModal, updateDropletMutation, updateGemMutation]);
 
   if (!userInfo || isLoading) {
     return <LoadingView />;

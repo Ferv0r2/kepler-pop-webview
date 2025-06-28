@@ -24,6 +24,9 @@ export enum WebToNativeMessageType {
 
   // Energy control
   ENERGY_CHANGE = 'ENERGY_CHANGE',
+
+  // In-app purchase
+  IN_APP_PURCHASE = 'IN_APP_PURCHASE',
 }
 
 // Messages from Native to Web
@@ -41,6 +44,9 @@ export enum NativeToWebMessageType {
 
   ENERGY_CHANGE = 'ENERGY_CHANGE',
 
+  // In-app purchase
+  PURCHASE_RESULT = 'PURCHASE_RESULT',
+
   NATIVE_ERROR = 'NATIVE_ERROR',
   // Wildcard for all message types
   ALL = '*',
@@ -52,6 +58,10 @@ export type ExitActionPayload = void;
 
 export interface WebAppReadyPayload {
   timestamp: string;
+}
+
+export interface InAppPurchasePayload {
+  productId: string;
 }
 
 // Native to Web message payloads
@@ -80,7 +90,16 @@ export interface GemUpdatePayload {
   reason?: string; // optional: 광고, 구매 등
 }
 
+export interface PurchaseResultPayload {
+  status: 'success' | 'failed' | 'cancelled';
+  productId: string;
+  amount?: number;
+  error?: string;
+}
+
 // Typed message interfaces
 export type WebAppReadyMessage = WebToNativeMessage<WebAppReadyPayload>;
 export type GoogleIdTokenMessage = NativeToWebMessage<GoogleIdTokenPayload>;
 export type GemUpdateMessage = WebToNativeMessage<GemUpdatePayload>;
+export type InAppPurchaseMessage = WebToNativeMessage<InAppPurchasePayload>;
+export type PurchaseResultMessage = NativeToWebMessage<PurchaseResultPayload>;

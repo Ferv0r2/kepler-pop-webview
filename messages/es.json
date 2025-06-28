@@ -98,6 +98,42 @@
     "passwordLength": "La contraseña debe tener al menos 8 caracteres",
     "passwordMatch": "Las contraseñas no coinciden"
   },
+  "store": {
+    "title": "Tienda",
+    "droplet": "Gota de Energía",
+    "gems": "Gemas",
+    "energyPackages": "Paquetes de Energía",
+    "gemPackages": "Paquetes de Gems",
+    "purchase": "Comprar",
+    "purchasing": "Comprando...",
+    "purchaseSuccess": "Compra realizada con éxito!",
+    "purchaseFailed": "Error en la compra",
+    "insufficientGems": "Gemas insuficientes",
+    "confirmPurchase": "Confirmar Compra",
+    "confirmPurchaseMessage": "¿Estás seguro de que deseas comprar este artículo?",
+    "bestValue": "Mejor Valor",
+    "popular": "Popular",
+    "limited": "Limitado",
+    "free": "Gratuito",
+    "originalPrice": "Precio Original",
+    "discount": "Descuento",
+    "energyDescription": "Energía para jugar el juego",
+    "gemDescription": "Moneda premium en el juego",
+    "package": {
+      "small": "Paquete Pequeño",
+      "medium": "Paquete Medio",
+      "large": "Paquete Grande",
+      "mega": "Paquete Mega"
+    },
+    "droplet_unit": "Gota de Energía {count}",
+    "gem_unit": "Gema {count}",
+    "droplet_small": "Gota de Energía Pequeña",
+    "droplet_medium": "Gota de Energía Media",
+    "droplet_large": "Gota de Energía Grande",
+    "gems_small": "Gema Pequeña",
+    "gems_medium": "Gema Media",
+    "gems_large": "Gema Grande"
+  },
   "game": {
     "modes": {
       "casual": "Casual",

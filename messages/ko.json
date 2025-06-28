@@ -47,6 +47,31 @@
     "close": "닫기",
     "startGame": "게임 시작"
   },
+  "tutorial": {
+    "title": "게임 방법",
+    "step1": {
+      "description": "인접한 타일을 교환하여 3개 이상의 동일한 타일을 만들어보세요."
+    },
+    "step2": {
+      "tier_1": "1등급",
+      "tier_2": "2등급",
+      "tier_3": "3등급",
+      "description": "타일을 맞출수록 등급이 높아지고 더욱 어려워집니다!",
+      "instruction": "같은 등급끼리만 맞출 수 있습니다."
+    },
+    "step3": {
+      "description": "특정 점수에 도달하면 랜덤한 보상을 선택할 수 있습니다.",
+      "instruction": "10% 확률로 유물을 획득할 수 있습니다."
+    },
+    "step4": {
+      "description": "특별한 아이템을 사용하여 타일을 제거하고 강력한 콤보를 만들어보세요.",
+      "instruction": "아이템을 선택한 후 타일을 탭하여 효과를 활성화하세요."
+    },
+    "step5": {
+      "description": "맞출 수 있는 타일이 없다면 타일을 섞어야 해요.",
+      "instruction": "이동 횟수를 소모하거나 아이템을 사용해보세요."
+    }
+  },
   "navigation": {
     "home": "홈",
     "about": "소개",
@@ -72,6 +97,42 @@
     "invalidEmail": "유효한 이메일을 입력해주세요",
     "passwordLength": "비밀번호는 최소 8자 이상이어야 합니다",
     "passwordMatch": "비밀번호가 일치하지 않습니다"
+  },
+  "store": {
+    "title": "스토어",
+    "droplet": "물방울",
+    "gems": "보석",
+    "energyPackages": "에너지 패키지",
+    "gemPackages": "보석 패키지",
+    "purchase": "구매하기",
+    "purchasing": "구매 중...",
+    "purchaseSuccess": "구매가 완료되었습니다!",
+    "purchaseFailed": "구매에 실패했습니다",
+    "insufficientGems": "보석이 부족합니다",
+    "confirmPurchase": "구매 확인",
+    "confirmPurchaseMessage": "정말로 이 상품을 구매하시겠습니까?",
+    "bestValue": "최고 가치",
+    "popular": "인기",
+    "limited": "한정",
+    "free": "무료",
+    "originalPrice": "원래 가격",
+    "discount": "할인",
+    "energyDescription": "게임을 플레이하기 위한 에너지입니다",
+    "gemDescription": "게임 내 프리미엄 화폐입니다",
+    "package": {
+      "small": "소형 패키지",
+      "medium": "중형 패키지",
+      "large": "대형 패키지",
+      "mega": "메가 패키지"
+    },
+    "droplet_unit": "물방울 {count}개",
+    "gem_unit": "보석 {count}개",
+    "droplet_small": "이슬 패키지",
+    "droplet_medium": "물뿌리개 패키지",
+    "droplet_large": "물탱크 패키지",
+    "gems_small": "보석 패키지",
+    "gems_medium": "보물상자 패키지",
+    "gems_large": "보물더미 패키지"
   },
   "game": {
     "modes": {
@@ -164,31 +225,6 @@
     "watchAd": "광고 시청하기",
     "purchase": "물방울 구매하기",
     "close": "닫기"
-  },
-  "tutorial": {
-    "title": "게임 방법",
-    "step1": {
-      "description": "인접한 타일을 교환하여 3개 이상의 동일한 타일을 만들어보세요."
-    },
-    "step2": {
-      "tier_1": "1등급",
-      "tier_2": "2등급",
-      "tier_3": "3등급",
-      "description": "타일을 맞출수록 등급이 높아지고 더욱 어려워집니다!",
-      "instruction": "같은 등급끼리만 맞출 수 있습니다."
-    },
-    "step3": {
-      "description": "특정 점수에 도달하면 랜덤한 보상을 선택할 수 있습니다.",
-      "instruction": "10% 확률로 유물을 획득할 수 있습니다."
-    },
-    "step4": {
-      "description": "특별한 아이템을 사용하여 타일을 제거하고 강력한 콤보를 만들어보세요.",
-      "instruction": "아이템을 선택한 후 타일을 탭하여 효과를 활성화하세요."
-    },
-    "step5": {
-      "description": "맞출 수 있는 타일이 없다면 타일을 섞어야 해요.",
-      "instruction": "이동 횟수를 소모하거나 아이템을 사용해보세요."
-    }
   },
   "artifact": {
     "seed_spore": "생존의 포자",

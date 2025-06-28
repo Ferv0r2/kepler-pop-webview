@@ -98,6 +98,42 @@
     "passwordLength": "密码长度至少为8个字符",
     "passwordMatch": "密码不匹配"
   },
+  "store": {
+    "title": "商店",
+    "droplet": "能量水滴",
+    "gems": "宝石",
+    "energyPackages": "能量水滴包",
+    "gemPackages": "宝石包",
+    "purchase": "购买",
+    "purchasing": "购买中...",
+    "purchaseSuccess": "购买成功！",
+    "purchaseFailed": "购买失败",
+    "insufficientGems": "宝石不足",
+    "confirmPurchase": "确认购买",
+    "confirmPurchaseMessage": "您确定要购买此物品吗？",
+    "bestValue": "最佳价值",
+    "popular": "热门",
+    "limited": "限量",
+    "free": "免费",
+    "originalPrice": "原价",
+    "discount": "折扣",
+    "energyDescription": "用于游戏的能量",
+    "gemDescription": "游戏中的高级货币",
+    "package": {
+      "small": "小包",
+      "medium": "中包",
+      "large": "大包",
+      "mega": "超级包"
+    },
+    "droplet_unit": "能量水滴 {count}",
+    "gem_unit": "宝石 {count}",
+    "droplet_small": "小能量水滴",
+    "droplet_medium": "中能量水滴",
+    "droplet_large": "大能量水滴",
+    "gems_small": "小宝石",
+    "gems_medium": "中宝石",
+    "gems_large": "大宝石"
+  },
   "game": {
     "modes": {
       "casual": "休闲",

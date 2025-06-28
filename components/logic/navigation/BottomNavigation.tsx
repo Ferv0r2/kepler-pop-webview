@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Store, Settings, Sparkles } from 'lucide-react';
+import { Store, Settings, Play } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { createElement, ElementType, useMemo } from 'react';
@@ -16,7 +16,7 @@ export const BottomNavigation = () => {
   const navigationButtons = useMemo(
     () => [
       { icon: Store, label: t('common.store'), path: `/${locale}/store` },
-      { icon: Sparkles, label: t('common.play'), path: `/${locale}` },
+      { icon: Play, label: t('common.play'), path: `/${locale}` },
       { icon: Settings, label: t('common.settings'), path: `/${locale}/profile` },
     ],
     [t, locale],
@@ -29,9 +29,9 @@ export const BottomNavigation = () => {
   return (
     <motion.div
       className="relative bg-gray-900/80 backdrop-blur-md border-t border-gray-800 pb-4"
-      initial={{ y: 50, opacity: 0 }}
+      initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.6, duration: 0.5 }}
+      transition={{ duration: 0.5 }}
     >
       <div className="flex justify-around items-center px-6">
         {navigationButtons.map((button) => (
@@ -66,14 +66,14 @@ export const BottomNavigationButton = ({ icon, label, isSelected, onClick }: Bot
         <>
           <div className="absolute -inset-1 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full opacity-40 blur-sm" />
           <div className="relative bg-gradient-to-r from-pink-500 to-purple-600 p-4 rounded-full shadow-lg">
-            <Sparkles className="w-6 h-6 text-white" />
+            {createElement(icon, { className: 'w-6 h-6 text-white' })}
           </div>
-          <span className="block text-white text-xs font-medium mt-1">{label}</span>
+          <span className="block text-white text-md font-medium mt-1">{label}</span>
         </>
       ) : (
         <>
           <div className="p-2">{createElement(icon, { className: 'w-5 h-5 text-gray-400' })}</div>
-          <span className="text-gray-400 text-xs">{label}</span>
+          <span className="text-gray-400 text-nd">{label}</span>
         </>
       )}
     </motion.button>

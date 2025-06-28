@@ -98,6 +98,42 @@
     "passwordLength": "パスワードは8文字以上必要です",
     "passwordMatch": "パスワードが一致しません"
   },
+  "store": {
+    "title": "ストア",
+    "droplet": "ドロップレット",
+    "gems": "ジェム",
+    "energyPackages": "エネルギーパッケージ",
+    "gemPackages": "ジェムパッケージ",
+    "purchase": "購入",
+    "purchasing": "購入中...",
+    "purchaseSuccess": "購入が完了しました！",
+    "purchaseFailed": "購入に失敗しました",
+    "insufficientGems": "ジェムが不足しています",
+    "confirmPurchase": "購入を確定",
+    "confirmPurchaseMessage": "本当にこの商品を購入しますか？",
+    "bestValue": "最高価値",
+    "popular": "人気",
+    "limited": "限定",
+    "free": "無料",
+    "originalPrice": "元の価格",
+    "discount": "割引",
+    "energyDescription": "ゲームをプレイするためのエネルギーです",
+    "gemDescription": "ゲーム内のプレミアム通貨です",
+    "package": {
+      "small": "小さなパッケージ",
+      "medium": "中くらいのパッケージ",
+      "large": "大きなパッケージ",
+      "mega": "メガパッケージ"
+    },
+    "droplet_unit": "ドロップレット {count}",
+    "gem_unit": "ジェム {count}",
+    "droplet_small": "ドロップレット小",
+    "droplet_medium": "ドロップレット中",
+    "droplet_large": "ドロップレット大",
+    "gems_small": "ジェム小",
+    "gems_medium": "ジェム中",
+    "gems_large": "ジェム大"
+  },
   "game": {
     "modes": {
       "casual": "カジュアル",

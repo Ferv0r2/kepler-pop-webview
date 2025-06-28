@@ -98,6 +98,42 @@
     "passwordLength": "Password must be at least 8 characters",
     "passwordMatch": "Passwords do not match"
   },
+  "store": {
+    "title": "Store",
+    "droplet": "Droplet",
+    "gems": "Gems",
+    "energyPackages": "Energy Packages",
+    "gemPackages": "Gem Packages",
+    "purchase": "Purchase",
+    "purchasing": "Purchasing...",
+    "purchaseSuccess": "Purchase completed!",
+    "purchaseFailed": "Purchase failed",
+    "insufficientGems": "Insufficient gems",
+    "confirmPurchase": "Confirm Purchase",
+    "confirmPurchaseMessage": "Are you sure you want to purchase this item?",
+    "bestValue": "Best Value",
+    "popular": "Popular",
+    "limited": "Limited",
+    "free": "Free",
+    "originalPrice": "Original Price",
+    "discount": "Discount",
+    "energyDescription": "Energy for playing the game",
+    "gemDescription": "Premium currency in the game",
+    "package": {
+      "small": "Small Package",
+      "medium": "Medium Package",
+      "large": "Large Package",
+      "mega": "Mega Package"
+    },
+    "droplet_unit": "Droplet {count}",
+    "gem_unit": "Gem {count}",
+    "droplet_small": "Droplet Small",
+    "droplet_medium": "Droplet Medium",
+    "droplet_large": "Droplet Large",
+    "gems_small": "Gem Small",
+    "gems_medium": "Gem Medium",
+    "gems_large": "Gem Large"
+  },
   "game": {
     "modes": {
       "casual": "Casual",
@@ -201,14 +237,14 @@
     "blossom_burst": "Blossom Burst",
     "blossom_burst_description": "Add 2 additional moves per combo",
     "stellar_broom": "Stellar Broom",
-    "stellar_broom_description": "Automatically remove the highest tier tile every 5 turns",
+    "stellar_broom_description": "Automatically remove 1 highest tier tile every 5 turns",
     "primal_cleanser": "Primal Cleanser",
-    "primal_cleanser_description": "Automatically remove the highest tier tile every 3 turns",
+    "primal_cleanser_description": "Automatically remove 1 highest tier tile every 3 turns",
     "starlight_core": "Starlight Core",
     "starlight_core_description": "Increase all match scores by 10%",
     "twin_core": "Twin Core",
     "twin_core_description": "Increase all match scores by 20%",
     "comet_blessing": "Comet Blessing",
-    "comet_blessing_description": "1st tier tile match: 10% chance to upgrade to 3rd tier"
+    "comet_blessing_description": "10% chance to upgrade tier 1 tile matches to tier 3"
   }
 }
