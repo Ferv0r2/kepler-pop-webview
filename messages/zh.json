@@ -46,6 +46,31 @@
     "friendsPlaying": "4位好友正在游戏中",
     "close": "关闭"
   },
+  "tutorial": {
+    "title": "如何游玩",
+    "step1": {
+      "description": "交换相邻的方块以创建3个或更多相同方块的匹配。"
+    },
+    "step2": {
+      "tier_1": "等级1",
+      "tier_2": "等级2",
+      "tier_3": "等级3",
+      "description": "匹配方块时，等级会提高，游戏变得更加困难！",
+      "instruction": "只有相同等级的方块可以匹配。"
+    },
+    "step3": {
+      "description": "达到一定分数时，可以获得随机奖励。",
+      "instruction": "有10%的概率获得奖励。"
+    },
+    "step4": {
+      "description": "使用特殊道具清除方块并创建强大的连击。",
+      "instruction": "选择一个道具，然后点击方块来激活其效果。"
+    },
+    "step5": {
+      "description": "如果无法匹配方块，则需要重新洗牌。",
+      "instruction": "使用道具或消耗移动次数来重新洗牌。"
+    }
+  },
   "navigation": {
     "home": "首页",
     "about": "关于",
@@ -160,25 +185,6 @@
     "watchAd": "观看广告",
     "purchase": "购买能量",
     "close": "关闭"
-  },
-  "tutorial": {
-    "title": "游戏玩法",
-    "step1": {
-      "description": "交换相邻的方块以创建3个或更多相同方块的匹配。"
-    },
-    "step2": {
-      "description": "使用特殊道具清除方块并创建强大的连击。",
-      "instruction": "选择一个道具，然后点击方块来激活其效果。"
-    },
-    "step3": {
-      "casual": {
-        "description": "在休闲模式中，您可以自由游戏。没有排行榜，没有获胜压力！"
-      },
-      "challenge": {
-        "description": "在挑战模式中，方块等级会提高，游戏变得更加困难！",
-        "instruction": "匹配更高等级的方块将获得更高的分数。"
-      }
-    }
   },
   "artifact": {
     "seed_spore": "种子孢子",

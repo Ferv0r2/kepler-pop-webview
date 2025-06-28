@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { X, Home, RefreshCw, MousePointer, Hand, Droplet, HelpCircle, Volume2, VolumeX } from 'lucide-react';
+import { X, Home, RefreshCw, MousePointer, Hand, Droplet, HelpCircle, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
-import { useSound } from '@/hooks/useSound';
+// import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import type { TileSwapMode } from '@/types/game-types';
 
@@ -30,7 +30,7 @@ export const SettingsMenu = ({
 }: SettingsMenuProps) => {
   const t = useTranslations();
   const { data: userInfo } = useUser();
-  const { settings: soundSettings, toggleSound, setVolume } = useSound();
+  // const { settings: soundSettings, toggleSound, setVolume } = useSound();
 
   if (!isOpen) return null;
 
@@ -63,13 +63,19 @@ export const SettingsMenu = ({
         transition={{ type: 'spring', damping: 25 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-white">{t('modal.settings')}</h3>
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6 relative z-10">
+          <motion.div className="flex items-center gap-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 backdrop-blur-sm">
+              <Settings className="h-6 w-6 text-cyan-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-white">{t('modal.settings')}</h3>
+          </motion.div>
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            className="h-10 w-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 transition-all duration-200 relative z-20"
           >
             <X className="h-5 w-5 text-white/80" />
           </Button>
@@ -82,7 +88,7 @@ export const SettingsMenu = ({
               <Button
                 variant={tileSwapMode === 'drag' ? 'default' : 'outline'}
                 className={`border-none flex-1 flex items-center justify-center gap-2 ${
-                  tileSwapMode === 'drag' ? 'bg-gradient-to-r from-pink-500 to-purple-600' : ''
+                  tileSwapMode === 'drag' ? 'bg-gradient-to-r from-cyan-500 to-purple-600' : ''
                 }`}
                 onClick={() => onChangeTileSwapMode('drag')}
               >
@@ -92,7 +98,7 @@ export const SettingsMenu = ({
               <Button
                 variant={tileSwapMode === 'select' ? 'default' : 'outline'}
                 className={`border-none flex-1 flex items-center justify-center gap-2 ${
-                  tileSwapMode === 'select' ? 'bg-gradient-to-r from-pink-500 to-purple-600' : ''
+                  tileSwapMode === 'select' ? 'bg-gradient-to-r from-cyan-500 to-purple-600' : ''
                 }`}
                 onClick={() => onChangeTileSwapMode('select')}
               >
@@ -102,7 +108,8 @@ export const SettingsMenu = ({
             </div>
           </div>
 
-          <div className="space-y-2">
+          {/* TODO: 효과음 설정 추가 필요 */}
+          {/* <div className="space-y-2">
             <h4 className="text-white/80 font-medium">{t('modal.effects')}</h4>
             <div className="flex items-center gap-3">
               <Button
@@ -140,14 +147,14 @@ export const SettingsMenu = ({
               </div>
               <span className="text-white/60 text-sm w-8 text-center">{Math.round(soundSettings.volume * 100)}%</span>
             </div>
-          </div>
+          </div> */}
 
-          <div className="mt-6 pt-4 border-t border-indigo-500/30"></div>
+          <div className="mt-6 pt-4 border-t border-slate-600/80"></div>
 
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               variant="outline"
-              className="w-full flex justify-start gap-3 rounded-xl py-4 bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
+              className="w-full flex justify-start gap-3 rounded-lg py-5 bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
               onClick={() => {
                 onClose();
                 onShowBackConfirmation();
@@ -161,7 +168,7 @@ export const SettingsMenu = ({
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               variant="outline"
-              className={`w-full flex justify-start gap-3 rounded-xl py-4 border-indigo-500/30 text-white ${
+              className={`w-full flex justify-start gap-3 rounded-lg py-5 border-indigo-500/30 text-white ${
                 !userInfo || userInfo.droplet <= 0
                   ? 'bg-gradient-to-r from-slate-700/40 to-slate-800/40 opacity-50 cursor-not-allowed'
                   : 'bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40'
@@ -189,7 +196,7 @@ export const SettingsMenu = ({
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               variant="outline"
-              className="w-full flex justify-start gap-3 rounded-xl py-4 bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
+              className="w-full flex justify-start gap-3 rounded-lg py-5 bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
               onClick={() => {
                 onClose();
                 onShowTutorial();
@@ -200,7 +207,7 @@ export const SettingsMenu = ({
             </Button>
           </motion.div>
 
-          <div className="mt-6 pt-4 border-t border-indigo-500/30">
+          <div className="mt-6 pt-4 border-t border-slate-600/80">
             <p className="text-center text-sm text-white/60 mb-2">Kepler Pop</p>
             <p className="text-center text-xs text-white/40">© 2025 Ferv0r2Labs</p>
           </div>

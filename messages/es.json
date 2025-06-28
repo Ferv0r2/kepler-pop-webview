@@ -46,6 +46,31 @@
     "friendsPlaying": "4 amigos están jugando",
     "close": "Cerrar"
   },
+  "tutorial": {
+    "title": "Cómo Jugar",
+    "step1": {
+      "description": "Intercambia fichas adyacentes para crear combinaciones de 3 o más fichas idénticas."
+    },
+    "step2": {
+      "tier_1": "Nivel 1",
+      "tier_2": "Nivel 2",
+      "tier_3": "Nivel 3",
+      "description": "A medida que combinas fichas, sus niveles aumentan, lo que hace que el juego sea más desafiante!",
+      "instruction": "Solo se pueden combinar fichas del mismo nivel."
+    },
+    "step3": {
+      "description": "Alcanza una puntuación determinada para recibir una recompensa aleatoria.",
+      "instruction": "Tienes un 10% de probabilidad de recibir un artefacto."
+    },
+    "step4": {
+      "description": "Usa objetos especiales para limpiar fichas y crear combos poderosos.",
+      "instruction": "Selecciona un objeto, luego toca una ficha para activar su efecto."
+    },
+    "step5": {
+      "description": "Si no puedes combinar fichas, necesitas mezclarlas.",
+      "instruction": "Usa objetos o consume movimientos para mezclar fichas."
+    }
+  },
   "navigation": {
     "home": "Inicio",
     "about": "Acerca de",
@@ -160,25 +185,6 @@
     "watchAd": "Ver Anuncio",
     "purchase": "Comprar Energía",
     "close": "Cerrar"
-  },
-  "tutorial": {
-    "title": "Cómo Jugar",
-    "step1": {
-      "description": "Intercambia fichas adyacentes para crear combinaciones de 3 o más fichas idénticas."
-    },
-    "step2": {
-      "description": "Usa objetos especiales para limpiar fichas y crear combos poderosos.",
-      "instruction": "Selecciona un objeto, luego toca una ficha para activar su efecto."
-    },
-    "step3": {
-      "casual": {
-        "description": "En el modo Casual, puedes jugar libremente. ¡Sin tablas de clasificación, sin presión para ganar!"
-      },
-      "challenge": {
-        "description": "¡En el modo Desafío, los niveles de las fichas aumentan y se vuelve más difícil!",
-        "instruction": "Combinar fichas con niveles más altos te dará una puntuación más alta."
-      }
-    }
   },
   "artifact": {
     "seed_spore": "Semilla de espora",

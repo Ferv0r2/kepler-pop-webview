@@ -46,6 +46,31 @@
     "friendsPlaying": "4 friends are playing now",
     "close": "Close"
   },
+  "tutorial": {
+    "title": "How to Play",
+    "step1": {
+      "description": "Swap adjacent tiles to create matches of 3 or more identical tiles."
+    },
+    "step2": {
+      "tier_1": "Tier 1",
+      "tier_2": "Tier 2",
+      "tier_3": "Tier 3",
+      "description": "As you match tiles, their tiers increase, making the game more challenging!",
+      "instruction": "Only tiles of the same tier can be matched."
+    },
+    "step3": {
+      "description": "Reach a certain score to receive a random reward.",
+      "instruction": "You have a 10% chance to receive an artifact."
+    },
+    "step4": {
+      "description": "Use special items to clear tiles and create powerful combos.",
+      "instruction": "Select an item, then tap a tile to activate its effect."
+    },
+    "step5": {
+      "description": "If you can't match any tiles, you need to shuffle them.",
+      "instruction": "Use items or consume moves to shuffle tiles."
+    }
+  },
   "navigation": {
     "home": "Home",
     "about": "About",
@@ -160,25 +185,6 @@
     "watchAd": "Watch Ad",
     "purchase": "Purchase Energy",
     "close": "Close"
-  },
-  "tutorial": {
-    "title": "How to Play",
-    "step1": {
-      "description": "Swap adjacent tiles to create matches of 3 or more identical tiles."
-    },
-    "step2": {
-      "description": "Use special items to clear tiles and create powerful combos.",
-      "instruction": "Select an item, then tap a tile to activate its effect."
-    },
-    "step3": {
-      "casual": {
-        "description": "In Casual mode, you can play freely. No leaderboards, no pressure to win!"
-      },
-      "challenge": {
-        "description": "In Challenge mode, tile tiers increase and it becomes more difficult!",
-        "instruction": "Matching tiles with higher tiers will earn you a higher score."
-      }
-    }
   },
   "artifact": {
     "seed_spore": "Seed Spore",

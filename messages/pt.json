@@ -46,6 +46,32 @@
     "friendsPlaying": "4 amigos estão jogando",
     "close": "Fechar"
   },
+  "tutorial": {
+    "title": "Como Jogar",
+    "step1": {
+      "description": "Troque peças adjacentes para criar combinações de 3 ou mais peças idênticas."
+    },
+    "step2": {
+      "tier_1": "Nível 1",
+      "tier_2": "Nível 2",
+      "tier_3": "Nível 3",
+      "description": "A medida que você combina peças, seus níveis aumentam, tornando o jogo mais desafiador!",
+      "instruction": "Apenas peças do mesmo nível podem ser combinadas."
+    },
+    "step3": {
+      "description": "Alcance uma certa pontuação para receber uma recompensa aleatória.",
+      "instruction": "Você tem uma chance de 10% de receber um artefato."
+    },
+
+    "step4": {
+      "description": "Use itens especiais para limpar peças e criar combos poderosos.",
+      "instruction": "Selecione um item, depois toque em uma peça para ativar seu efeito."
+    },
+    "step5": {
+      "description": "Se você não puder combinar peças, você precisa embaralhá-las.",
+      "instruction": "Use itens ou consuma movimentos para embaralhar peças."
+    }
+  },
   "navigation": {
     "home": "Início",
     "about": "Sobre",
@@ -160,25 +186,6 @@
     "watchAd": "Assistir Anúncio",
     "purchase": "Comprar Energia",
     "close": "Fechar"
-  },
-  "tutorial": {
-    "title": "Como Jogar",
-    "step1": {
-      "description": "Troque peças adjacentes para criar combinações de 3 ou mais peças idênticas."
-    },
-    "step2": {
-      "description": "Use itens especiais para limpar peças e criar combos poderosos.",
-      "instruction": "Selecione um item, depois toque em uma peça para ativar seu efeito."
-    },
-    "step3": {
-      "casual": {
-        "description": "No modo Casual, você pode jogar livremente. Sem placares, sem pressão para vencer!"
-      },
-      "challenge": {
-        "description": "No modo Desafio, os níveis das peças aumentam e fica mais difícil!",
-        "instruction": "Combinar peças com níveis mais altos lhe dará uma pontuação mais alta."
-      }
-    }
   },
   "artifact": {
     "seed_spore": "Semente de espora",

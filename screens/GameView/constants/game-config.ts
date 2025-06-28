@@ -13,6 +13,8 @@ export const HINT_MOVE_INTERVAL_MS = 10000;
 
 export const TILE_MAX_TIER = 3;
 
+export const TUTORIAL_TOTAL_STEP = 5;
+
 export const CASUAL_MODE_MOVE_COUNT = 30;
 export const CHALLENGE_MODE_MOVE_COUNT = 20;
 

@@ -31,6 +31,7 @@ import {
   SHOW_HINT_TIME_MS,
   SHOW_STREAK_MAINTAIN_TIME_MS,
   TILE_MAX_TIER,
+  TUTORIAL_TOTAL_STEP,
 } from '@/screens/GameView/constants/game-config';
 import { tileConfig } from '@/screens/GameView/constants/tile-config';
 import type {
@@ -897,7 +898,7 @@ export const GameView = () => {
   };
 
   const nextTutorialStep = () => {
-    if (tutorialStep < 3) {
+    if (tutorialStep < TUTORIAL_TOTAL_STEP) {
       setTutorialStep(tutorialStep + 1);
     } else {
       closeTutorial();
@@ -1579,7 +1580,6 @@ export const GameView = () => {
         onNextStep={nextTutorialStep}
         onPrevStep={prevTutorialStep}
         currentStep={tutorialStep}
-        gameMode={gameMode}
         gameItems={gameItems}
       />
 
