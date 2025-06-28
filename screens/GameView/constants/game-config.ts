@@ -1,5 +1,8 @@
 import type { RewardThreshold } from '@/types/game-types';
 
+export const ENERGY_CONSUME_AMOUNT = 5;
+export const AD_ENERGY_REWARD_AMOUNT = 10;
+
 export const GRID_SIZE = 8;
 export const MIN_MATCH_COUNT = 3;
 export const ANIMATION_DURATION = 150;

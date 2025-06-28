@@ -24,6 +24,7 @@ import {
   ANIMATION_DURATION,
   CASUAL_MODE_MOVE_COUNT,
   CHALLENGE_MODE_MOVE_COUNT,
+  ENERGY_CONSUME_AMOUNT,
   GRID_SIZE,
   HINT_MOVE_INTERVAL_MS,
   SCORE,
@@ -61,6 +62,7 @@ import {
   playRewardSound,
   SoundSettings,
   playArtifactSound,
+  playButtonSound,
 } from '@/utils/sound-helper';
 
 import { LoadingView } from '../LoadingView/LoadingView';
@@ -708,7 +710,7 @@ export const GameView = () => {
 
   const restartGame = () => {
     // 에너지 소모
-    updateDropletMutation.mutate(-1, {
+    updateDropletMutation.mutate(-ENERGY_CONSUME_AMOUNT, {
       onSuccess: () => {
         setGameState({
           score: 0,
@@ -870,6 +872,7 @@ export const GameView = () => {
   };
 
   const handleBackClick = () => {
+    playButtonSound(soundSettings);
     if (gameState.isGameOver) {
       router.back();
       return;
@@ -878,11 +881,13 @@ export const GameView = () => {
   };
 
   const handleBackConfirm = () => {
+    playButtonSound(soundSettings);
     setShowBackConfirmation(false);
     router.back();
   };
 
   const handleSettingsClick = () => {
+    playButtonSound(soundSettings);
     setShowSettingsMenu(!showSettingsMenu);
   };
 
@@ -901,6 +906,7 @@ export const GameView = () => {
     if (tutorialStep < TUTORIAL_TOTAL_STEP) {
       setTutorialStep(tutorialStep + 1);
     } else {
+      playButtonSound(soundSettings);
       closeTutorial();
     }
   };
@@ -1563,15 +1569,28 @@ export const GameView = () => {
       <SettingsMenu
         isOpen={showSettingsMenu}
         tileSwapMode={tileSwapMode}
-        onChangeTileSwapMode={setTileSwapMode}
+        onChangeTileSwapMode={(mode) => {
+          playButtonSound(soundSettings);
+          setTileSwapMode(mode);
+        }}
         onClose={() => setShowSettingsMenu(false)}
         onShowTutorial={() => {
+          playButtonSound(soundSettings);
           setShowTutorial(true);
           setTutorialStep(1);
         }}
-        onShowBackConfirmation={() => setShowBackConfirmation(true)}
-        onShowRestartConfirmation={() => setShowRestartConfirmation(true)}
-        onShowEnergyModal={() => setShowEnergyModal(true)}
+        onShowBackConfirmation={() => {
+          playButtonSound(soundSettings);
+          setShowBackConfirmation(true);
+        }}
+        onShowRestartConfirmation={() => {
+          playButtonSound(soundSettings);
+          setShowRestartConfirmation(true);
+        }}
+        onShowEnergyModal={() => {
+          playButtonSound(soundSettings);
+          setShowEnergyModal(true);
+        }}
       />
 
       <TutorialDialog

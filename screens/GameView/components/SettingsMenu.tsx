@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { useUser } from '@/hooks/useUser';
 import type { TileSwapMode } from '@/types/game-types';
 
+import { ENERGY_CONSUME_AMOUNT } from '../constants/game-config';
+
 interface SettingsMenuProps {
   isOpen: boolean;
   tileSwapMode: TileSwapMode;
@@ -187,7 +189,7 @@ export const SettingsMenu = ({
                 <span
                   className={`text-sm font-medium ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-400' : 'text-cyan-300'}`}
                 >
-                  -1
+                  {`-${ENERGY_CONSUME_AMOUNT}`}
                 </span>
               </div>
             </Button>

@@ -1,7 +1,8 @@
-import { Droplet } from 'lucide-react';
+import { Droplet, Store } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
+import { AD_ENERGY_REWARD_AMOUNT } from '@/screens/GameView/constants/game-config';
 
 import { ConfirmationModal } from './ConfirmationModal';
 
@@ -28,24 +29,23 @@ export const EnergyModal = ({ isOpen, onClose, onWatchAd, onPurchase, isLoading 
               onClick={onWatchAd}
               variant="default"
               disabled={isLoading}
-              className="flex justify-between items-center bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+              className="flex justify-between items-center bg-gradient-to-r from-blue-700 to-cyan-700 hover:from-blue-800 hover:to-cyan-800 text-white"
             >
               <span>{t('modal.watchAd')}</span>
               <div className="flex items-center gap-1">
                 <Droplet className="text-white w-4 h-4" />
-                <span className="text-white font-bold">+1</span>
+                <span className="text-white font-bold">{`+${AD_ENERGY_REWARD_AMOUNT}`}</span>
               </div>
             </Button>
             <Button
               onClick={onPurchase}
               variant="secondary"
               disabled={isLoading}
-              className="flex justify-between items-center bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              className="flex justify-between items-center bg-gradient-to-r from-purple-700 to-pink-700 hover:from-purple-800 hover:to-pink-800 text-white"
             >
               <span>{t('modal.purchase')}</span>
               <div className="flex items-center gap-1">
-                <Droplet className="text-white w-4 h-4" />
-                <span className="text-white font-bold">+5</span>
+                <Store className="text-white w-4 h-4" />
               </div>
             </Button>
           </div>

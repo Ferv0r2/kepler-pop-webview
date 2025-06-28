@@ -22,6 +22,7 @@ import type { NativeToWebMessage, EnergyChangePayload } from '@/types/native-cal
 import { containerVariants, itemVariants } from '@/utils/animation-helper';
 import { playButtonSound } from '@/utils/sound-helper';
 
+import { AD_ENERGY_REWARD_AMOUNT, ENERGY_CONSUME_AMOUNT } from './GameView/constants/game-config';
 import { LoadingView } from './LoadingView/LoadingView';
 
 const useUpdateDroplet = () => {
@@ -99,13 +100,13 @@ export const MainView = () => {
   const { name, level, droplet, gameMoney, gem, profileImage } = userInfo;
 
   const handleStartGame = async (mode: 'casual' | 'challenge') => {
-    if (!userInfo || userInfo.droplet <= 0) {
+    playButtonSound(soundSettings);
+    if (!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT) {
       setShowEnergyModal(true);
       return;
     }
 
-    playButtonSound(soundSettings);
-    updateDropletMutation.mutate(-1, {
+    updateDropletMutation.mutate(-ENERGY_CONSUME_AMOUNT, {
       onSuccess: () => {
         router.push(`/game?mode=${mode}`);
       },
@@ -116,17 +117,16 @@ export const MainView = () => {
     if (isLoading || !userInfo) return;
     sendMessage({
       type: WebToNativeMessageType.ENERGY_CHANGE,
-      payload: { amount: 1, reason: 'ad' },
+      payload: { amount: AD_ENERGY_REWARD_AMOUNT, reason: 'ad' },
     });
+    playButtonSound(soundSettings);
     setShowEnergyModal(false);
   };
 
-  const handlePurchase = async () => {
+  const handlePurchase = () => {
     if (isLoading || !userInfo) return;
-    sendMessage({
-      type: WebToNativeMessageType.ENERGY_CHANGE,
-      payload: { amount: 5, reason: 'purchase' },
-    });
+    router.push('/store');
+    playButtonSound(soundSettings);
     setShowEnergyModal(false);
   };
 
