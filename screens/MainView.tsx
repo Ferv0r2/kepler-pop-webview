@@ -2,7 +2,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Play } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, useMemo } from 'react';
@@ -18,7 +17,7 @@ import { useUser } from '@/hooks/useUser';
 import { useRouter } from '@/i18n/routing';
 import { updateDroplet } from '@/networks/KeplerBackend';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
-import type { NativeToWebMessage, EnergyChangePayload } from '@/types/native-call';
+import type { NativeToWebMessage, EnergyUpdatePayload } from '@/types/native-call';
 import { itemVariants } from '@/utils/animation-helper';
 import { playButtonSound } from '@/utils/sound-helper';
 
@@ -74,7 +73,7 @@ export const MainView = () => {
       setShowExitModal(false);
     });
 
-    const unsubscribeEnergyChange = addMessageHandler<NativeToWebMessage<EnergyChangePayload>>(
+    const unsubscribeEnergyChange = addMessageHandler<NativeToWebMessage<EnergyUpdatePayload>>(
       NativeToWebMessageType.ENERGY_CHANGE,
       async (msg) => {
         const payload = msg.payload;
@@ -175,7 +174,7 @@ export const MainView = () => {
                 <div className="absolute -inset-1 bg-gradient-to-br from-yellow-400/20 to-amber-400/20 rounded-full blur-sm"></div>
               </div>
               <div className="text-center">
-                <p className="text-yellow-300 text-xs font-medium">{t('game.highScore')}</p>
+                <p className="text-yellow-300 font-medium">{t('game.highScore')}</p>
                 <p className="text-yellow-400 text-lg font-bold">{highScores.challenge.toLocaleString()}</p>
               </div>
               <div className="relative">
@@ -218,27 +217,21 @@ export const MainView = () => {
           </div>
 
           {/* 게임 모드 선택 */}
-          <div className="max-w-80 mx-auto w-full flex flex-col gap-4 mb-4">
-            <motion.div
-              className="relative bg-gradient-to-br from-amber-900/60 to-orange-900/60 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-amber-800/30 hover:border-amber-600/50 transition-all duration-300"
-              variants={itemVariants}
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleStartGame('challenge')}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="relative">
-                  <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg">
-                    <Play className="w-4 h-4 text-white" fill="currentColor" />
-                  </div>
-                </div>
-                <div>
-                  <span className="text-white font-semibold text-lg">{t('common.startGame')}</span>
-                  <p className="text-gray-300 text-sm">{t('common.challengeDescription')}</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+          <motion.div
+            className="w-fit mx-auto flex-col px-3 py-1 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 mb-20"
+            variants={itemVariants}
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handleStartGame('challenge')}
+          >
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-white font-semibold text-lg">{t('common.startGame')}</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <Image src="/icons/droplet.png" alt="Droplet" width={20} height={20} />
+              <span className="text-white font-semibold">{`x${ENERGY_CONSUME_AMOUNT}`}</span>
+            </div>
+          </motion.div>
         </main>
 
         <footer className="sticky left-0 bottom-0 z-10">

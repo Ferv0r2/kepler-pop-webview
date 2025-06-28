@@ -19,7 +19,7 @@ import { Toast } from '@/components/ui/toast';
 import { useBackButton } from '@/hooks/useBackButton';
 import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
-import { updateDroplet, updateScore } from '@/networks/KeplerBackend';
+import { updateDroplet, updateGem, updateScore } from '@/networks/KeplerBackend';
 import {
   ANIMATION_DURATION,
   CASUAL_MODE_MOVE_COUNT,
@@ -92,6 +92,16 @@ const useUpdateScore = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ score, mode }: { score: number; mode: GameMode }) => updateScore(score, mode),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+};
+
+const useUpdateGem = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (amount: number) => updateGem(amount),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
@@ -241,6 +251,7 @@ export const GameView = () => {
   const { data: userInfo } = useUser();
   const updateDropletMutation = useUpdateDroplet();
   const updateScoreMutation = useUpdateScore();
+  const updateGemMutation = useUpdateGem();
 
   // 현재 모드의 최고 점수 가져오기
   const currentModeHighScore = useMemo(() => {
@@ -747,10 +758,11 @@ export const GameView = () => {
   };
 
   const handleRestartConfirm = () => {
+    playButtonSound(soundSettings);
     setShowRestartConfirmation(false);
 
     // 에너지가 부족한 경우 에너지 모달 표시
-    if (!userInfo || userInfo.droplet <= 0) {
+    if (!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT) {
       setShowEnergyModal(true);
       return;
     }
@@ -1083,11 +1095,13 @@ export const GameView = () => {
         // 아이템 추가
         const itemId = reward.id.split('_')[1] as GameItemType;
         addItem(itemId, reward.value);
+      } else if (reward.type === 'gem') {
+        updateGemMutation.mutate(reward.value);
       }
       playRewardSound(soundSettings);
       // artifact는 이미 selectRewardBase에서 처리됨
     },
-    [selectRewardBase, addItem, soundSettings],
+    [selectRewardBase, soundSettings, addItem, updateGemMutation],
   );
 
   if (isLoading) {
@@ -1334,7 +1348,7 @@ export const GameView = () => {
                           <Button
                             onClick={handleRestartConfirm}
                             disabled={!userInfo || userInfo.droplet <= 0}
-                            className={`flex items-center justify-center font-bold py-3 px-6 rounded-xl text-md shadow-lg transition-all duration-300 ${
+                            className={`flex items-center justify-center font-bold py-4 px-6 rounded-lg text-md shadow-lg transition-all duration-300 ${
                               !userInfo || userInfo.droplet <= 0
                                 ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-gray-300 cursor-not-allowed opacity-50'
                                 : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white hover:shadow-xl'
@@ -1343,9 +1357,12 @@ export const GameView = () => {
                             <RefreshCw
                               className={`w-5 h-5 mr-2 ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-300' : 'text-white'}`}
                             />
-                            <div className="flex items-center gap-1">
-                              <span>{t('game.playAgain')}</span>
-                              <span>{-1}</span>
+                            <div className="flex items-center gap-2">
+                              <span>{t('game.restart')}</span>
+                              <div className="flex items-center">
+                                <Image src="/icons/droplet.png" alt="Droplet" width={24} height={24} />
+                                <span className="mt-1 font-medium text-md">{`x${ENERGY_CONSUME_AMOUNT}`}</span>
+                              </div>
                             </div>
                           </Button>
                           <Button
@@ -1354,7 +1371,7 @@ export const GameView = () => {
                               playButtonSound(soundSettings);
                             }}
                             variant="outline"
-                            className="flex items-center justify-center bg-slate-800/30 border-indigo-500/50 text-white hover:bg-slate-800/50 rounded-xl py-3 text-md"
+                            className="flex items-center justify-center bg-slate-800/30 border-indigo-500/50 text-white hover:bg-slate-800/50 rounded-lg py-4 text-md"
                           >
                             <Home className="w-5 h-5 mr-2" />
                             {t('game.returnToHome')}
@@ -1654,7 +1671,7 @@ export const GameView = () => {
                   animate={{ scale: 1, rotate: 360 }}
                   transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
                 >
-                  <div className="text-5xl text-blue-400">🎲</div>
+                  <Image src="/icons/dice.png" alt="Dice" width={80} height={80} />
                 </motion.div>
                 <motion.div
                   className="text-center mb-6 bg-slate-800/40 p-4 rounded-xl border border-blue-500/30"

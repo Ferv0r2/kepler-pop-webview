@@ -79,6 +79,20 @@ export const useRewardSystem = (gameItems: GameItem[]): UseRewardSystemReturn =>
         }
       });
 
+      // gem 보상: round * (0~1), 최소 1개 보장
+      for (let i = 0; i <= 1; i++) {
+        const gemCount = Math.max(1, Math.floor(round * i)); // 최소 1개 보장
+        allRewards.push({
+          type: 'gem',
+          id: `gem_${round}_${i}`,
+          name: t('game.reward.gem_title', { count: gemCount }),
+          description: t('game.reward.gem_description', { count: gemCount }),
+          icon: '/icons/gem.png',
+          value: gemCount,
+          color: 'text-yellow-400',
+        });
+      }
+
       // 아직 획득하지 않은 유물만 풀에 추가
       const ownedArtifactIds = new Set(rewardState.activeArtifacts.map((a) => a.id));
       const artifactIds = (Object.keys(ARTIFACTS) as ArtifactId[]).filter((id) => !ownedArtifactIds.has(id));
@@ -108,6 +122,7 @@ export const useRewardSystem = (gameItems: GameItem[]): UseRewardSystemReturn =>
         const movesProb = REWARD_PROBABILITIES.moves;
         const itemsProb = REWARD_PROBABILITIES.items;
         const artifactProb = REWARD_PROBABILITIES.artifact;
+        const gemProb = REWARD_PROBABILITIES.gem;
 
         if (random < movesProb) {
           // moves 타입 선택
@@ -115,7 +130,10 @@ export const useRewardSystem = (gameItems: GameItem[]): UseRewardSystemReturn =>
         } else if (random < movesProb + itemsProb) {
           // items 타입 선택
           candidateRewards = availableRewards.filter((r) => r.type === 'items');
-        } else if (random < movesProb + itemsProb + artifactProb) {
+        } else if (random < movesProb + itemsProb + gemProb) {
+          // gem 타입 선택
+          candidateRewards = availableRewards.filter((r) => r.type === 'gem');
+        } else if (random < movesProb + itemsProb + gemProb + artifactProb) {
           // artifact 타입 선택
           candidateRewards = availableRewards.filter((r) => r.type === 'artifact');
         } else {
@@ -189,6 +207,9 @@ export const useRewardSystem = (gameItems: GameItem[]): UseRewardSystemReturn =>
         threshold = REWARD_THRESHOLDS[round - 1];
       } else if (reward.type === 'items') {
         const round = parseInt(reward.id.split('_')[2]);
+        threshold = REWARD_THRESHOLDS[round - 1];
+      } else if (reward.type === 'gem') {
+        const round = parseInt(reward.id.split('_')[1]);
         threshold = REWARD_THRESHOLDS[round - 1];
       } else if (reward.type === 'artifact') {
         const round = parseInt(reward.id.split('_')[2]);

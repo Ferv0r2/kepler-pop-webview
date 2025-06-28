@@ -68,7 +68,13 @@ export interface NativeErrorPayload {
   stack?: string;
 }
 
-export interface EnergyChangePayload {
+export interface EnergyUpdatePayload {
+  status: 'success' | 'failed';
+  amount: number;
+  reason?: string; // optional: 광고, 구매 등
+}
+
+export interface GemUpdatePayload {
   status: 'success' | 'failed';
   amount: number;
   reason?: string; // optional: 광고, 구매 등
@@ -77,3 +83,4 @@ export interface EnergyChangePayload {
 // Typed message interfaces
 export type WebAppReadyMessage = WebToNativeMessage<WebAppReadyPayload>;
 export type GoogleIdTokenMessage = NativeToWebMessage<GoogleIdTokenPayload>;
+export type GemUpdateMessage = WebToNativeMessage<GemUpdatePayload>;

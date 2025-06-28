@@ -139,10 +139,13 @@
       "moves": "额外移动",
       "items": "物品已获得",
       "artifact": "奖励已获得",
+      "gem": "宝石已获得",
       "moves_title": "移动 +{count}",
       "moves_description": "移动次数增加{count}次",
       "items_title": "{name} x{count}",
-      "items_description": "获得{count}个{name}"
+      "items_description": "获得{count}个{name}",
+      "gem_title": "宝石 +{count}",
+      "gem_description": "获得{count}个宝石"
     },
     "artifactPanel": {
       "title": "激活的奖励",

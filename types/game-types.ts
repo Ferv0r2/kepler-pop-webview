@@ -41,7 +41,7 @@ export type ItemAnimation = {
 };
 
 // 보상 시스템 타입들
-export type RewardType = 'moves' | 'items' | 'artifact';
+export type RewardType = 'moves' | 'items' | 'artifact' | 'gem';
 
 export type Reward = {
   type: RewardType;
@@ -96,4 +96,5 @@ export type RewardThreshold = {
   score: number;
   moves: number;
   items: number;
+  gem: number;
 };

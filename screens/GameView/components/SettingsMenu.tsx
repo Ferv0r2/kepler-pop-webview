@@ -157,20 +157,6 @@ export const SettingsMenu = ({
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               variant="outline"
-              className="w-full flex justify-start gap-3 rounded-lg py-5 bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
-              onClick={() => {
-                onClose();
-                onShowBackConfirmation();
-              }}
-            >
-              <Home className="h-5 w-5 text-blue-300" />
-              <span>{t('game.returnToHome')}</span>
-            </Button>
-          </motion.div>
-
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button
-              variant="outline"
               className={`w-full flex justify-start gap-3 rounded-lg py-5 border-indigo-500/30 text-white ${
                 !userInfo || userInfo.droplet <= 0
                   ? 'bg-gradient-to-r from-slate-700/40 to-slate-800/40 opacity-50 cursor-not-allowed'
@@ -189,14 +175,28 @@ export const SettingsMenu = ({
                   alt="droplet"
                   width={24}
                   height={24}
-                  className={`${!userInfo || userInfo.droplet <= 0 ? 'text-gray-400' : 'text-cyan-300'}`}
+                  className={`${!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT ? 'text-gray-400' : 'text-cyan-300'}`}
                 />
                 <span
-                  className={`mt-1 font-medium ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-400' : 'text-cyan-300'}`}
+                  className={`mt-1 font-medium text-md ${!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT ? 'text-gray-400' : 'text-cyan-300'}`}
                 >
                   {`x${ENERGY_CONSUME_AMOUNT}`}
                 </span>
               </div>
+            </Button>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Button
+              variant="outline"
+              className="w-full flex justify-start gap-3 rounded-lg py-5 bg-gradient-to-r from-slate-800/40 to-purple-800/40 hover:from-slate-700/40 hover:to-purple-700/40 border-indigo-500/30 text-white"
+              onClick={() => {
+                onClose();
+                onShowBackConfirmation();
+              }}
+            >
+              <Home className="h-5 w-5 text-blue-300" />
+              <span>{t('game.returnToHome')}</span>
             </Button>
           </motion.div>
 

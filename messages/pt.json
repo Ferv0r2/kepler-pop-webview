@@ -140,10 +140,13 @@
       "moves": "Movimentos adicionais",
       "items": "Item recebido",
       "artifact": "Artefato recebido",
+      "gem": "Gema recebida",
       "moves_title": "Movimentos +{count}",
       "moves_description": "Adiciona {count} movimentos",
       "items_title": "{name} x{count}",
-      "items_description": "Obtém {count} {name}"
+      "items_description": "Obtém {count} {name}",
+      "gem_title": "Gemas +{count}",
+      "gem_description": "Obtém {count} gemas"
     },
     "artifactPanel": {
       "title": "Artefatos ativos",

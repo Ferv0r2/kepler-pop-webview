@@ -139,10 +139,13 @@
       "moves": "Additional moves",
       "items": "Item received",
       "artifact": "Artifact received",
+      "gem": "Gem received",
       "moves_title": "Moves +{count}",
       "moves_description": "Add {count} moves",
       "items_title": "{name} x{count}",
-      "items_description": "Get {count} {name}"
+      "items_description": "Get {count} {name}",
+      "gem_title": "Gems +{count}",
+      "gem_description": "Get {count} gems"
     },
     "artifactPanel": {
       "title": "Active Artifacts",

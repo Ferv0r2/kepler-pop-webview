@@ -43,20 +43,21 @@ export const COMBO_BONUS = {
 
 // 보상 시스템 상수들
 export const REWARD_THRESHOLDS: RewardThreshold[] = [
-  { score: 2000, moves: 3, items: 2 },
-  { score: 5000, moves: 5, items: 3 },
-  { score: 10000, moves: 8, items: 5 },
-  { score: 20000, moves: 12, items: 6 },
-  { score: 50000, moves: 15, items: 8 },
-  { score: 100000, moves: 20, items: 10 },
-  { score: 200000, moves: 25, items: 12 },
-  { score: 500000, moves: 30, items: 15 },
-  { score: 1000000, moves: 50, items: 20 },
+  { score: 2000, moves: 3, items: 2, gem: 1 },
+  { score: 5000, moves: 5, items: 3, gem: 2 },
+  { score: 10000, moves: 8, items: 5, gem: 3 },
+  { score: 20000, moves: 12, items: 6, gem: 5 },
+  { score: 50000, moves: 15, items: 8, gem: 8 },
+  { score: 100000, moves: 20, items: 10, gem: 12 },
+  { score: 200000, moves: 25, items: 12, gem: 15 },
+  { score: 500000, moves: 30, items: 15, gem: 20 },
+  { score: 1000000, moves: 50, items: 20, gem: 30 },
 ];
 
 export const REWARD_PROBABILITIES = {
-  moves: 0.5,
-  items: 0.4,
+  moves: 0.4,
+  items: 0.3,
+  gem: 0.2,
   artifact: 0.1,
 };
 export const REWARD_SELECTION_TIMEOUT = 30000; // 30초

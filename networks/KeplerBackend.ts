@@ -32,3 +32,8 @@ export const updateScore = async (score: number, mode: 'casual' | 'challenge'): 
   const response = await api.post('/users/me/score/update', { score, mode });
   if (!response.ok) throw new Error('Failed to update score');
 };
+
+export const updateGem = async (amount: number): Promise<void> => {
+  const response = await api.post('/users/me/gem/update', { amount });
+  if (!response.ok) throw new Error('Failed to update gem');
+};

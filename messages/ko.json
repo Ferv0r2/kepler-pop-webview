@@ -114,10 +114,13 @@
       "moves": "추가 이동",
       "items": "아이템 획득",
       "artifact": "유물 획득",
+      "gem": "보석 획득",
       "moves_title": "이동 +{count}",
       "moves_description": "이동 횟수를 {count}회 추가합니다",
       "items_title": "{name} x{count}",
-      "items_description": "{name}을 {count}개 획득합니다"
+      "items_description": "{name}을 {count}개 획득합니다",
+      "gem_title": "보석 +{count}",
+      "gem_description": "보석을 {count}개 획득합니다"
     },
     "artifactPanel": {
       "title": "활성 유물",

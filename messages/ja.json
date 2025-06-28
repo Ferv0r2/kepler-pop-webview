@@ -139,10 +139,13 @@
       "moves": "追加移動",
       "items": "アイテムを受け取りました",
       "artifact": "アーティファクトを受け取りました",
+      "gem": "宝石を受け取りました",
       "moves_title": "移動 +{count}",
       "moves_description": "{count}回の追加移動",
       "items_title": "{name} x{count}",
-      "items_description": "{name}を{count}個獲得"
+      "items_description": "{name}を{count}個獲得",
+      "gem_title": "宝石 +{count}",
+      "gem_description": "宝石を{count}個獲得"
     },
     "artifactPanel": {
       "title": "アクティブなアーティファクト",
