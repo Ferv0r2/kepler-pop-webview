@@ -54,10 +54,18 @@ export const MainView = () => {
 
   const [showEnergyModal, setShowEnergyModal] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const updateDropletMutation = useUpdateDroplet();
   const updateGemMutation = useUpdateGem();
 
   const { settings: soundSettings } = useSound();
+
+  // 사용자 정보가 로드되면 hasLoadedOnce를 true로 설정
+  useEffect(() => {
+    if (userInfo && !hasLoadedOnce) {
+      setHasLoadedOnce(true);
+    }
+  }, [userInfo, hasLoadedOnce]);
 
   // 각 모드의 최고점수 계산
   const highScores = useMemo(() => {
@@ -120,7 +128,7 @@ export const MainView = () => {
     };
   }, [isInWebView, sendMessage, addMessageHandler, showExitModal, updateDropletMutation, updateGemMutation]);
 
-  if (!userInfo || isLoading) {
+  if (!userInfo || (isLoading && !hasLoadedOnce)) {
     return <LoadingView />;
   }
 

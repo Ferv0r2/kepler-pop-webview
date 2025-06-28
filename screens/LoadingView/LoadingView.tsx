@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 
 import { Logo } from '@/components/logo/Logo';
 import { StarsAndSparkles } from '@/components/ui/StarsAndSparkles';
@@ -26,7 +26,10 @@ interface LoadingScreenProps {
 export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_TIME_MS }: LoadingScreenProps) => {
   const [progress, setProgress] = useState(0);
   const [loadingText, setLoadingText] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
   const t = useTranslations();
+  const animationFrameRef = useRef<number>(0);
+  const startTimeRef = useRef<number>(Date.now());
 
   const loadingMessages = useMemo(
     () => [
@@ -53,17 +56,25 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
   }, []);
 
   useEffect(() => {
-    const startTime = Date.now();
-    let animationFrame: number;
-    let isComplete = false;
+    // 이미 완료된 경우 즉시 완료 처리
+    if (isComplete) {
+      setProgress(100);
+      setTimeout(() => {
+        onLoadComplete?.();
+      }, LOADING_COMPLETE_DELAY_MS);
+      return;
+    }
 
     // Simulate loading progress
     const simulateLoading = () => {
-      const timeProgress = Math.min(100, ((Date.now() - startTime) / minLoadingTime) * 100);
+      const timeProgress = Math.min(100, ((Date.now() - startTimeRef.current) / minLoadingTime) * 100);
 
       if (timeProgress >= 100 && !isComplete) {
-        isComplete = true;
-        cancelAnimationFrame(animationFrame);
+        setIsComplete(true);
+        setProgress(100);
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
         setTimeout(() => {
           onLoadComplete?.();
         }, LOADING_COMPLETE_DELAY_MS);
@@ -71,7 +82,7 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
       }
 
       setProgress(timeProgress);
-      animationFrame = requestAnimationFrame(simulateLoading);
+      animationFrameRef.current = requestAnimationFrame(simulateLoading);
     };
 
     // Start loading simulation
@@ -90,10 +101,12 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
     setLoadingText(loadingMessages[0]);
 
     return () => {
-      cancelAnimationFrame(animationFrame);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       clearInterval(messageInterval);
     };
-  }, [minLoadingTime, onLoadComplete, loadingMessages]);
+  }, [minLoadingTime, onLoadComplete, loadingMessages, isComplete]);
 
   return (
     <motion.div
