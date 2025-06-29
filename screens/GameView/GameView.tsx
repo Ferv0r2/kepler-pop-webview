@@ -167,6 +167,7 @@ export const GameView = () => {
     isItemAnimating,
     itemAnimation,
     addItem,
+    resetItems,
   } = useGameItem();
   const { settings: soundSettings } = useSound();
 
@@ -763,8 +764,7 @@ export const GameView = () => {
         setShowShuffleButton(false);
 
         // 아이템 관련 상태 초기화
-        setItemAnimation(null);
-        setIsItemAnimating(false);
+        resetItems();
       },
     });
   };
@@ -1459,7 +1459,7 @@ export const GameView = () => {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.3, type: 'spring' }}
               >
-                {gameItems.map(({ id, count, icon, name }) => (
+                {gameItems.map(({ id, count, icon }) => (
                   <motion.div
                     key={id}
                     className={`
@@ -1480,7 +1480,7 @@ export const GameView = () => {
                       <Image
                         className={`${selectedGameItem === id ? 'animate-item-selected' : ''}`}
                         src={icon}
-                        alt={name}
+                        alt={t(`game.items.${id}`)}
                         width={64}
                         height={64}
                         priority

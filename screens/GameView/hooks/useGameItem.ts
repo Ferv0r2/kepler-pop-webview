@@ -6,6 +6,25 @@ import { useState } from 'react';
 import { DIRECTIONS } from '@/screens/GameView/constants/game-config';
 import type { GameItem, GameItemType, GridItem, ItemAnimation } from '@/types/game-types';
 
+// 아이템 초기 설정을 상수로 분리
+const INITIAL_GAME_ITEMS: GameItem[] = [
+  {
+    id: 'shovel',
+    count: 0,
+    icon: '/icons/shovel.png',
+  },
+  {
+    id: 'mole',
+    count: 0,
+    icon: '/icons/mole.png',
+  },
+  {
+    id: 'bomb',
+    count: 0,
+    icon: '/icons/bomb.png',
+  },
+];
+
 export interface UseGameItemReturn {
   gameItems: GameItem[];
   selectedGameItem: GameItemType | null;
@@ -24,29 +43,11 @@ export interface UseGameItemReturn {
   executeItem: (grid: GridItem[][]) => GridItem[][] | void;
   addItem: (itemId: GameItemType, amount?: number) => void;
   clearItemAnimation: () => void;
+  resetItems: () => void;
 }
 
 export const useGameItem = (): UseGameItemReturn => {
-  const [gameItems, setGameItems] = useState<GameItem[]>([
-    {
-      id: 'shovel',
-      name: 'Shovel',
-      count: 0,
-      icon: '/icons/shovel.png',
-    },
-    {
-      id: 'mole',
-      name: 'Mole',
-      count: 0,
-      icon: '/icons/mole.png',
-    },
-    {
-      id: 'bomb',
-      name: 'Bomb',
-      count: 0,
-      icon: '/icons/bomb.png',
-    },
-  ]);
+  const [gameItems, setGameItems] = useState<GameItem[]>(INITIAL_GAME_ITEMS);
   const [selectedGameItem, setSelectedGameItem] = useState<GameItemType | null>(null);
   const [isItemAnimating, setIsItemAnimating] = useState<boolean>(false);
   const [itemAnimation, setItemAnimation] = useState<ItemAnimation | null>(null);
@@ -163,6 +164,11 @@ export const useGameItem = (): UseGameItemReturn => {
     setIsItemAnimating(false);
   };
 
+  const resetItems = () => {
+    setGameItems(INITIAL_GAME_ITEMS);
+    clearItemAnimation();
+  };
+
   return {
     gameItems,
     selectedGameItem,
@@ -174,5 +180,6 @@ export const useGameItem = (): UseGameItemReturn => {
     executeItem,
     addItem,
     clearItemAnimation,
+    resetItems,
   };
 };

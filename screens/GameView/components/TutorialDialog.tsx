@@ -21,7 +21,6 @@ interface TutorialDialogProps {
   gameItems: {
     id: string;
     icon: string;
-    name: string;
   }[];
 }
 
@@ -208,7 +207,7 @@ export const TutorialDialog = ({
                     key={i}
                     className="w-12 h-12 rounded-lg bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center"
                   >
-                    <Image src={item.icon} alt={item.name} width={32} height={32} />
+                    <Image src={item.icon} alt={t(`game.items.${item.id}`)} width={32} height={32} />
                   </div>
                 ))}
               </div>

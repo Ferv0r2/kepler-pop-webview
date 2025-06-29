@@ -70,8 +70,8 @@ export const useRewardSystem = (gameItems: GameItem[]): UseRewardSystemReturn =>
           allRewards.push({
             type: 'items',
             id: `items_${gameItem.id}_${round}_${i}`,
-            name: t('game.reward.items_title', { name: gameItem.name, count: round * i }),
-            description: t('game.reward.items_description', { name: gameItem.name, count: round * i }),
+            name: t('game.reward.items_title', { name: t(`game.items.${gameItem.id}`), count: round * i }),
+            description: t('game.reward.items_description', { name: t(`game.items.${gameItem.id}`), count: round * i }),
             icon: gameItem.icon,
             value: round * i,
             color: 'text-purple-400',
