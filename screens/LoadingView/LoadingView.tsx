@@ -6,7 +6,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 
 import { Logo } from '@/components/logo/Logo';
 import { StarsAndSparkles } from '@/components/ui/StarsAndSparkles';
-import { preloadAllSounds } from '@/utils/sound-helper';
+import { preloadAssetsWithProgress } from '@/utils/preload-assets';
 
 import {
   DEFAULT_LOADING_TIME_MS,
@@ -27,6 +27,7 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
   const [progress, setProgress] = useState(0);
   const [loadingText, setLoadingText] = useState('');
   const [isComplete, setIsComplete] = useState(false);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
   const t = useTranslations();
   const animationFrameRef = useRef<number>(0);
   const startTimeRef = useRef<number>(Date.now());
@@ -42,17 +43,24 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
     [t],
   );
 
-  // 효과음 미리 로드
+  // 모든 에셋(이미지, 음성) 미리 로드
   useEffect(() => {
-    const loadSounds = async () => {
+    const loadAssets = async () => {
       try {
-        await preloadAllSounds();
+        await preloadAssetsWithProgress((assetProgress) => {
+          // 에셋 로딩 진행률을 전체 진행률의 80%까지 반영
+          const assetProgressWeighted = (assetProgress * 80) / 100;
+          setProgress(assetProgressWeighted);
+        });
+        setAssetsLoaded(true);
+        console.log('LoadingView: 모든 에셋이 성공적으로 로드되었습니다.');
       } catch (error) {
-        console.warn('LoadingView: 효과음 로드 실패:', error);
+        console.warn('LoadingView: 에셋 로드 실패:', error);
+        setAssetsLoaded(true); // 실패해도 계속 진행
       }
     };
 
-    loadSounds();
+    loadAssets();
   }, []);
 
   useEffect(() => {
@@ -65,11 +73,18 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
       return;
     }
 
-    // Simulate loading progress
-    const simulateLoading = () => {
-      const timeProgress = Math.min(100, ((Date.now() - startTimeRef.current) / minLoadingTime) * 100);
+    // 에셋 로딩이 완료되지 않았으면 진행하지 않음
+    if (!assetsLoaded) {
+      return;
+    }
 
-      if (timeProgress >= 100 && !isComplete) {
+    // Simulate loading progress (에셋 로딩 후 나머지 20% 진행)
+    const simulateLoading = () => {
+      const elapsedTime = Date.now() - startTimeRef.current;
+      const timeProgress = Math.min(20, (elapsedTime / (minLoadingTime * 0.2)) * 20); // 나머지 20% 진행
+      const totalProgress = 80 + timeProgress; // 에셋 로딩 80% + 시간 기반 20%
+
+      if (totalProgress >= 100 && !isComplete) {
         setIsComplete(true);
         setProgress(100);
         if (animationFrameRef.current) {
@@ -81,7 +96,7 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
         return;
       }
 
-      setProgress(timeProgress);
+      setProgress(totalProgress);
       animationFrameRef.current = requestAnimationFrame(simulateLoading);
     };
 
@@ -106,7 +121,7 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
       }
       clearInterval(messageInterval);
     };
-  }, [minLoadingTime, onLoadComplete, loadingMessages, isComplete]);
+  }, [minLoadingTime, onLoadComplete, loadingMessages, isComplete, assetsLoaded]);
 
   return (
     <motion.div
