@@ -749,10 +749,22 @@ export const GameView = () => {
         setStreakCount(0);
         setIsNewHighScore(false);
         setShowRestartConfirmation(false);
-        setIsInitializing(true);
 
         // 보상 상태 초기화
         resetRewardState();
+
+        // 드래그 관련 상태 초기화
+        setIsDragging(false);
+        setDraggedTile(null);
+
+        // 셔플 관련 상태 초기화
+        setIsShuffling(false);
+        setShowShuffleConfirmation(false);
+        setShowShuffleButton(false);
+
+        // 아이템 관련 상태 초기화
+        setItemAnimation(null);
+        setIsItemAnimating(false);
       },
     });
   };
@@ -1054,6 +1066,20 @@ export const GameView = () => {
       isGameOver,
     }));
 
+    // 게임 종료 시 점수 업데이트
+    if (isGameOver) {
+      runConfetti(() => {
+        createGameOverConfetti();
+      });
+
+      // 게임 오버 효과음 재생
+      playGameOverSound(soundSettings);
+      setIsShuffling(false);
+
+      updateUserScore(gameState.score);
+      return;
+    }
+
     // 섞기 중 상태 활성화
     setIsShuffling(true);
 
@@ -1065,18 +1091,6 @@ export const GameView = () => {
       setShowShuffleToast(true);
       setTimeout(() => setShowShuffleToast(false), 2000);
     }, 1500);
-
-    // 게임 종료 시 점수 업데이트
-    if (isGameOver) {
-      runConfetti(() => {
-        createGameOverConfetti();
-      });
-
-      // 게임 오버 효과음 재생
-      playGameOverSound(soundSettings);
-
-      updateUserScore(gameState.score);
-    }
   };
 
   // 보상 선택 핸들러
