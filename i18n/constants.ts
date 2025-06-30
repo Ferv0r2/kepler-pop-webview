@@ -1,18 +1,4 @@
-export const SUPPORTED_LOCALES = [
-  'ko',
-  'en',
-  'ja',
-  'zh',
-  'zh-TW',
-  'es',
-  'fr',
-  'de',
-  'ru',
-  'pt',
-  'it',
-  'ar',
-  'hi',
-] as const;
+export const SUPPORTED_LOCALES = ['ko', 'en', 'ja', 'zh', 'es', 'pt'] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 

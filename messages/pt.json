@@ -101,6 +101,7 @@
   },
   "store": {
     "title": "Loja",
+    "description": "Faça o jogo mais divertido!",
     "droplet": "Gota de Energia",
     "gems": "Gemas",
     "energyPackages": "Pacotes de Energia",
@@ -134,6 +135,29 @@
     "gems_small": "Gema Pequena",
     "gems_medium": "Gema Média",
     "gems_large": "Gema Grande"
+  },
+  "settings": {
+    "title": "Configurações",
+    "description": "Gerencie suas informações de conta e altere as configurações do aplicativo",
+    "saveSuccess": "Configurações salvas com sucesso!",
+    "settingsProfile": "Configuração de Perfil",
+    "settingsLanguage": "Configuração de Idioma",
+    "settingsProfileDescription": "Altere seu nome de usuário e sua imagem de perfil",
+    "nickname": "Nome de usuário",
+    "nicknameDescription": "Altere seu nome de usuário",
+    "nicknamePlaceholder": "Insira seu nome de usuário",
+    "nicknameMaxLength": "Insira até 16 caracteres",
+    "nicknameMinLength": "Insira pelo menos 2 caracteres",
+    "nicknameInvalid": "O nome de usuário deve ter entre 2 e 16 caracteres",
+    "nicknameSave": "Salvar Nome de Usuário",
+    "profileImage": "Imagem de Perfil",
+    "profileImageDescription": "Altere sua imagem de perfil",
+    "settingsLanguageDescription": "Selecione o idioma para o aplicativo",
+    "language": "Idioma",
+    "saving": "Salvando...",
+    "saveChanges": "Salvar Alterações",
+    "saved": "Salvo",
+    "saveFailed": "Erro ao salvar. Por favor, tente novamente."
   },
   "game": {
     "modes": {

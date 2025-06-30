@@ -100,6 +100,7 @@
   },
   "store": {
     "title": "스토어",
+    "description": "게임을 더욱 즐겁게 만들어보세요!",
     "droplet": "물방울",
     "gems": "보석",
     "energyPackages": "에너지 패키지",
@@ -133,6 +134,29 @@
     "gems_small": "보석 패키지",
     "gems_medium": "보물상자 패키지",
     "gems_large": "보물더미 패키지"
+  },
+  "settings": {
+    "title": "설정",
+    "description": "계정 정보를 관리하고 앱 설정을 변경하세요",
+    "saveSuccess": "설정이 성공적으로 저장되었습니다!",
+    "settingsProfile": "프로필 설정",
+    "settingsLanguage": "언어 설정",
+    "settingsProfileDescription": "닉네임과 프로필 이미지를 변경할 수 있습니다",
+    "nickname": "닉네임",
+    "nicknameDescription": "닉네임을 변경할 수 있습니다",
+    "nicknamePlaceholder": "닉네임을 입력하세요",
+    "nicknameMaxLength": "16자 이하로 입력해주세요",
+    "nicknameMinLength": "2자 이상으로 입력해주세요",
+    "nicknameInvalid": "닉네임은 2자 이상 16자 이하로 입력해주세요",
+    "nicknameSave": "닉네임 저장",
+    "profileImage": "프로필 이미지",
+    "profileImageDescription": "프로필 이미지를 변경할 수 있습니다",
+    "settingsLanguageDescription": "앱에서 사용할 언어를 선택하세요",
+    "language": "언어",
+    "saving": "저장 중...",
+    "saveChanges": "변경사항 저장",
+    "saved": "저장됨",
+    "saveFailed": "저장에 실패했습니다. 다시 시도해주세요."
   },
   "game": {
     "modes": {

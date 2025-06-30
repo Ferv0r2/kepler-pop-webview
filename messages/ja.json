@@ -100,6 +100,7 @@
   },
   "store": {
     "title": "ストア",
+    "description": "ゲームをもっと楽しむためのストアです",
     "droplet": "ドロップレット",
     "gems": "ジェム",
     "energyPackages": "エネルギーパッケージ",
@@ -133,6 +134,29 @@
     "gems_small": "ジェム小",
     "gems_medium": "ジェム中",
     "gems_large": "ジェム大"
+  },
+  "settings": {
+    "title": "設定",
+    "description": "アカウント情報を管理し、アプリの設定を変更しましょう",
+    "saveSuccess": "設定が正常に保存されました！",
+    "settingsProfile": "プロフィール設定",
+    "settingsLanguage": "言語設定",
+    "settingsProfileDescription": "ニックネームとプロフィール画像を変更できます",
+    "nickname": "ニックネーム",
+    "nicknameDescription": "ニックネームを変更できます",
+    "nicknamePlaceholder": "ニックネームを入力してください",
+    "nicknameMaxLength": "16文字以内で入力してください",
+    "nicknameMinLength": "2文字以上で入力してください",
+    "nicknameInvalid": "ニックネームは2文字以上16文字以内で入力してください",
+    "nicknameSave": "ニックネームを保存",
+    "profileImage": "プロフィール画像",
+    "profileImageDescription": "プロフィール画像を変更できます",
+    "settingsLanguageDescription": "アプリで使用する言語を選択してください",
+    "language": "言語",
+    "saving": "保存中...",
+    "saveChanges": "変更を保存",
+    "saved": "保存されました",
+    "saveFailed": "保存に失敗しました。再度試してください。"
   },
   "game": {
     "modes": {

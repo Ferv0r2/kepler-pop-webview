@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { Store } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -136,13 +137,18 @@ export const StoreView = () => {
         <main className="flex-1 flex flex-col px-4 py-6 overflow-hidden">
           {/* 페이지 제목 */}
           <motion.div
-            className="text-center mb-6"
+            className="text-center mb-6 flex flex-col items-center gap-2"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-2xl font-bold text-white mb-2">{t('store.title')}</h1>
-            <p className="text-gray-400 text-sm">게임을 더욱 즐겁게 만들어보세요!</p>
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-blue-500/20 rounded-lg">
+                <Store className="w-5 h-5 text-blue-400" />
+              </div>
+              <h1 className="text-2xl font-bold text-white">{t('store.title')}</h1>
+            </div>
+            <p className="text-gray-400 text-sm">{t('store.description')}</p>
           </motion.div>
 
           {/* 탭 네비게이션 */}

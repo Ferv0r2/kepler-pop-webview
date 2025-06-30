@@ -134,6 +134,29 @@
     "gems_medium": "中宝石",
     "gems_large": "大宝石"
   },
+  "settings": {
+    "title": "设置",
+    "description": "管理您的账户信息并更改应用程序设置",
+    "saveSuccess": "设置已成功保存！",
+    "settingsProfile": "个人资料设置",
+    "settingsLanguage": "语言设置",
+    "settingsProfileDescription": "更改您的昵称和头像",
+    "nickname": "昵称",
+    "nicknameDescription": "更改您的昵称",
+    "nicknamePlaceholder": "输入您的昵称",
+    "nicknameMaxLength": "输入最多16个字符",
+    "nicknameMinLength": "输入至少2个字符",
+    "nicknameInvalid": "昵称必须为2到16个字符",
+    "nicknameSave": "保存昵称",
+    "profileImage": "头像",
+    "profileImageDescription": "更改您的头像",
+    "settingsLanguageDescription": "选择应用程序使用的语言",
+    "language": "语言",
+    "saving": "保存中...",
+    "saveChanges": "保存更改",
+    "saved": "已保存",
+    "saveFailed": "保存失败。请重试。"
+  },
   "game": {
     "modes": {
       "casual": "休闲",

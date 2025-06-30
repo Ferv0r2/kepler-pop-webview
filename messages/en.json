@@ -100,6 +100,7 @@
   },
   "store": {
     "title": "Store",
+    "description": "Make the game more fun!",
     "droplet": "Droplet",
     "gems": "Gems",
     "energyPackages": "Energy Packages",
@@ -133,6 +134,29 @@
     "gems_small": "Gem Small",
     "gems_medium": "Gem Medium",
     "gems_large": "Gem Large"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your account information and change app settings",
+    "saveSuccess": "Settings saved successfully!",
+    "settingsProfile": "Profile Settings",
+    "settingsLanguage": "Language Settings",
+    "settingsProfileDescription": "Change your nickname and profile image",
+    "nickname": "Nickname",
+    "nicknameDescription": "Change your nickname",
+    "nicknamePlaceholder": "Enter your nickname",
+    "nicknameMaxLength": "Enter up to 16 characters",
+    "nicknameMinLength": "Enter at least 2 characters",
+    "nicknameInvalid": "Nickname must be between 2 and 16 characters",
+    "nicknameSave": "Save Nickname",
+    "profileImage": "Profile Image",
+    "profileImageDescription": "Change your profile image",
+    "settingsLanguageDescription": "Select the language for the app",
+    "language": "Language",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "saved": "Saved",
+    "saveFailed": "Save failed. Please try again."
   },
   "game": {
     "modes": {
