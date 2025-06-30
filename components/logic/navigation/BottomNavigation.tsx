@@ -17,7 +17,7 @@ export const BottomNavigation = () => {
     () => [
       { icon: Store, label: t('common.store'), path: `/${locale}/store` },
       { icon: Play, label: t('common.play'), path: `/${locale}` },
-      { icon: Settings, label: t('common.settings'), path: `/${locale}/profile` },
+      { icon: Settings, label: t('common.settings'), path: `/${locale}/settings` },
     ],
     [t, locale],
   );
