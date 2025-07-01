@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 
 import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
+import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,30 +20,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { useUser } from '@/hooks/useUser';
 import { SUPPORTED_LOCALES } from '@/i18n/constants';
+import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 
 import { LoadingView } from '../LoadingView/LoadingView';
 
-const PLANT_IMAGES = [
-  '/plants/sprout.png',
-  '/plants/sunflower.png',
-  '/plants/tulip.png',
-  '/plants/mushroom.png',
-  '/plants/crystal-cactus.png',
-];
-
-const LOCALE_NAMES: Record<string, string> = {
-  ko: '한국어',
-  en: 'English',
-  ja: '日本語',
-  zh: '中文',
-  es: 'Español',
-  pt: 'Português',
-};
+import { LOCALE_NAMES, PLANT_IMAGES } from './constants/settings-config';
 
 export const SettingsView = () => {
   const t = useTranslations();
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const { data: userInfo, isLoading } = useUser();
+  const { sendMessage, addMessageHandler } = useWebViewBridgeContext();
   // const queryClient = useQueryClient();
 
   const [nickname, setNickname] = useState(userInfo?.name || '');
@@ -53,6 +41,16 @@ export const SettingsView = () => {
   const [success, setSuccess] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'language'>('profile');
+
+  useEffect(() => {
+    const unsubscribeBackState = addMessageHandler(NativeToWebMessageType.CAN_BACK_STATE, () => {
+      sendMessage({ type: WebToNativeMessageType.EXIT_ACTION });
+    });
+
+    return () => {
+      unsubscribeBackState();
+    };
+  }, [addMessageHandler, sendMessage]);
 
   useEffect(() => {
     if (userInfo && !hasLoadedOnce) {

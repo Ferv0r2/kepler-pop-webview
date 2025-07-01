@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Store } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
@@ -13,9 +13,11 @@ import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgePro
 import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import { updateDroplet, updateGem } from '@/networks/KeplerBackend';
-import { WebToNativeMessageType } from '@/types/native-call';
+import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import { itemVariants } from '@/utils/animation-helper';
 import { playButtonSound } from '@/utils/sound-helper';
+
+import { LoadingView } from '../LoadingView/LoadingView';
 
 import { PurchaseConfirmModal } from './components/PurchaseConfirmModal';
 import { STORE_ITEMS } from './constants/store-config';
@@ -44,7 +46,7 @@ const useUpdateGem = () => {
 export const StoreView = () => {
   const queryClient = useQueryClient();
   const { data: userInfo, isLoading } = useUser();
-  const { isInWebView, sendMessage } = useWebViewBridgeContext();
+  const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
   const t = useTranslations();
 
   const updateDropletMutation = useUpdateDroplet();
@@ -91,6 +93,16 @@ export const StoreView = () => {
     },
   });
 
+  useEffect(() => {
+    const unsubscribeBackState = addMessageHandler(NativeToWebMessageType.CAN_BACK_STATE, () => {
+      sendMessage({ type: WebToNativeMessageType.EXIT_ACTION });
+    });
+
+    return () => {
+      unsubscribeBackState();
+    };
+  }, [addMessageHandler, sendMessage]);
+
   const handleItemClick = (item: (typeof STORE_ITEMS)[0]) => {
     setSelectedItem(item);
     setShowConfirmModal(true);
@@ -109,11 +121,7 @@ export const StoreView = () => {
   };
 
   if (!userInfo || isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#334155] flex items-center justify-center">
-        <div className="text-white text-lg">로딩 중...</div>
-      </div>
-    );
+    return <LoadingView />;
   }
 
   const { name, level, gameMoney, gem, profileImage } = userInfo;
