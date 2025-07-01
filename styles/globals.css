@@ -9,6 +9,43 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'PixelMplus';
+  src: url('./fonts/PixelMplus10-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF, U+2A700-2B73F, U+2B740-2B81F, U+2B820-2CEAF, U+F900-FAFF, U+2F800-2FA1F;
+}
+@font-face {
+  font-family: 'PixelMplus';
+  src: url('./fonts/PixelMplus10-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF, U+2A700-2B73F, U+2B740-2B81F, U+2B820-2CEAF, U+F900-FAFF, U+2F800-2FA1F;
+}
+@font-face {
+  font-family: 'PixelMplus';
+  src: url('./fonts/PixelMplus12-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF, U+2A700-2B73F, U+2B740-2B81F, U+2B820-2CEAF, U+F900-FAFF, U+2F800-2FA1F;
+}
+@font-face {
+  font-family: 'PixelMplus';
+  src: url('./fonts/PixelMplus12-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+4E00-9FFF, U+3400-4DBF, U+20000-2A6DF, U+2A700-2B73F, U+2B740-2B81F, U+2B820-2CEAF, U+F900-FAFF, U+2F800-2FA1F;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -128,7 +165,7 @@
   body {
     user-select: none; /* 텍스트 드래그 방지 */
     @apply bg-background text-foreground;
-    font-family: var(--font-neodgm), monospace;
+    font-family: 'PixelMplus', 'Neodgm', monospace;
   }
   @keyframes blob {
     0% {

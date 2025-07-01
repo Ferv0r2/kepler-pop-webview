@@ -100,6 +100,7 @@
   },
   "store": {
     "title": "商店",
+    "description": "购买能量水滴和宝石，解锁更多游戏内容！",
     "droplet": "能量水滴",
     "gems": "宝石",
     "energyPackages": "能量水滴包",
