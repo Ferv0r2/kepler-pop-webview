@@ -37,3 +37,8 @@ export const updateGem = async (amount: number): Promise<void> => {
   const response = await api.post('/users/me/gem/update', { amount });
   if (!response.ok) throw new Error('Failed to update gem');
 };
+
+export const updateUserInfo = async (userInfo: Partial<UserInfo>): Promise<void> => {
+  const response = await api.post('/users/me/update', userInfo);
+  if (!response.ok) throw new Error('Failed to update user info');
+};

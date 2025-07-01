@@ -65,7 +65,7 @@ export const BottomNavigationButton = ({ icon, label, isSelected, onClick }: Bot
       {isSelected ? (
         <>
           <div className="absolute -inset-1 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full opacity-40 blur-sm" />
-          <div className="relative bg-gradient-to-r from-pink-500 to-purple-600 p-4 rounded-full shadow-lg">
+          <div className="relative w-fit mx-auto bg-gradient-to-r from-pink-500 to-purple-600 p-4 rounded-full shadow-lg">
             {createElement(icon, { className: 'w-6 h-6 text-white' })}
           </div>
           <span className="block text-white text-md font-medium mt-1">{label}</span>
@@ -73,7 +73,7 @@ export const BottomNavigationButton = ({ icon, label, isSelected, onClick }: Bot
       ) : (
         <>
           <div className="p-2">{createElement(icon, { className: 'w-5 h-5 text-gray-400' })}</div>
-          <span className="text-gray-400 text-nd">{label}</span>
+          <span className="text-gray-400 text-md">{label}</span>
         </>
       )}
     </motion.button>

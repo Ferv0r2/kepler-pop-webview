@@ -1,9 +1,10 @@
 'use client';
 
-// import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, User, Globe, ImageIcon, Save, Check, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -20,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { useUser } from '@/hooks/useUser';
 import { SUPPORTED_LOCALES } from '@/i18n/constants';
+import { updateUserInfo } from '@/networks/KeplerBackend';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 
 import { LoadingView } from '../LoadingView/LoadingView';
@@ -31,7 +33,9 @@ export const SettingsView = () => {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const { data: userInfo, isLoading } = useUser();
   const { sendMessage, addMessageHandler } = useWebViewBridgeContext();
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [nickname, setNickname] = useState(userInfo?.name || '');
   const [selectedLocale, setSelectedLocale] = useState(userInfo?.locale || 'ko');
@@ -91,14 +95,30 @@ export const SettingsView = () => {
     setSuccess(false);
 
     try {
-      // TODO: 서버 연동 후 주석 해제
-      // await updateUserInfo({
-      //   name: nickname.trim(),
-      //   profileImage: selectedProfileImage,
-      //   locale: selectedLocale,
-      // });
+      if (activeTab === 'profile') {
+        await updateUserInfo({
+          name: nickname.trim(),
+          profileImage: selectedProfileImage,
+        });
+      } else if (activeTab === 'language') {
+        await updateUserInfo({
+          locale: selectedLocale,
+        });
 
-      // await queryClient.invalidateQueries({ queryKey: ['user'] });
+        // locale이 변경된 경우에만 URL 이동
+        if (selectedLocale !== (userInfo?.locale || 'ko')) {
+          const pathParts = pathname.split('/');
+          if (pathParts[1] && pathParts[1].length === 2) {
+            pathParts[1] = selectedLocale;
+          } else {
+            pathParts.splice(1, 0, selectedLocale);
+          }
+          const newPath = pathParts.join('/') || `/${selectedLocale}/settings`;
+          router.push(newPath);
+        }
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['user'] });
       setSuccess(true);
       setHasChanges(false);
     } catch (e: unknown) {
@@ -153,7 +173,7 @@ export const SettingsView = () => {
               className="mb-6 max-w-2xl mx-auto w-full"
             >
               <Alert className="border-green-500/50 bg-green-500/10">
-                <Check className="h-4 w-4 text-green-400" />
+                <Check className="h-4 w-4 !text-green-400" />
                 <AlertDescription className="text-green-400">{t('settings.saveSuccess')}</AlertDescription>
               </Alert>
             </motion.div>
@@ -167,7 +187,7 @@ export const SettingsView = () => {
               className="mb-6 max-w-2xl mx-auto w-full"
             >
               <Alert className="border-red-500/50 bg-red-500/10">
-                <AlertCircle className="h-4 w-4 text-red-400" />
+                <AlertCircle className="h-4 w-4 !text-red-400" />
                 <AlertDescription className="text-red-400">{error}</AlertDescription>
               </Alert>
             </motion.div>

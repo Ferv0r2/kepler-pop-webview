@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, useMemo, useRef } from 'react';
 
@@ -33,6 +33,8 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
   const animationFrameRef = useRef<number>(0);
   const startTimeRef = useRef<number>(Date.now());
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = pathname.split('/')[1] || 'en';
 
   const loadingMessages = useMemo(
     () => [
@@ -65,10 +67,10 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
     loadAssets();
 
     // 주요 경로 prefetch
-    router.prefetch('/store');
-    router.prefetch('/game?mode=challenge');
-    router.prefetch('/settings');
-  }, [router]);
+    router.prefetch(`/${locale}/store`);
+    router.prefetch(`/${locale}/game?mode=challenge`);
+    router.prefetch(`/${locale}/settings`);
+  }, [router, locale]);
 
   useEffect(() => {
     // 이미 완료된 경우 즉시 완료 처리
