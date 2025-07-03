@@ -12,6 +12,7 @@ interface TileComponentProps {
   isSelected: boolean;
   isDragged: boolean;
   showHint: boolean;
+  isShuffling: boolean;
   onTileClick?: () => void;
   onMouseDown?: () => void;
   onMouseEnter?: () => void;
@@ -114,6 +115,7 @@ export const TileComponent = memo<TileComponentProps>(
     isSelected,
     isDragged,
     showHint,
+    isShuffling,
     onTileClick,
     onMouseDown,
     onMouseEnter,
@@ -164,11 +166,19 @@ export const TileComponent = memo<TileComponentProps>(
 
     // 애니메이션 속성 최적화
     const animateProps = useMemo(() => {
+      if (isShuffling) {
+        return {
+          scale: 1,
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0 },
+        };
+      }
       if (item.isMatched) return ANIMATION_VARIANTS.matched;
       if (isSelected) return ANIMATION_VARIANTS.selected;
       if (isDragged) return ANIMATION_VARIANTS.dragged;
       return ANIMATION_VARIANTS.normal;
-    }, [item.isMatched, isSelected, isDragged]);
+    }, [isShuffling, item.isMatched, isSelected, isDragged]);
 
     // 이벤트 핸들러 최적화
     const optimizedHandlers = useMemo(
@@ -195,7 +205,7 @@ export const TileComponent = memo<TileComponentProps>(
     return (
       <motion.div
         key={item.id}
-        layout
+        layout={isShuffling ? false : 'position'}
         initial={ANIMATION_VARIANTS.refill}
         animate={animateProps}
         className={cssClasses}
@@ -210,36 +220,40 @@ export const TileComponent = memo<TileComponentProps>(
         <div {...GRADIENT_STYLE} />
 
         {/* Tier 2 효과 - 조건부 렌더링 최적화 */}
-        {item.tier === 2 && <TierTwoEffects />}
+        {item.tier === 2 && <TierTwoEffects isShuffling={isShuffling} />}
 
         {/* Tier 3 효과 - 조건부 렌더링 최적화 */}
-        {item.tier === 3 && <TierThreeEffects />}
+        {item.tier === 3 && <TierThreeEffects isShuffling={isShuffling} />}
 
         {/* 아이콘 렌더링 최적화 */}
-        <IconRenderer icon={tileIcon} isSelected={isSelected} />
+        <IconRenderer icon={tileIcon} isSelected={isSelected} isShuffling={isShuffling} />
       </motion.div>
     );
   },
 );
 
-const TierTwoEffects = memo(() => (
+const TierTwoEffects = memo(({ isShuffling }: { isShuffling: boolean }) => (
   <>
-    <div className="absolute inset-0 rounded-xl border-2 border-yellow-400 opacity-70 animate-pulse" />
+    <div
+      className={`absolute inset-0 rounded-xl border-2 border-yellow-400 opacity-70${isShuffling ? '' : ' animate-pulse'}`}
+    />
     <div className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center">
       <Star className="w-5 h-5 text-yellow-300 drop-shadow-[0_0_3px_rgba(253,224,71,0.7)]" />
     </div>
   </>
 ));
 
-const TierThreeEffects = memo(() => (
+const TierThreeEffects = memo(({ isShuffling }: { isShuffling: boolean }) => (
   <>
     <div className="absolute inset-0 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-cyan-500/20 to-purple-500/20" />
-    <div className="absolute inset-0 rounded-xl border border-white/30 shadow-[inset_0_0_15px_rgba(255,255,255,0.5)] animate-pulse" />
+    <div
+      className={`absolute inset-0 rounded-xl border border-white/30 shadow-[inset_0_0_15px_rgba(255,255,255,0.5)]${isShuffling ? '' : ' animate-pulse'}`}
+    />
     <div className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center">
       <Flame className="w-6 h-6 text-cyan-300 drop-shadow-[0_0_5px_rgba(103,232,249,0.9)]" />
     </div>
     <div className="absolute -bottom-1 -left-1 w-5 h-5 flex items-center justify-center">
-      <Shield className="w-5 h-5 text-purple-300 drop-shadow-[0_0_5px_rgba(216,180,254,0.9)] animate-pulse" />
+      <Shield className="w-5 h-5 text-purple-300 drop-shadow-[0_0_5px_rgba(216,180,254,0.9)]" />
     </div>
   </>
 ));
@@ -247,15 +261,16 @@ const TierThreeEffects = memo(() => (
 interface IconRendererProps {
   icon: React.ElementType;
   isSelected: boolean;
+  isShuffling: boolean;
 }
 
-const IconRenderer = memo<IconRendererProps>(({ icon, isSelected }) => (
+const IconRenderer = memo<IconRendererProps>(({ icon, isSelected, isShuffling }) => (
   <motion.div
-    animate={{ rotate: isSelected ? 360 : 0 }}
+    animate={{ rotate: isShuffling ? 0 : isSelected ? 360 : 0 }}
     transition={{
       duration: 1,
       type: 'tween',
-      repeat: isSelected ? Number.POSITIVE_INFINITY : 0,
+      repeat: isSelected && !isShuffling ? Number.POSITIVE_INFINITY : 0,
     }}
     className="relative z-10"
   >

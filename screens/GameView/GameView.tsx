@@ -1085,12 +1085,15 @@ export const GameView = () => {
 
     // 섞기 로딩 시간 (1.5초)
     setTimeout(() => {
-      const newGrid = shuffleGrid();
-      setGrid(newGrid);
       setIsShuffling(false);
       setShowShuffleToast(true);
       setTimeout(() => setShowShuffleToast(false), 2000);
     }, 1500);
+
+    setTimeout(() => {
+      const newGrid = shuffleGrid();
+      setGrid(newGrid);
+    }, 1000);
   };
 
   // 보상 선택 핸들러
@@ -1418,6 +1421,7 @@ export const GameView = () => {
                         ((hintPosition?.row1 === rowIndex && hintPosition?.col1 === colIndex) ||
                           (hintPosition?.row2 === rowIndex && hintPosition?.col2 === colIndex))
                       }
+                      isShuffling={isShuffling}
                       onTileClick={() => tileSwapMode === 'select' && handleTileClick(rowIndex, colIndex)}
                       onMouseDown={() => tileSwapMode === 'drag' && handleDragStart(rowIndex, colIndex)}
                       onMouseEnter={() => tileSwapMode === 'drag' && handleDragEnter(rowIndex, colIndex)}
