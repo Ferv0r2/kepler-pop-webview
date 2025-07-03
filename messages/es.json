@@ -156,7 +156,9 @@
     "saving": "Guardando...",
     "saveChanges": "Guardar Cambios",
     "saved": "Guardado",
-    "saveFailed": "Error al guardar. Por favor, inténtalo de nuevo."
+    "saveFailed": "Error al guardar. Por favor, inténtalo de nuevo.",
+    "logout": "Cerrar sesión",
+    "logoutDescription": "Cerrar sesión y volver a la pantalla de autenticación."
   },
   "game": {
     "modes": {

@@ -156,7 +156,9 @@
     "saving": "保存中...",
     "saveChanges": "変更を保存",
     "saved": "保存されました",
-    "saveFailed": "保存に失敗しました。再度試してください。"
+    "saveFailed": "保存に失敗しました。再度試してください。",
+    "logout": "ログアウト",
+    "logoutDescription": "ログアウトして認証画面に移動します。"
   },
   "game": {
     "modes": {

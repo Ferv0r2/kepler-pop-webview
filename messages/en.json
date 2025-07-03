@@ -156,7 +156,9 @@
     "saving": "Saving...",
     "saveChanges": "Save Changes",
     "saved": "Saved",
-    "saveFailed": "Save failed. Please try again."
+    "saveFailed": "Save failed. Please try again.",
+    "logout": "Logout",
+    "logoutDescription": "Logout and go to the authentication screen."
   },
   "game": {
     "modes": {

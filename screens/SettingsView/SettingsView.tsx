@@ -22,6 +22,7 @@ import { Separator } from '@/components/ui/separator';
 import { useUser } from '@/hooks/useUser';
 import { SUPPORTED_LOCALES } from '@/i18n/constants';
 import { updateUserInfo } from '@/networks/KeplerBackend';
+import { useAuthStore } from '@/store/authStore';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 
 import { LoadingView } from '../LoadingView/LoadingView';
@@ -36,9 +37,10 @@ export const SettingsView = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
+  const clearTokens = useAuthStore((state) => state.clearTokens);
 
   const [nickname, setNickname] = useState(userInfo?.name || '');
-  const [selectedLocale, setSelectedLocale] = useState(userInfo?.locale || 'ko');
+  const [selectedLocale, setSelectedLocale] = useState(userInfo?.locale || 'en');
   const [selectedProfileImage, setSelectedProfileImage] = useState(userInfo?.profileImage || PLANT_IMAGES[0]);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -130,6 +132,12 @@ export const SettingsView = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleLogout = () => {
+    clearTokens();
+    const currentLocale = userInfo?.locale || 'en';
+    router.push(`/${currentLocale}/auth`);
   };
 
   const isNicknameValid = nickname.trim().length >= 2 && nickname.trim().length <= 16;
@@ -382,6 +390,17 @@ export const SettingsView = () => {
                   {t('settings.saved')}
                 </div>
               )}
+            </Button>
+          </motion.div>
+          {/* 로그아웃 버튼 */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+            className="mt-4"
+          >
+            <Button variant="secondary" onClick={handleLogout} className="w-full h-12 text-lg font-semibold">
+              {t('settings.logout')}
             </Button>
           </motion.div>
         </div>
