@@ -158,6 +158,7 @@ export const TutorialDialog = ({
                         }}
                         rowIndex={0}
                         colIndex={0}
+                        isShuffling={false}
                         isSelected={false}
                         isDragged={false}
                         showHint={false}
