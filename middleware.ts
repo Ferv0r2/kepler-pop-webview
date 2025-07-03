@@ -25,23 +25,54 @@ function getPreferredLocale(request: NextRequest): string {
   return DEFAULT_LOCALE;
 }
 
+// JWT payload 파싱 함수 추가
+function parseJwt(token: string): unknown {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
+
 export function middleware(request: NextRequest) {
   // i18n
   const response = intlMiddleware(request);
 
   const authStorage = request.cookies.get('auth-storage')?.value;
   let hasAccessToken = false;
+  let refreshTokenExpired = false;
 
   if (authStorage) {
     try {
       const authData = typeof authStorage === 'string' ? JSON.parse(authStorage) : authStorage;
       hasAccessToken = !!authData.state?.accessToken;
+      const refreshToken = authData.state?.refreshToken;
+      if (!refreshToken) {
+        refreshTokenExpired = true;
+      } else {
+        const payload = parseJwt(refreshToken);
+        if (
+          !payload ||
+          typeof payload !== 'object' ||
+          payload === null ||
+          !('exp' in payload) ||
+          typeof (payload as { exp?: number }).exp !== 'number' ||
+          (payload as { exp: number }).exp * 1000 < Date.now()
+        ) {
+          refreshTokenExpired = true;
+        }
+      }
     } catch (error) {
       console.error('Failed to parse auth storage:', error);
       const response = NextResponse.next();
       response.cookies.delete('auth-storage');
       return response;
     }
+  } else {
+    refreshTokenExpired = true;
   }
 
   const currentLocale = getPreferredLocale(request);
@@ -56,7 +87,9 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  if (!hasAccessToken) {
+  if (!hasAccessToken || refreshTokenExpired) {
+    const response = NextResponse.next();
+    response.cookies.delete('auth-storage');
     const redirectUrl = new URL(`/${currentLocale}/auth`, request.url);
     return NextResponse.redirect(redirectUrl);
   }
