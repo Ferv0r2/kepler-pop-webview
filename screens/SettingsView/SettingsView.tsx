@@ -8,6 +8,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
+import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
@@ -47,6 +48,7 @@ export const SettingsView = () => {
   const [success, setSuccess] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'language'>('profile');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     const unsubscribeBackState = addMessageHandler(NativeToWebMessageType.CAN_BACK_STATE, () => {
@@ -399,7 +401,11 @@ export const SettingsView = () => {
             transition={{ duration: 0.5, delay: 0.35 }}
             className="mt-4"
           >
-            <Button variant="secondary" onClick={handleLogout} className="w-full h-12 text-lg font-semibold">
+            <Button
+              variant="secondary"
+              onClick={() => setShowLogoutModal(true)}
+              className="w-full h-12 text-lg font-semibold"
+            >
               {t('settings.logout')}
             </Button>
           </motion.div>
@@ -409,6 +415,21 @@ export const SettingsView = () => {
       <footer className="sticky left-0 bottom-0 z-10">
         <BottomNavigation />
       </footer>
+
+      {/* 로그아웃 확인 모달 */}
+      <ConfirmationModal
+        isOpen={showLogoutModal}
+        title={t('settings.logout')}
+        message={<div className="text-white/80">{t('settings.logoutDescription')}</div>}
+        confirmText={t('modal.confirm')}
+        cancelText={t('modal.cancel')}
+        variant="destructive"
+        onConfirm={() => {
+          setShowLogoutModal(false);
+          handleLogout();
+        }}
+        onCancel={() => setShowLogoutModal(false)}
+      />
     </div>
   );
 };

@@ -135,9 +135,9 @@ const ModalContent = ({
 
       <motion.div
         className={`relative bg-gradient-to-br ${variantStyles.gradient} ${variantStyles.border} ${variantStyles.shadow} rounded-3xl p-8 w-[400px] max-w-[90vw] border backdrop-blur-xl`}
-        initial={{ scale: 0.8, y: 50, opacity: 0, rotateX: -15 }}
-        animate={{ scale: 1, y: 0, opacity: 1, rotateX: 0 }}
-        exit={{ scale: 0.8, y: 50, opacity: 0, rotateX: 15 }}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 50, opacity: 0 }}
         transition={{
           type: 'spring',
           damping: 20,
