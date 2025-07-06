@@ -47,7 +47,6 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
     [t],
   );
 
-  // 모든 에셋(이미지, 음성) 미리 로드
   useEffect(() => {
     const loadAssets = async () => {
       try {
@@ -56,6 +55,14 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
           const assetProgressWeighted = (assetProgress * 80) / 100;
           setProgress(assetProgressWeighted);
         });
+
+        // 주요 경로 prefetch
+        router.prefetch(`/${locale}`);
+        router.prefetch(`/${locale}/auth`);
+        router.prefetch(`/${locale}/store`);
+        router.prefetch(`/${locale}/game?mode=challenge`);
+        router.prefetch(`/${locale}/settings`);
+
         setAssetsLoaded(true);
         console.log('LoadingView: 모든 에셋이 성공적으로 로드되었습니다.');
       } catch (error) {
@@ -65,11 +72,6 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
     };
 
     loadAssets();
-
-    // 주요 경로 prefetch
-    router.prefetch(`/${locale}/store`);
-    router.prefetch(`/${locale}/game?mode=challenge`);
-    router.prefetch(`/${locale}/settings`);
   }, [router, locale]);
 
   useEffect(() => {

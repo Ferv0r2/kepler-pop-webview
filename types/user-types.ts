@@ -17,6 +17,7 @@ export type DropletStatus = {
 export type UserInfo = {
   id: string;
   name: string;
+  nickname: string;
   email: string;
   createdAt: Date;
   updatedAt: Date;

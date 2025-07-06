@@ -128,7 +128,7 @@ export const MainView = () => {
     };
   }, [isInWebView, sendMessage, addMessageHandler, showExitModal, updateDropletMutation, updateGemMutation]);
 
-  if (!userInfo || (isLoading && !hasLoadedOnce)) {
+  if (!userInfo || !hasLoadedOnce) {
     return <LoadingView />;
   }
 

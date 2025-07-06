@@ -40,7 +40,7 @@ export const SettingsView = () => {
   const pathname = usePathname();
   const clearTokens = useAuthStore((state) => state.clearTokens);
 
-  const [nickname, setNickname] = useState(userInfo?.name || '');
+  const [nickname, setNickname] = useState(userInfo?.nickname || '');
   const [selectedLocale, setSelectedLocale] = useState(userInfo?.locale || 'en');
   const [selectedProfileImage, setSelectedProfileImage] = useState(userInfo?.profileImage || PLANT_IMAGES[0]);
   const [isSaving, setIsSaving] = useState(false);
@@ -63,7 +63,7 @@ export const SettingsView = () => {
   useEffect(() => {
     if (userInfo && !hasLoadedOnce) {
       setHasLoadedOnce(true);
-      setNickname(userInfo.name || '');
+      setNickname(userInfo.nickname || '');
       setSelectedLocale(userInfo.locale || 'ko');
       setSelectedProfileImage(userInfo.profileImage || PLANT_IMAGES[0]);
     }
@@ -71,8 +71,8 @@ export const SettingsView = () => {
 
   useEffect(() => {
     if (userInfo) {
-      const hasNicknameChanged = nickname !== (userInfo.name || '');
-      const hasLocaleChanged = selectedLocale !== (userInfo.locale || 'ko');
+      const hasNicknameChanged = nickname !== (userInfo.nickname || '');
+      const hasLocaleChanged = selectedLocale !== (userInfo.locale || 'en');
       const hasImageChanged = selectedProfileImage !== (userInfo.profileImage || PLANT_IMAGES[0]);
       setHasChanges(hasNicknameChanged || hasLocaleChanged || hasImageChanged);
     }
@@ -102,6 +102,7 @@ export const SettingsView = () => {
       if (activeTab === 'profile') {
         await updateUserInfo({
           name: nickname.trim(),
+          nickname: nickname.trim(),
           profileImage: selectedProfileImage,
         });
       } else if (activeTab === 'language') {
@@ -110,7 +111,7 @@ export const SettingsView = () => {
         });
 
         // locale이 변경된 경우에만 URL 이동
-        if (selectedLocale !== (userInfo?.locale || 'ko')) {
+        if (selectedLocale !== (userInfo?.locale || 'en')) {
           const pathParts = pathname.split('/');
           if (pathParts[1] && pathParts[1].length === 2) {
             pathParts[1] = selectedLocale;
