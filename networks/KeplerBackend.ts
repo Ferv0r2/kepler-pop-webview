@@ -5,8 +5,8 @@ import type { SignInWithGoogleResponse } from './types/auth';
 
 // TODO: Error Handling
 
-export const signInWithGoogle = async (token: string): Promise<SignInWithGoogleResponse> => {
-  const response = await api.post('/auth/google', { token });
+export const signInWithGoogle = async (token: string, locale?: string): Promise<SignInWithGoogleResponse> => {
+  const response = await api.post('/auth/google', { token, locale });
   if (!response.ok) throw new Error('Failed to login');
   return response.json();
 };

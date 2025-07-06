@@ -24,13 +24,25 @@ export default function AuthPage() {
   const queryClient = useQueryClient();
   const t = useTranslations('auth');
 
+  const getCurrentLocale = () => {
+    if (typeof window !== 'undefined') {
+      return window.location.pathname.split('/')[1];
+    }
+    return 'en'; // fallback
+  };
+
+  const googleLoginWithLocale = async (token: string) => {
+    const locale = getCurrentLocale();
+    return signInWithGoogle(token, locale);
+  };
+
   const { mutate: handleGoogleLogin } = useMutation({
-    mutationFn: signInWithGoogle,
+    mutationFn: googleLoginWithLocale,
     onSuccess: async (data) => {
       const { accessToken, refreshToken, user } = data;
       setTokens(accessToken, refreshToken);
       queryClient.setQueryData(['user'], user);
-      const currentLocale = window.location.pathname.split('/')[1];
+      const currentLocale = getCurrentLocale();
       router.replace(`/${currentLocale}`);
     },
     onError: (error: unknown) => {
