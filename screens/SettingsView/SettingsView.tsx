@@ -138,6 +138,7 @@ export const SettingsView = () => {
 
   const handleLogout = () => {
     clearTokens();
+    queryClient.clear();
     const currentLocale = userInfo?.locale || 'en';
     router.push(`/${currentLocale}/auth`);
   };

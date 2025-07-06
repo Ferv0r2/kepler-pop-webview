@@ -27,7 +27,12 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       refreshToken: null,
       setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
-      clearTokens: () => set({ accessToken: null, refreshToken: null }),
+      clearTokens: () => {
+        set({ accessToken: null, refreshToken: null });
+        if (typeof document !== 'undefined') {
+          document.cookie = 'auth-storage=; path=/; max-age=0';
+        }
+      },
     }),
     {
       name: 'auth-storage',
