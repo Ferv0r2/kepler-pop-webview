@@ -205,7 +205,7 @@ export const TileComponent = memo<TileComponentProps>(
     return (
       <motion.div
         key={item.id}
-        layout={isShuffling ? false : 'position'}
+        layout={!isShuffling}
         initial={ANIMATION_VARIANTS.refill}
         animate={animateProps}
         className={cssClasses}
