@@ -64,8 +64,13 @@ export const MainView = () => {
   useEffect(() => {
     if (userInfo && !hasLoadedOnce) {
       setHasLoadedOnce(true);
+
+      // 주요 경로 prefetch
+      router.prefetch(`/${userInfo.locale}/store`);
+      router.prefetch(`/${userInfo.locale}/game?mode=challenge`);
+      router.prefetch(`/${userInfo.locale}/settings`);
     }
-  }, [userInfo, hasLoadedOnce]);
+  }, [userInfo, hasLoadedOnce, router]);
 
   // 각 모드의 최고점수 계산
   const highScores = useMemo(() => {

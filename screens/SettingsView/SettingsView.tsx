@@ -140,8 +140,13 @@ export const SettingsView = () => {
   const handleLogout = () => {
     clearTokens();
     queryClient.clear();
-    const currentLocale = userInfo?.locale || 'en';
-    router.push(`/${currentLocale}/auth`);
+
+    queueMicrotask(() => {
+      const currentLocale = userInfo?.locale || 'en';
+      router.push(`/${currentLocale}/auth`);
+      queryClient.removeQueries({ queryKey: ['user'] });
+      queryClient.removeQueries({ queryKey: ['droplet-status'] });
+    });
   };
 
   const isNicknameValid = nickname.trim().length >= 2 && nickname.trim().length <= 16;

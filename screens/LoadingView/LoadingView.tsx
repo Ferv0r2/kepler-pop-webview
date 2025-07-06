@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, useMemo, useRef } from 'react';
 
@@ -32,9 +31,6 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
   const t = useTranslations();
   const animationFrameRef = useRef<number>(0);
   const startTimeRef = useRef<number>(Date.now());
-  const router = useRouter();
-  const pathname = usePathname();
-  const locale = pathname.split('/')[1] || 'en';
 
   const loadingMessages = useMemo(
     () => [
@@ -48,6 +44,17 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
   );
 
   useEffect(() => {
+    // 이미 로드된 경우 바로 완료 처리
+    if (typeof window !== 'undefined' && sessionStorage.getItem('assetsLoaded') === 'true') {
+      setProgress(100);
+      setIsComplete(true);
+      setAssetsLoaded(true);
+      setTimeout(() => {
+        onLoadComplete?.();
+      }, LOADING_COMPLETE_DELAY_MS);
+      return;
+    }
+
     const loadAssets = async () => {
       try {
         await preloadAssetsWithProgress((assetProgress) => {
@@ -56,23 +63,22 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
           setProgress(assetProgressWeighted);
         });
 
-        // 주요 경로 prefetch
-        router.prefetch(`/${locale}`);
-        router.prefetch(`/${locale}/auth`);
-        router.prefetch(`/${locale}/store`);
-        router.prefetch(`/${locale}/game?mode=challenge`);
-        router.prefetch(`/${locale}/settings`);
-
         setAssetsLoaded(true);
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('assetsLoaded', 'true');
+        }
         console.log('LoadingView: 모든 에셋이 성공적으로 로드되었습니다.');
       } catch (error) {
         console.warn('LoadingView: 에셋 로드 실패:', error);
         setAssetsLoaded(true); // 실패해도 계속 진행
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('assetsLoaded', 'true');
+        }
       }
     };
 
     loadAssets();
-  }, [router, locale]);
+  }, [onLoadComplete]);
 
   useEffect(() => {
     // 이미 완료된 경우 즉시 완료 처리

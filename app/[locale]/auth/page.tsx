@@ -42,6 +42,7 @@ export default function AuthPage() {
       const { accessToken, refreshToken, user } = data;
       setTokens(accessToken, refreshToken);
       queryClient.setQueryData(['user'], user);
+      await queryClient.invalidateQueries({ queryKey: ['droplet-status'] });
       const currentLocale = getCurrentLocale();
       router.replace(`/${currentLocale}`);
     },
