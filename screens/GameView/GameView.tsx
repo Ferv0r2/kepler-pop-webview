@@ -1526,7 +1526,9 @@ export const GameView = () => {
           <div className="space-y-3">
             <div className="flex items-start gap-2 bg-cyan-400/10 p-2 rounded-lg">
               <Zap className="h-5 w-5 text-cyan-400 flex-shrink-0 mt-0.5" />
-              <p className="text-cyan-300 text-sm font-medium">{t('game.restartMessage')}</p>
+              <p className="text-cyan-300 text-sm font-medium">
+                {t('game.restartMessage', { count: ENERGY_CONSUME_AMOUNT })}
+              </p>
             </div>
           </div>
         }

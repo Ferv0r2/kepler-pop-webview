@@ -188,7 +188,7 @@
     "moves": "Movimientos",
     "restart": "Reiniciar",
     "restartConfirm": "¿Estás seguro de que quieres reiniciar el juego?",
-    "restartMessage": "Reiniciar reseteará tu progreso actual y consumirá 1 gota de energía.",
+    "restartMessage": "Reiniciar reseteará tu progreso actual y consumirá {count} gota de energía.",
     "insufficientEnergy": "Energía Insuficiente",
     "insufficientEnergyMessage": "No tienes suficientes gotas de energía para reiniciar el juego. ¿Te gustaría recargar tu energía?",
     "shuffling": "Mezclando fichas...",

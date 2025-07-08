@@ -188,7 +188,7 @@
     "moves": "移动",
     "restart": "重新开始",
     "restartConfirm": "您确定要重新开始游戏吗？",
-    "restartMessage": "重新开始将重置您当前的进度并消耗1个能量水滴。",
+    "restartMessage": "重新开始将重置您当前的进度并消耗{count}个能量水滴。",
     "insufficientEnergy": "能量不足",
     "insufficientEnergyMessage": "您没有足够的能量水滴来重新开始游戏。是否要充值能量？",
     "shuffling": "正在重新排列方块...",

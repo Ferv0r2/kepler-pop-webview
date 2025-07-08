@@ -188,7 +188,7 @@
     "moves": "Moves",
     "restart": "Restart",
     "restartConfirm": "Are you sure you want to restart the game?",
-    "restartMessage": "Restarting will reset your current progress and consume 1 droplet.",
+    "restartMessage": "Restarting will reset your current progress and consume {count} droplet.",
     "insufficientEnergy": "Insufficient Energy",
     "insufficientEnergyMessage": "You don't have enough droplets to restart the game. Would you like to recharge your droplets?",
     "shuffling": "Shuffling tiles...",
