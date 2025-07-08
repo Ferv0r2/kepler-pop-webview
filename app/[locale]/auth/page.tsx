@@ -1,5 +1,6 @@
 'use client';
 
+import { GoogleLogin } from '@react-oauth/google';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -59,6 +60,9 @@ export default function AuthPage() {
         message = t('sessionExpired');
       }
       setErrorMsg(message);
+      setTimeout(() => {
+        setErrorMsg(null);
+      }, 3000);
     },
   });
 
@@ -105,6 +109,32 @@ export default function AuthPage() {
             </div>
           ))}
         </div>
+
+        {/* 개발 환경에서만 보이는 구글 로그인 버튼 */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-8">
+            <GoogleLogin
+              onSuccess={(credentialResponse) => {
+                console.log('Google login successful:', credentialResponse);
+                // ID token을 사용하여 로그인
+                if (credentialResponse.credential) {
+                  handleGoogleLogin(credentialResponse.credential);
+                }
+              }}
+              onError={() => {
+                console.error('Google login failed');
+                setErrorMsg(t('loginFailed'));
+                setTimeout(() => {
+                  setErrorMsg(null);
+                }, 3000);
+              }}
+              theme="filled_blue"
+              size="large"
+              text="signin_with"
+            />
+            <p className="text-white/40 text-xs mt-2 text-center">개발 환경에서만 표시됩니다</p>
+          </div>
+        )}
       </div>
 
       {/* 에러 메시지 */}
@@ -112,7 +142,7 @@ export default function AuthPage() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute top-8 left-1/2 -translate-x-1/2 z-10 bg-white/80 text-red-600 px-6 py-3 rounded-3xl shadow-lg font-semibold"
+          className="absolute top-8 left-1/2 w-full max-w-3/4 -translate-x-1/2 z-10 bg-white/80 text-red-600 px-6 py-3 rounded-3xl shadow-lg"
         >
           {errorMsg}
         </motion.div>

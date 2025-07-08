@@ -202,9 +202,13 @@ export default function RootLayout({
         </div>
         <InitialLoaderRemover />
         <QueryProvider>
-          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+          {process.env.NODE_ENV === 'development' ? (
+            <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+              <WebViewBridgeProvider>{children}</WebViewBridgeProvider>
+            </GoogleOAuthProvider>
+          ) : (
             <WebViewBridgeProvider>{children}</WebViewBridgeProvider>
-          </GoogleOAuthProvider>
+          )}
         </QueryProvider>
       </body>
     </html>
