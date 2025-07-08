@@ -205,7 +205,7 @@ export const TileComponent = memo<TileComponentProps>(
     return (
       <motion.div
         key={item.id}
-        layout={!isShuffling}
+        layout={isShuffling ? 'preserve-aspect' : true}
         initial={ANIMATION_VARIANTS.refill}
         animate={animateProps}
         className={cssClasses}
@@ -220,34 +220,32 @@ export const TileComponent = memo<TileComponentProps>(
         <div {...GRADIENT_STYLE} />
 
         {/* Tier 2 효과 - 조건부 렌더링 최적화 */}
-        {item.tier === 2 && <TierTwoEffects isShuffling={isShuffling} />}
+        {item.tier === 2 && <TierTwoEffects />}
 
         {/* Tier 3 효과 - 조건부 렌더링 최적화 */}
-        {item.tier === 3 && <TierThreeEffects isShuffling={isShuffling} />}
+        {item.tier === 3 && <TierThreeEffects />}
 
         {/* 아이콘 렌더링 최적화 */}
-        <IconRenderer icon={tileIcon} isSelected={isSelected} isShuffling={isShuffling} />
+        <IconRenderer icon={tileIcon} isSelected={isSelected} />
       </motion.div>
     );
   },
 );
 
-const TierTwoEffects = memo(({ isShuffling }: { isShuffling: boolean }) => (
+const TierTwoEffects = memo(() => (
   <>
-    <div
-      className={`absolute inset-0 rounded-xl border-2 border-yellow-400 opacity-70${isShuffling ? '' : ' animate-pulse'}`}
-    />
+    <div className={`absolute inset-0 rounded-xl border-2 border-yellow-400 opacity-70 animate-pulse`} />
     <div className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center">
       <Star className="w-5 h-5 text-yellow-300 drop-shadow-[0_0_3px_rgba(253,224,71,0.7)]" />
     </div>
   </>
 ));
 
-const TierThreeEffects = memo(({ isShuffling }: { isShuffling: boolean }) => (
+const TierThreeEffects = memo(() => (
   <>
     <div className="absolute inset-0 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-cyan-500/20 to-purple-500/20" />
     <div
-      className={`absolute inset-0 rounded-xl border border-white/30 shadow-[inset_0_0_15px_rgba(255,255,255,0.5)]${isShuffling ? '' : ' animate-pulse'}`}
+      className={`absolute inset-0 rounded-xl border border-white/30 shadow-[inset_0_0_15px_rgba(255,255,255,0.5)] animate-pulse`}
     />
     <div className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center">
       <Flame className="w-6 h-6 text-cyan-300 drop-shadow-[0_0_5px_rgba(103,232,249,0.9)]" />
@@ -261,16 +259,15 @@ const TierThreeEffects = memo(({ isShuffling }: { isShuffling: boolean }) => (
 interface IconRendererProps {
   icon: React.ElementType;
   isSelected: boolean;
-  isShuffling: boolean;
 }
 
-const IconRenderer = memo<IconRendererProps>(({ icon, isSelected, isShuffling }) => (
+const IconRenderer = memo<IconRendererProps>(({ icon, isSelected }) => (
   <motion.div
-    animate={{ rotate: isShuffling ? 0 : isSelected ? 360 : 0 }}
+    animate={{ rotate: isSelected ? 360 : 0 }}
     transition={{
       duration: 1,
       type: 'tween',
-      repeat: isSelected && !isShuffling ? Number.POSITIVE_INFINITY : 0,
+      repeat: isSelected ? Number.POSITIVE_INFINITY : 0,
     }}
     className="relative z-10"
   >
@@ -286,17 +283,3 @@ TileComponent.displayName = 'TileComponent';
 TierTwoEffects.displayName = 'TierTwoEffects';
 TierThreeEffects.displayName = 'TierThreeEffects';
 IconRenderer.displayName = 'IconRenderer';
-
-// 커스텀 비교 함수로 불필요한 리렌더링 방지
-export const areEqual = (prevProps: TileComponentProps, nextProps: TileComponentProps): boolean => {
-  // 가장 중요한 props만 빠르게 비교
-  return (
-    prevProps.item.id === nextProps.item.id &&
-    prevProps.item.isMatched === nextProps.item.isMatched &&
-    prevProps.isSelected === nextProps.isSelected &&
-    prevProps.isDragged === nextProps.isDragged &&
-    prevProps.showHint === nextProps.showHint &&
-    prevProps.item.type === nextProps.item.type &&
-    prevProps.item.tier === nextProps.item.tier
-  );
-};
