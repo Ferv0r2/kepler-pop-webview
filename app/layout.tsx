@@ -1,6 +1,7 @@
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono, Press_Start_2P } from 'next/font/google';
+import { Press_Start_2P } from 'next/font/google';
+import localFont from 'next/font/local';
 import { ReactNode } from 'react';
 
 import { Logo } from '@/components/logo/Logo';
@@ -11,23 +12,44 @@ import { StarsAndSparkles } from '@/components/ui/StarsAndSparkles';
 
 import '@/styles/globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
 const pressStart2P = Press_Start_2P({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-press-start',
 });
 
-const neodgmFont = {
+const neodgmFont = localFont({
+  src: '../styles/fonts/neodgm.woff2',
   variable: '--font-neodgm',
-};
+  display: 'swap',
+});
+
+const pixelMplusFont = localFont({
+  src: [
+    {
+      path: '../styles/fonts/PixelMplus10-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../styles/fonts/PixelMplus10-Bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: '../styles/fonts/PixelMplus12-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../styles/fonts/PixelMplus12-Bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-pixelmplus',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Kepler Pop',
@@ -49,11 +71,17 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" style={{ background: 'linear-gradient(to bottom, #0B0C1D, #101340)' }}>
       <head>
         <style
           dangerouslySetInnerHTML={{
             __html: `
+            html, body {
+              background: linear-gradient(to bottom, #0B0C1D, #101340) !important;
+              margin: 0;
+              padding: 0;
+              min-height: 100vh;
+            }
             #initial-loader {
               position: fixed;
               top: 0;
@@ -186,9 +214,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} ${neodgmFont.variable} antialiased`}
-      >
+      <body className={`${pixelMplusFont.variable} ${pressStart2P.variable} ${neodgmFont.variable} antialiased`}>
         <div id="initial-loader" aria-busy="true" role="status" tabIndex={-1}>
           <StarsAndSparkles />
           <Logo className="mt-24" />

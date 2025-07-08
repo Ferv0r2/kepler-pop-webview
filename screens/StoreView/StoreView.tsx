@@ -142,7 +142,7 @@ export const StoreView = () => {
           />
         </header>
 
-        <main className="flex-1 flex flex-col px-4 py-6 overflow-hidden">
+        <main className="flex-1 flex flex-col px-4 py-6 overflow-x-hidden mb-20">
           {/* 페이지 제목 */}
           <motion.div
             className="text-center mb-6 flex flex-col items-center gap-2"

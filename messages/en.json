@@ -26,7 +26,6 @@
     "challengeFeature1": "• High difficulty",
     "challengeFeature2": "• Special rewards",
     "energy": "Energy",
-    "userName": "Space Explorer",
     "score": "Score",
     "moves": "Moves",
     "combo": "Combo",
@@ -272,5 +271,51 @@
     "twin_core_description": "Increase all match scores by 20%",
     "comet_blessing": "Comet Blessing",
     "comet_blessing_description": "10% chance to upgrade tier 1 tile matches to tier 3"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "description": "Compare your score with other players!",
+    "myRank": "My Rank",
+    "rank": "Rank",
+    "player": "Player",
+    "score": "Score",
+    "level": "Level",
+    "noData": "No data available",
+    "loading": "Loading leaderboard...",
+    "error": "Failed to load leaderboard",
+    "refresh": "Refresh",
+    "loadMore": "Load More",
+    "filters": {
+      "period": "Period",
+      "mode": "Mode",
+      "scope": "Scope",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "all": "All",
+      "challenge": "Challenge",
+      "global": "Global",
+      "friends": "Friends"
+    },
+    "stats": {
+      "totalPlayers": "Total Players",
+      "averageScore": "Average Score",
+      "topScore": "Top Score",
+      "yourRank": "Your Rank",
+      "yourScore": "Your Score",
+      "rankUp": "Rank Up",
+      "rankDown": "Rank Down",
+      "rankSame": "Rank Same"
+    },
+    "podium": {
+      "first": "1st",
+      "second": "2nd",
+      "third": "3rd"
+    },
+    "empty": {
+      "title": "No records yet",
+      "description": "Play the game and register your score on the leaderboard!",
+      "playNow": "Play Now"
+    }
   }
 }

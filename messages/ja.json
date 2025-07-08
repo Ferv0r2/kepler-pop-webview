@@ -26,7 +26,6 @@
     "challengeFeature1": "• 高い難易度",
     "challengeFeature2": "• 特別な報酬",
     "energy": "エネルギー",
-    "userName": "宇宙探検家",
     "score": "スコア",
     "moves": "移動",
     "combo": "コンボ",
@@ -272,5 +271,51 @@
     "twin_core_description": "すべてのマッチスコアを20%増加",
     "comet_blessing": "彗星の祝福",
     "comet_blessing_description": "1階級のタイルマッチ: 10%の確率で3階級にアップグレード"
+  },
+  "leaderboard": {
+    "title": "リーダーボード",
+    "description": "他のプレイヤーとスコアを比較してください！",
+    "myRank": "自分のランク",
+    "rank": "ランク",
+    "player": "プレイヤー",
+    "score": "スコア",
+    "level": "レベル",
+    "noData": "データがありません",
+    "loading": "リーダーボードを読み込んでいます...",
+    "error": "リーダーボードの読み込みに失敗しました",
+    "refresh": "更新",
+    "loadMore": "もっと見る",
+    "filters": {
+      "period": "期間",
+      "mode": "モード",
+      "scope": "範囲",
+      "daily": "日間",
+      "weekly": "週間",
+      "monthly": "月間",
+      "all": "全期間",
+      "challenge": "チャレンジ",
+      "global": "グローバル",
+      "friends": "フレンド"
+    },
+    "stats": {
+      "totalPlayers": "総プレイヤー数",
+      "averageScore": "平均スコア",
+      "topScore": "最高スコア",
+      "yourRank": "自分のランク",
+      "yourScore": "自分のスコア",
+      "rankUp": "ランクアップ",
+      "rankDown": "ランクダウン",
+      "rankSame": "ランク同じ"
+    },
+    "podium": {
+      "first": "1位",
+      "second": "2位",
+      "third": "3位"
+    },
+    "empty": {
+      "title": "まだ記録がありません",
+      "description": "ゲームをプレイしてリーダーボードに登録してください！",
+      "playNow": "今すぐプレイ"
+    }
   }
 }

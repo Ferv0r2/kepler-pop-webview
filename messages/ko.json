@@ -26,7 +26,6 @@
     "challengeFeature1": "• 높은 난이도",
     "challengeFeature2": "• 특별한 보상",
     "energy": "에너지",
-    "userName": "우주 탐험가",
     "score": "점수",
     "moves": "이동",
     "combo": "콤보",
@@ -272,5 +271,51 @@
     "twin_core_description": "모든 매치 점수 20% 증가",
     "comet_blessing": "유성의 축복",
     "comet_blessing_description": "1등급 타일 매치 시 10% 확률로 3등급으로 승급"
+  },
+  "leaderboard": {
+    "title": "리더보드",
+    "description": "다른 플레이어들과 점수를 비교해보세요",
+    "myRank": "내 순위",
+    "rank": "순위",
+    "player": "플레이어",
+    "score": "점수",
+    "level": "레벨",
+    "noData": "데이터가 없습니다",
+    "loading": "리더보드를 불러오는 중...",
+    "error": "리더보드를 불러오는데 실패했습니다",
+    "refresh": "새로고침",
+    "loadMore": "더 보기",
+    "filters": {
+      "period": "기간",
+      "mode": "모드",
+      "scope": "범위",
+      "daily": "일간",
+      "weekly": "주간",
+      "monthly": "월간",
+      "all": "전체",
+      "challenge": "챌린지",
+      "global": "전체",
+      "friends": "친구"
+    },
+    "stats": {
+      "totalPlayers": "총 플레이어",
+      "averageScore": "평균 점수",
+      "topScore": "최고 점수",
+      "yourRank": "내 순위",
+      "yourScore": "내 점수",
+      "rankUp": "순위 상승",
+      "rankDown": "순위 하락",
+      "rankSame": "순위 유지"
+    },
+    "podium": {
+      "first": "1위",
+      "second": "2위",
+      "third": "3위"
+    },
+    "empty": {
+      "title": "아직 기록이 없습니다",
+      "description": "게임을 플레이하여 리더보드에 등록해보세요!",
+      "playNow": "지금 플레이"
+    }
   }
 }

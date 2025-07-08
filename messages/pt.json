@@ -26,7 +26,6 @@
     "challengeFeature1": "• Alta dificuldade",
     "challengeFeature2": "• Recompensas especiais",
     "energy": "Energia",
-    "userName": "Explorador Espacial",
     "score": "Pontuação",
     "moves": "Movimentos",
     "combo": "Combo",
@@ -273,5 +272,51 @@
     "twin_core_description": "Aumenta todas as pontuações de combinação em 20%",
     "comet_blessing": "Bendito de cometa",
     "comet_blessing_description": "Combinação de peça de nível 1: 10% de chance de atualizar para nível 3"
+  },
+  "leaderboard": {
+    "title": "Classificação",
+    "description": "Compare sua pontuação com outros jogadores!",
+    "myRank": "Meu Ranking",
+    "rank": "Ranking",
+    "player": "Jogador",
+    "score": "Pontuação",
+    "level": "Nível",
+    "noData": "Nenhum dado disponível",
+    "loading": "Carregando classificação...",
+    "error": "Erro ao carregar classificação",
+    "refresh": "Atualizar",
+    "loadMore": "Carregar mais",
+    "filters": {
+      "period": "Período",
+      "mode": "Modo",
+      "scope": "Escopo",
+      "daily": "Diário",
+      "weekly": "Semanal",
+      "monthly": "Mensal",
+      "all": "Todos",
+      "challenge": "Desafio",
+      "global": "Global",
+      "friends": "Amigos"
+    },
+    "stats": {
+      "totalPlayers": "Total de jogadores",
+      "averageScore": "Pontuação média",
+      "topScore": "Pontuação mais alta",
+      "yourRank": "Seu Ranking",
+      "yourScore": "Sua Pontuação",
+      "rankUp": "Subir Ranking",
+      "rankDown": "Descer Ranking",
+      "rankSame": "Ranking Igual"
+    },
+    "podium": {
+      "first": "1º",
+      "second": "2º",
+      "third": "3º"
+    },
+    "empty": {
+      "title": "Nenhum registro ainda",
+      "description": "Jogue o jogo e registre sua pontuação na classificação!",
+      "playNow": "Jogar Agora"
+    }
   }
 }
