@@ -1,7 +1,7 @@
 'use client';
 
 import { GoogleLogin } from '@react-oauth/google';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -22,7 +22,6 @@ export default function AuthPage() {
 
   const { addMessageHandler, sendMessage } = useWebViewBridgeContext();
   const { setTokens } = useAuthStore();
-  const queryClient = useQueryClient();
   const t = useTranslations('auth');
 
   const getCurrentLocale = () => {
@@ -40,10 +39,8 @@ export default function AuthPage() {
   const { mutate: handleGoogleLogin } = useMutation({
     mutationFn: googleLoginWithLocale,
     onSuccess: async (data) => {
-      const { accessToken, refreshToken, user } = data;
+      const { accessToken, refreshToken } = data;
       setTokens(accessToken, refreshToken);
-      queryClient.setQueryData(['user'], user);
-      await queryClient.invalidateQueries({ queryKey: ['droplet-status'] });
       const currentLocale = getCurrentLocale();
       router.replace(`/${currentLocale}`);
     },

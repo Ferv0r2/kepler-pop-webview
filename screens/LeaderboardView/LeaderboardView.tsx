@@ -42,7 +42,7 @@ export const LeaderboardView = () => {
 
   const handlePlayNow = useCallback(() => {
     if (userInfo?.locale) {
-      router.push(`/${userInfo.locale}/game?mode=challenge`);
+      router.push(`/${userInfo.locale}`);
     }
   }, [router, userInfo?.locale]);
 

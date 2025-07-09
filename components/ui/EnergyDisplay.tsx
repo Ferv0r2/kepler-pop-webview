@@ -42,7 +42,7 @@ export const EnergyDisplay = () => {
     return (dropletStatus.droplet / ENERGY_MAX) * 100;
   };
 
-  const isFull = dropletStatus?.droplet === ENERGY_MAX;
+  const isFull = (dropletStatus?.droplet || 0) >= ENERGY_MAX;
   const isLow = dropletStatus && dropletStatus.droplet < ENERGY_CONSUME_AMOUNT;
 
   if (isLoading) {

@@ -30,8 +30,8 @@ const useUpdateDroplet = () => {
   return useMutation({
     mutationFn: updateDroplet,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
       queryClient.invalidateQueries({ queryKey: ['droplet-status'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
 };
@@ -48,7 +48,6 @@ const useUpdateGem = () => {
 
 export const MainView = () => {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { data: userInfo, isLoading } = useUser();
   const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
   const t = useTranslations();
@@ -145,8 +144,6 @@ export const MainView = () => {
 
     // 에너지 상태를 최신으로 업데이트
     try {
-      await queryClient.invalidateQueries({ queryKey: ['droplet-status'] });
-      await queryClient.invalidateQueries({ queryKey: ['user'] });
     } catch (error) {
       console.warn('Failed to refresh energy status:', error);
     }
@@ -202,7 +199,7 @@ export const MainView = () => {
           />
         </header>
 
-        <main className="flex-1 flex flex-col mt-6 px-4 py-2 mb-20 overflow-hidden">
+        <main className="flex-1 flex flex-col mt-6 py-2 mb-20 overflow-hidden">
           {highScores.challenge > 0 && (
             <motion.div
               className="max-w-56 mx-auto w-full flex items-center justify-center gap-3 p-3 bg-gradient-to-r from-yellow-500/20 via-amber-500/20 to-orange-500/20 backdrop-blur-md rounded-xl border border-yellow-500/30 shadow-lg mb-8"
@@ -275,7 +272,7 @@ export const MainView = () => {
           </motion.div>
 
           {/* 주간 리더보드 위젯 */}
-          <div className="max-w-80 mx-auto w-full">
+          <div className="max-w-sm md mx-auto w-full px-2">
             <WeeklyLeaderboardWidget locale={userInfo.locale} />
           </div>
         </main>

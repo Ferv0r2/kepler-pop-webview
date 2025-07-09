@@ -27,8 +27,8 @@ const useUpdateDroplet = () => {
   return useMutation({
     mutationFn: updateDroplet,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
       queryClient.invalidateQueries({ queryKey: ['droplet-status'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
 };

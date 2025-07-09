@@ -1,6 +1,6 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, User, Globe, ImageIcon, Save, Check, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
@@ -30,15 +30,25 @@ import { LoadingView } from '../LoadingView/LoadingView';
 
 import { LOCALE_NAMES, PLANT_IMAGES } from './constants/settings-config';
 
+const useUpdateUserInfo = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateUserInfo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+};
 export const SettingsView = () => {
   const t = useTranslations();
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const { data: userInfo, isLoading } = useUser();
   const { sendMessage, addMessageHandler } = useWebViewBridgeContext();
-  const queryClient = useQueryClient();
+  const updateUserInfoMutation = useUpdateUserInfo();
   const router = useRouter();
   const pathname = usePathname();
   const clearTokens = useAuthStore((state) => state.clearTokens);
+  const queryClient = useQueryClient();
 
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
   const [selectedLocale, setSelectedLocale] = useState(userInfo?.locale || 'en');
@@ -100,12 +110,12 @@ export const SettingsView = () => {
 
     try {
       if (activeTab === 'profile') {
-        await updateUserInfo({
+        await updateUserInfoMutation.mutateAsync({
           nickname: nickname.trim(),
           profileImage: selectedProfileImage,
         });
       } else if (activeTab === 'language') {
-        await updateUserInfo({
+        await updateUserInfoMutation.mutateAsync({
           locale: selectedLocale,
         });
 
@@ -122,7 +132,6 @@ export const SettingsView = () => {
         }
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['user'] });
       setSuccess(true);
       setHasChanges(false);
     } catch (e: unknown) {
@@ -137,14 +146,12 @@ export const SettingsView = () => {
   };
 
   const handleLogout = () => {
-    clearTokens();
     queryClient.clear();
 
+    clearTokens();
     queueMicrotask(() => {
       const currentLocale = userInfo?.locale || 'en';
       router.push(`/${currentLocale}/auth`);
-      queryClient.removeQueries({ queryKey: ['user'] });
-      queryClient.removeQueries({ queryKey: ['droplet-status'] });
     });
   };
 

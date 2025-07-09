@@ -83,6 +83,7 @@ const useUpdateDroplet = () => {
   return useMutation({
     mutationFn: updateDroplet,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['droplet-status'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
@@ -153,7 +154,6 @@ function applyAutoRemoveArtifacts(
 export const GameView = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
   const gameMode = searchParams.get('mode') as GameMode;
   const { grid, setGrid, getRandomItemType, createInitialGrid, findMatches, findPossibleMove } = useMatchGame();
   const { tileSwapMode, setTileSwapMode, hasSeenTutorial, setHasSeenTutorial } = useGameSettings();
@@ -723,12 +723,6 @@ export const GameView = () => {
 
   const restartGame = () => {
     // 에너지 상태를 최신으로 업데이트
-    try {
-      queryClient.invalidateQueries({ queryKey: ['droplet-status'] });
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-    } catch (error) {
-      console.warn('Failed to refresh energy status:', error);
-    }
 
     // 에너지 소모
     updateDropletMutation.mutate(-ENERGY_CONSUME_AMOUNT, {
