@@ -89,7 +89,7 @@ export const SettingsView = () => {
     return <LoadingView />;
   }
 
-  const { name, level, gameMoney, gem, profileImage } = userInfo;
+  const { nickname: userNickname, level, gameMoney, gem, profileImage } = userInfo;
 
   const handleSave = async () => {
     if (!hasChanges) return;
@@ -101,7 +101,6 @@ export const SettingsView = () => {
     try {
       if (activeTab === 'profile') {
         await updateUserInfo({
-          name: nickname.trim(),
           nickname: nickname.trim(),
           profileImage: selectedProfileImage,
         });
@@ -155,7 +154,7 @@ export const SettingsView = () => {
     <div className="grid grid-rows-[auto_1fr_auto] min-h-screen bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#334155] p-0 relative">
       <header className="sticky w-full left-0 top-0 z-10">
         <TopNavigation
-          name={name}
+          name={userNickname}
           level={level}
           gameMoney={gameMoney}
           gem={gem}

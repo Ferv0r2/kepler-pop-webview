@@ -54,13 +54,13 @@ export const LeaderboardView = () => {
     );
   }
 
-  const { name, level, gameMoney, gem, profileImage } = userInfo;
+  const { nickname, level, gameMoney, gem, profileImage } = userInfo;
 
   return (
     <div className="grid grid-rows-[auto_1fr_auto] min-h-screen bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#334155] p-0 relative">
       <header className="sticky w-full left-0 top-0 z-10">
         <TopNavigation
-          name={name}
+          name={nickname}
           level={level}
           gameMoney={gameMoney}
           gem={gem}
