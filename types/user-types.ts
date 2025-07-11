@@ -9,6 +9,18 @@ export type UserScore = {
   updatedAt: Date;
 };
 
+export type PeriodScore = {
+  id: string;
+  user: UserInfo;
+  userId: string;
+  mode: 'casual' | 'challenge';
+  periodType: 'daily' | 'weekly' | 'monthly';
+  periodStartDate: Date;
+  score: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type DropletStatus = {
   droplet: number;
   nextChargeAt: number | null;
@@ -30,4 +42,5 @@ export type UserInfo = {
   gameItems: Partial<Record<GameItemType, number>>;
   profileImage?: string;
   scores: UserScore[];
+  periodScores: PeriodScore[];
 };

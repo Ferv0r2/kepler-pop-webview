@@ -19,5 +19,6 @@ export const mockUser: UserInfo = {
   },
   profileImage: '/plants/sprout.png',
   scores: [],
+  periodScores: [],
   locale: 'ko',
 };

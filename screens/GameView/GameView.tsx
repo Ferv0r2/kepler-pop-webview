@@ -271,15 +271,20 @@ export const GameView = () => {
   // 게임 종료 시 점수 업데이트
   const updateUserScore = useCallback(
     async (finalScore: number) => {
-      if (!userInfo || finalScore <= currentModeHighScore) return;
+      if (!userInfo) return;
+
+      // 이미 업데이트 중이면 중복 호출 방지
+      if (updateScoreMutation.isPending) return;
 
       try {
+        // 모든 점수를 백엔드로 전송 (기간별 점수 업데이트를 위해)
+        // 백엔드에서 최고점수 vs 기간별 점수를 각각 처리함
         await updateScoreMutation.mutateAsync({ score: finalScore, mode: gameMode });
       } catch (error) {
         console.error('Failed to update score:', error);
       }
     },
-    [userInfo, currentModeHighScore, updateScoreMutation, gameMode],
+    [userInfo, updateScoreMutation, gameMode],
   );
 
   const handleTileClick = (row: number, col: number) => {

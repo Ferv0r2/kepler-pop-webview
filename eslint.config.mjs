@@ -44,6 +44,13 @@ const eslintConfig = [
       ...nextPlugin.configs.recommended.rules,
     },
   },
+  // Jest 설정 파일에 대한 예외 처리
+  {
+    files: ['jest.config.js', 'jest.setup.js'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 ];
 
 export default eslintConfig;
