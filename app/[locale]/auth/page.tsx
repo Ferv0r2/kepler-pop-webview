@@ -12,9 +12,14 @@ import { Logo } from '@/components/logo/Logo';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
 import { StarsAndSparkles } from '@/components/ui/StarsAndSparkles';
 import { CHARACTERS } from '@/constants/characters';
-import { signInWithGoogle } from '@/networks/KeplerBackend';
+import { signInWithGoogle, signInWithApple } from '@/networks/KeplerBackend';
 import { useAuthStore } from '@/store/authStore';
-import { GoogleIdTokenMessage, NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
+import {
+  GoogleIdTokenMessage,
+  AppleIdTokenMessage,
+  NativeToWebMessageType,
+  WebToNativeMessageType,
+} from '@/types/native-call';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -63,6 +68,38 @@ export default function AuthPage() {
     },
   });
 
+  const appleLoginWithLocale = async (token: string) => {
+    const locale = getCurrentLocale();
+    return signInWithApple(token, locale);
+  };
+
+  const { mutate: handleAppleLogin } = useMutation({
+    mutationFn: appleLoginWithLocale,
+    onSuccess: async (data) => {
+      const { accessToken, refreshToken } = data;
+      setTokens(accessToken, refreshToken);
+      const currentLocale = getCurrentLocale();
+      router.replace(`/${currentLocale}`);
+    },
+    onError: (error: unknown) => {
+      console.error('Apple login failed:', error);
+      let message = t('loginFailed');
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'message' in error &&
+        typeof (error as { message?: string }).message === 'string' &&
+        (error as { message: string }).message.includes('jwt expired')
+      ) {
+        message = t('sessionExpired');
+      }
+      setErrorMsg(message);
+      setTimeout(() => {
+        setErrorMsg(null);
+      }, 3000);
+    },
+  });
+
   useEffect(() => {
     sendMessage({
       type: WebToNativeMessageType.NEED_TO_LOGIN,
@@ -79,10 +116,20 @@ export default function AuthPage() {
       },
     );
 
+    const unsubscribeAppleIdToken = addMessageHandler<AppleIdTokenMessage>(
+      NativeToWebMessageType.APPLE_ID_TOKEN,
+      ({ payload }) => {
+        if (payload) {
+          handleAppleLogin(payload.token);
+        }
+      },
+    );
+
     return () => {
       unsubscribeGoogleIdToken();
+      unsubscribeAppleIdToken();
     };
-  }, [addMessageHandler, handleGoogleLogin]);
+  }, [addMessageHandler, handleGoogleLogin, handleAppleLogin]);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-[#0B0C1D] to-[#101340] flex flex-col">

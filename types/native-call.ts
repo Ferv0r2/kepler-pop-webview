@@ -41,6 +41,7 @@ export enum NativeToWebMessageType {
   RESUME_ACTION = 'RESUME_ACTION',
 
   GOOGLE_ID_TOKEN = 'GOOGLE_ID_TOKEN',
+  APPLE_ID_TOKEN = 'APPLE_ID_TOKEN',
 
   ENERGY_CHANGE = 'ENERGY_CHANGE',
 
@@ -73,6 +74,10 @@ export interface GoogleIdTokenPayload {
   token: string;
 }
 
+export interface AppleIdTokenPayload {
+  token: string;
+}
+
 export interface NativeErrorPayload {
   message: string;
   stack?: string;
@@ -100,6 +105,7 @@ export interface PurchaseResultPayload {
 // Typed message interfaces
 export type WebAppReadyMessage = WebToNativeMessage<WebAppReadyPayload>;
 export type GoogleIdTokenMessage = NativeToWebMessage<GoogleIdTokenPayload>;
+export type AppleIdTokenMessage = NativeToWebMessage<AppleIdTokenPayload>;
 export type GemUpdateMessage = WebToNativeMessage<GemUpdatePayload>;
 export type InAppPurchaseMessage = WebToNativeMessage<InAppPurchasePayload>;
 export type PurchaseResultMessage = NativeToWebMessage<PurchaseResultPayload>;

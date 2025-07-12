@@ -85,6 +85,7 @@
     "noAccount": "アカウントをお持ちでないですか？",
     "haveAccount": "すでにアカウントをお持ちですか？",
     "loginWithGoogle": "Googleで続行",
+    "loginWithApple": "Appleで続行",
     "loginFailed": "ログインに失敗しました",
     "loggingIn": "ログイン中...",
     "pleaseLogin": "ログインしてください",

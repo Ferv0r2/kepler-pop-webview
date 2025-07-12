@@ -85,6 +85,7 @@
     "noAccount": "没有账号？",
     "haveAccount": "已有账号？",
     "loginWithGoogle": "使用 Google 继续",
+    "loginWithApple": "使用 Apple 继续",
     "loginFailed": "登录失败",
     "loggingIn": "登录中...",
     "pleaseLogin": "请登录",

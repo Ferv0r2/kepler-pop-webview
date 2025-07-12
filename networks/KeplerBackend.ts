@@ -18,6 +18,12 @@ export const signInWithGoogle = async (token: string, locale?: string): Promise<
   return response.json();
 };
 
+export const signInWithApple = async (token: string, locale?: string): Promise<SignInWithGoogleResponse> => {
+  const response = await api.post('/auth/apple', { token, locale });
+  if (!response.ok) throw new Error('Failed to login with Apple');
+  return response.json();
+};
+
 export const getUserInfo = async (): Promise<UserInfo> => {
   const response = await api.get('/users/me');
   if (!response.ok) throw new Error('Failed to get user info');

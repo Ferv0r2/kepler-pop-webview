@@ -85,6 +85,7 @@
     "noAccount": "Don't have an account?",
     "haveAccount": "Already have an account?",
     "loginWithGoogle": "Continue with Google",
+    "loginWithApple": "Continue with Apple",
     "loginFailed": "Login failed",
     "loggingIn": "Logging in...",
     "pleaseLogin": "Please log in",
