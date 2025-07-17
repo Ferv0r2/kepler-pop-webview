@@ -256,6 +256,7 @@ export const MainView = () => {
 
           {/* 게임 모드 선택 */}
           <motion.div
+            data-testid="challenge-mode-button"
             className="w-fit mx-auto flex-col px-3 py-1 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 mb-8"
             variants={itemVariants}
             whileHover={{ scale: 1.02, y: -2 }}

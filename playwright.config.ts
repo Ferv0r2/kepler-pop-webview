@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
+ * Mobile WebView 서비스를 위한 Playwright 설정
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
@@ -30,33 +31,51 @@ export default defineConfig({
 
     /* Record video on failure */
     video: 'retain-on-failure',
+
+    /* 모바일 WebView 최적화 설정 */
+    hasTouch: true, // 터치 이벤트 지원
+    isMobile: true, // 모바일 환경으로 설정
+
+    /* 모바일 네트워크 조건 시뮬레이션 */
+    launchOptions: {
+      slowMo: 100, // 모바일 환경의 느린 반응 시뮬레이션
+    },
   },
 
-  /* Configure projects for major browsers */
+  /* 모바일 기기에 특화된 프로젝트 설정 */
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'Mobile Chrome Android',
+      use: {
+        ...devices['Pixel 5'],
+        /* WebView 특화 설정 */
+        userAgent:
+          'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36 wv', // WebView UserAgent
+      },
     },
-
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
 
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      name: 'Mobile Safari iOS',
+      use: {
+        ...devices['iPhone 12'],
+        /* iOS WebView 특화 설정 */
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148', // iOS WebView UserAgent
+      },
     },
 
-    /* Test against mobile viewports. */
+    {
+      name: 'Mobile Chrome Small',
+      use: {
+        ...devices['Galaxy S5'],
+        /* 소형 모바일 기기 테스트 */
+      },
+    },
+
+    // 태블릿 테스트 (필요시)
     // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
+    //   name: 'iPad',
+    //   use: { ...devices['iPad Pro'] },
     // },
   ],
 

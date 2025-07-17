@@ -1152,6 +1152,7 @@ export const GameView = () => {
             </Button>
 
             <Button
+              data-testid="game-settings"
               variant="ghost"
               size="icon"
               onClick={handleSettingsClick}
@@ -1201,6 +1202,7 @@ export const GameView = () => {
                     }
                   />
                   <motion.div
+                    data-testid="game-score"
                     className={`relative w-full backdrop-blur-sm px-4 py-2 rounded-lg border shadow-[0_0_15px_rgba(236,72,153,0.3)] transition-all duration-500 ${
                       isNewHighScore
                         ? 'bg-black/90 border-yellow-500/50 shadow-[0_0_20px_rgba(250,204,21,0.5)]'
@@ -1231,7 +1233,9 @@ export const GameView = () => {
                     <div className="text-pink-400 mb-1 tracking-widest">
                       {t('common.score')}{' '}
                       <span
-                        className={`transition-all duration-300 ${isNewHighScore ? 'text-yellow-400 font-bold' : 'text-white/50'}`}
+                        className={`transition-all duration-300 ${
+                          isNewHighScore ? 'text-yellow-400 font-bold' : 'text-white/50'
+                        }`}
                       >
                         {currentModeHighScore > 0 ? `(${currentModeHighScore})` : ''}
                       </span>
@@ -1267,7 +1271,10 @@ export const GameView = () => {
                   transition={{ delay: 0.4, duration: 0.5 }}
                 >
                   <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg blur opacity-30" />
-                  <div className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                  <div
+                    data-testid="game-moves"
+                    className="relative w-full bg-black/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                  >
                     <div className="text-blue-400 mb-1 tracking-widest">{t('common.moves')}</div>
                     <motion.div
                       key={gameState.moves}
@@ -1371,7 +1378,9 @@ export const GameView = () => {
                             }`}
                           >
                             <RefreshCw
-                              className={`w-5 h-5 mr-2 ${!userInfo || userInfo.droplet <= 0 ? 'text-gray-300' : 'text-white'}`}
+                              className={`w-5 h-5 mr-2 ${
+                                !userInfo || userInfo.droplet <= 0 ? 'text-gray-300' : 'text-white'
+                              }`}
                             />
                             <div className="flex items-center gap-2">
                               <span>{t('game.restart')}</span>
@@ -1400,6 +1409,7 @@ export const GameView = () => {
               </AnimatePresence>
 
               <div
+                data-testid="game-grid"
                 className="grid gap-1.5 place-items-center"
                 style={{
                   gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,

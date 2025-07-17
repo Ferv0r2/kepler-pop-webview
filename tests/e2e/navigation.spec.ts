@@ -6,55 +6,79 @@ test.describe('메인 페이지 네비게이션', () => {
   test.beforeEach(async ({ page }) => {
     // 모든 테스트 전에 test-admin으로 로그인
     await authHelper.loginAsTestAdmin(page);
+    // 튜토리얼 스킵 설정
+    await authHelper.skipTutorial(page);
   });
 
   test('메인 페이지 로드 및 게임 모드 선택', async ({ page }) => {
     // 메인 페이지 확인 (로케일 유연하게)
     await expect(page).toHaveURL(/\/(ko|en|ja|zh|es|pt)(?:\/.*)?$/);
 
+    // 모바일 WebView 환경에서 안정적 로딩 대기
+    await authHelper.mobileWaitForStableLoad(page);
+
     // 페이지가 로드되었는지 확인
     await expect(page.locator('body')).toBeVisible();
     console.log('메인 페이지 URL:', page.url());
     console.log('메인 페이지 제목:', await page.title());
 
-    // 게임 모드 버튼이 있는지 확인 (더 유연한 선택자)
-    const challengeButton = page.locator('text=Challenge').or(page.locator('text=도전')).first();
-    if (await challengeButton.isVisible({ timeout: 5000 })) {
-      await challengeButton.click();
-      // 게임 페이지로 이동했는지 확인 (로케일 유연하게)
-      await expect(page).toHaveURL(/\/(ko|en|ja|zh|es|pt)\/game/);
+    // Challenge 모드 버튼 클릭 (data-testid 사용)
+    const challengeButton = page.locator('[data-testid="challenge-mode-button"]');
+    if (await challengeButton.isVisible({ timeout: 10000 })) {
+      // 타임아웃 증가
+      // 모바일 터치 이벤트로 클릭
+      await authHelper.mobileTab(page, '[data-testid="challenge-mode-button"]');
+
+      // 게임 페이지로 이동했는지 확인 (더 긴 대기 시간)
+      await expect(page).toHaveURL(/\/(ko|en|ja|zh|es|pt)\/game/, { timeout: 15000 });
+
+      // 모바일 환경에서 게임 로딩 대기
+      await authHelper.mobileWaitForStableLoad(page);
+
+      // 게임이 로드될 때까지 대기 및 모달 처리
+      await page.waitForTimeout(3000); // 모바일 환경 고려하여 증가
+      await authHelper.closeGameModals(page);
+
+      // 게임 그리드가 로드되었는지 확인 (더 긴 타임아웃)
+      await expect(page.locator('[data-testid="game-grid"]')).toBeVisible({ timeout: 20000 });
     } else {
-      console.log('게임 모드 버튼을 찾을 수 없음, 기본 페이지 확인만 진행');
+      console.log('Challenge 모드 버튼을 찾을 수 없음, 기본 페이지 확인만 진행');
     }
   });
 
   test('하단 네비게이션 동작 확인', async ({ page }) => {
-    // Store 버튼 찾기 (CSS 선택자 문법 수정)
-    const storeButton = page.locator('text=Store').or(page.locator('text=상점')).first();
-    if (await storeButton.isVisible({ timeout: 5000 })) {
-      await storeButton.click();
-      await expect(page).toHaveURL(/\/(ko|en|ja|zh|es|pt)\/store/);
-    } else {
-      console.log('Store 버튼을 찾을 수 없음');
-    }
+    // 모바일 WebView 환경에서 안정적 로딩 대기
+    await authHelper.mobileWaitForStableLoad(page);
+
+    // Store 버튼 클릭 (data-testid 사용)
+    const storeButton = page.locator('[data-testid="nav-store"]');
+    await expect(storeButton).toBeVisible({ timeout: 10000 }); // 타임아웃 증가
+
+    // 모바일 터치 이벤트로 클릭
+    await authHelper.mobileTab(page, '[data-testid="nav-store"]');
+    await expect(page).toHaveURL(/\/(ko|en|ja|zh|es|pt)\/store/, { timeout: 15000 }); // 타임아웃 증가
+
+    // 모바일 환경에서 페이지 로딩 대기
+    await authHelper.mobileWaitForStableLoad(page);
 
     // Play 버튼으로 메인으로 돌아가기
-    const playButton = page.locator('text=Play').or(page.locator('text=플레이')).first();
-    if (await playButton.isVisible({ timeout: 5000 })) {
-      await playButton.click();
-      await expect(page).toHaveURL(/\/(ko|en|ja|zh|es|pt)(?:\/.*)?$/);
-    } else {
-      console.log('Play 버튼을 찾을 수 없음');
-    }
+    const playButton = page.locator('[data-testid="nav-play"]');
+    await expect(playButton).toBeVisible({ timeout: 10000 }); // 타임아웃 증가
+
+    // 모바일 터치 이벤트로 클릭
+    await authHelper.mobileTab(page, '[data-testid="nav-play"]');
+    await expect(page).toHaveURL(/\/(ko|en|ja|zh|es|pt)(?:\/.*)?$/, { timeout: 15000 });
+
+    // 모바일 환경에서 페이지 로딩 대기
+    await authHelper.mobileWaitForStableLoad(page);
 
     // Settings 버튼 클릭
-    const settingsButton = page.locator('text=Settings').or(page.locator('text=설정')).first();
-    if (await settingsButton.isVisible({ timeout: 5000 })) {
-      await settingsButton.click();
-      await expect(page).toHaveURL(/\/(ko|en|ja|zh|es|pt)\/settings/);
-    } else {
-      console.log('Settings 버튼을 찾을 수 없음');
-    }
+    const settingsButton = page.locator('[data-testid="nav-settings"]');
+    await expect(settingsButton).toBeVisible({ timeout: 10000 }); // 타임아웃 증가
+
+    // 모바일 터치 이벤트로 클릭
+    await authHelper.mobileTab(page, '[data-testid="nav-settings"]');
+    await expect(page).toHaveURL(/\/(ko|en|ja|zh|es|pt)\/settings/, { timeout: 15000 });
   });
 
   test('리더보드 페이지 이동 및 데이터 표시', async ({ page }) => {
@@ -65,30 +89,37 @@ test.describe('메인 페이지 네비게이션', () => {
     // 리더보드 페이지로 이동
     await page.goto(`/${locale}/leaderboard`);
 
+    // 모바일 WebView 환경에서 안정적 로딩 대기
+    await authHelper.mobileWaitForStableLoad(page);
+
     // 페이지가 로드되었는지 기본 확인
     await expect(page.locator('body')).toBeVisible();
     console.log('리더보드 페이지 URL:', page.url());
     console.log('리더보드 페이지 제목:', await page.title());
 
-    // 페이지 컨텐츠가 로드되었는지 확인 (더 일반적인 방법)
-    await page.waitForLoadState('networkidle', { timeout: 10000 });
+    // 페이지에 기본 콘텐츠가 있는지 확인
+    const pageContent = await page.textContent('body');
+    const hasContent = pageContent && pageContent.length > 100;
+    expect(hasContent).toBe(true);
   });
 
   test('사용자 정보 표시 확인', async ({ page }) => {
-    // 페이지 기본 로드 확인
-    await expect(page.locator('body')).toBeVisible();
-    console.log('사용자 정보 확인 페이지 URL:', page.url());
-
-    // 페이지 컨텐츠 완전 로드 대기
-    await page.waitForLoadState('networkidle', { timeout: 10000 });
+    // 모바일 WebView 환경에서 안정적 로딩 대기
+    await authHelper.mobileWaitForStableLoad(page, { timeout: 20000 });
 
     // 실제 UI 구조를 확인하기 위해 페이지 정보 출력
     const pageContent = await page.textContent('body');
-    console.log('페이지에서 "10000" 포함 여부:', pageContent?.includes('10000'));
-    console.log('페이지에서 "999" 포함 여부:', pageContent?.includes('999'));
+    console.log('사용자 정보 확인 페이지 URL:', page.url());
 
-    // 기본적으로 test-admin이 로그인된 상태인지만 확인
-    const isAuth = await authHelper.isAuthenticated(page);
-    expect(isAuth).toBe(true);
+    // test-admin의 droplet 수 (999) 확인
+    const hasDroplet999 = pageContent?.includes('999');
+    console.log('페이지에서 "999" 포함 여부:', hasDroplet999);
+
+    // test-admin의 gem 수 (10000) 확인 - 페이지에 표시되지 않을 수도 있음
+    const hasGem10000 = pageContent?.includes('10000');
+    console.log('페이지에서 "10000" 포함 여부:', hasGem10000);
+
+    // 최소한 droplet 999는 확인되어야 함
+    expect(hasDroplet999).toBe(true);
   });
 });

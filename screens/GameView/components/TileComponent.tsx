@@ -210,6 +210,7 @@ export const TileComponent = memo<TileComponentProps>(
         animate={animateProps}
         className={cssClasses}
         style={GPU_ACCELERATED_STYLE}
+        data-testid="tile"
         data-row={rowIndex}
         data-col={colIndex}
         whileHover={{ scale: HOVER_SCALE }}

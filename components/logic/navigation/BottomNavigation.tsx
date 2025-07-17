@@ -15,9 +15,9 @@ export const BottomNavigation = () => {
 
   const navigationButtons = useMemo(
     () => [
-      { icon: Store, label: t('common.store'), path: `/${locale}/store` },
-      { icon: Play, label: t('common.play'), path: `/${locale}` },
-      { icon: Settings, label: t('common.settings'), path: `/${locale}/settings` },
+      { icon: Store, label: t('common.store'), path: `/${locale}/store`, testId: 'nav-store' },
+      { icon: Play, label: t('common.play'), path: `/${locale}`, testId: 'nav-play' },
+      { icon: Settings, label: t('common.settings'), path: `/${locale}/settings`, testId: 'nav-settings' },
     ],
     [t, locale],
   );
@@ -52,12 +52,14 @@ export interface BottomNavigationButtonProps {
   label: string;
   isSelected: boolean;
   onClick: () => void;
+  testId?: string;
 }
 
-export const BottomNavigationButton = ({ icon, label, isSelected, onClick }: BottomNavigationButtonProps) => {
+export const BottomNavigationButton = ({ icon, label, isSelected, onClick, testId }: BottomNavigationButtonProps) => {
   return (
     <div className="flex items-center justify-center w-full">
       <motion.button
+        data-testid={testId}
         className={isSelected ? 'relative -mt-8 w-full' : 'flex flex-col items-center w-full'}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}

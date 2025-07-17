@@ -8,6 +8,26 @@ module.exports = {
     './src/**/*.{ts,tsx}',
     '*.{js,ts,jsx,tsx,mdx}',
   ],
+  // 모바일 WebView 성능 최적화
+  experimental: {
+    optimizeUniversalDefaults: true, // 기본값 최적화
+  },
+  // 사용하지 않는 CSS 제거 최적화
+  purge: {
+    enabled: process.env.NODE_ENV === 'production',
+    content: [
+      './pages/**/*.{ts,tsx}',
+      './components/**/*.{ts,tsx}',
+      './app/**/*.{ts,tsx}',
+      './src/**/*.{ts,tsx}',
+      './screens/**/*.{ts,tsx}',
+      './hooks/**/*.{ts,tsx}',
+    ],
+    // 모바일에서 사용하지 않는 클래스들 제거
+    options: {
+      safelist: ['html', 'body'], // 기본 태그 보호
+    },
+  },
   theme: {
     extend: {
       colors: {

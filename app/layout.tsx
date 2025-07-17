@@ -54,6 +54,26 @@ const pixelMplusFont = localFont({
 export const metadata: Metadata = {
   title: 'Kepler Pop',
   description: 'Kepler Pop with Puzzle Game',
+  // 모바일 WebView 최적화
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Kepler Pop',
+  },
+  formatDetection: {
+    telephone: false, // 전화번호 자동 링크 비활성화
+    date: false, // 날짜 자동 링크 비활성화
+    address: false, // 주소 자동 링크 비활성화
+    email: false, // 이메일 자동 링크 비활성화
+    url: false, // URL 자동 링크 비활성화
+  },
+  other: {
+    // iOS Safari WebView 최적화
+    'mobile-web-app-capable': 'yes',
+    'mobile-web-app-status-bar-style': 'default',
+    // Android WebView 최적화
+    'mobile-web-app-title': 'Kepler Pop',
+  },
 };
 
 export const viewport: Viewport = {
@@ -63,6 +83,11 @@ export const viewport: Viewport = {
   minimumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
+  // 모바일 WebView 최적화
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#0B0C1D' },
+    { media: '(prefers-color-scheme: dark)', color: '#0B0C1D' },
+  ],
 };
 
 export default function RootLayout({
