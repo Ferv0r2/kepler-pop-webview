@@ -161,63 +161,129 @@ export const authHelper = {
    * 게임 페이지에서 나타날 수 있는 모든 모달들을 닫습니다
    */
   async closeGameModals(page: Page): Promise<void> {
+    // 먼저 페이지가 안정화될 때까지 대기
+    await page.waitForTimeout(2000);
+
     try {
-      // 튜토리얼 모달 닫기
-      const tutorialCloseButton = page.locator('button:has(svg)').filter({ hasText: '' }).first();
-      if (await tutorialCloseButton.isVisible({ timeout: 2000 })) {
-        await tutorialCloseButton.click();
-        await page.waitForTimeout(500);
+      // 1. 튜토리얼 모달 닫기 (가장 우선순위)
+      const tutorialModal = page.locator('.fixed.inset-0.z-50').filter({ hasText: 'tutorial.title' });
+      if (await tutorialModal.isVisible({ timeout: 3000 })) {
+        console.log('튜토리얼 모달 발견됨');
+
+        // X 버튼 클릭 시도
+        const tutorialCloseButton = tutorialModal
+          .locator('button')
+          .filter({ has: page.locator('svg') })
+          .first();
+        if (await tutorialCloseButton.isVisible({ timeout: 2000 })) {
+          await this.mobileTab(page, 'button:has(svg)');
+          await page.waitForTimeout(1000);
+          console.log('튜토리얼 모달 X 버튼으로 닫음');
+        } else {
+          // "시작하기" 버튼 클릭으로 튜토리얼 완료
+          const startPlayingButton = tutorialModal.locator('button').filter({ hasText: /시작|start|playing/i });
+          if (await startPlayingButton.isVisible({ timeout: 2000 })) {
+            await this.mobileTab(page, 'button:has-text("시작"), button:has-text("start"), button:has-text("playing")');
+            await page.waitForTimeout(1000);
+            console.log('튜토리얼 모달 시작하기 버튼으로 닫음');
+          }
+        }
       }
     } catch {
-      // 튜토리얼 모달이 없을 수도 있음
+      console.log('튜토리얼 모달 처리 중 오류 (정상적일 수 있음)');
     }
 
     try {
-      // X 버튼으로 모든 모달 닫기 시도
-      const closeButtons = page.locator('button[aria-label*="close"], button:has-text("×"), button:has-text("✕")');
+      // 2. 보상 모달 닫기
+      const rewardModal = page.locator('.fixed.inset-0').filter({ hasText: /reward|보상/i });
+      if (await rewardModal.isVisible({ timeout: 2000 })) {
+        console.log('보상 모달 발견됨');
+
+        // 첫 번째 보상 선택
+        const rewardItems = rewardModal
+          .locator('button, [role="button"]')
+          .filter({ hasText: /gem|droplet|젬|물방울/i });
+        if (await rewardItems.first().isVisible({ timeout: 1000 })) {
+          await this.mobileTab(page, 'button:has-text("gem"), button:has-text("droplet")');
+          await page.waitForTimeout(1000);
+          console.log('보상 모달 보상 선택으로 닫음');
+        }
+      }
+    } catch {
+      console.log('보상 모달 처리 중 오류 (정상적일 수 있음)');
+    }
+
+    try {
+      // 3. 일반적인 X 버튼으로 모든 모달 닫기
+      const closeButtons = page
+        .locator('button')
+        .filter({ has: page.locator('svg') })
+        .filter({ hasText: '' });
       const closeButtonCount = await closeButtons.count();
-      for (let i = 0; i < closeButtonCount; i++) {
+      for (let i = 0; i < Math.min(closeButtonCount, 3); i++) {
+        // 최대 3개까지만 처리
         const button = closeButtons.nth(i);
         if (await button.isVisible({ timeout: 1000 })) {
-          await button.click();
-          await page.waitForTimeout(300);
+          await this.mobileTab(page, `button >> nth=${i}`);
+          await page.waitForTimeout(500);
+          console.log(`일반 닫기 버튼 ${i + 1} 클릭됨`);
         }
       }
     } catch {
-      // 모달이 없을 수도 있음
+      console.log('일반 모달 닫기 중 오류 (정상적일 수 있음)');
     }
 
     try {
-      // 보상 모달이나 기타 모달의 배경 클릭으로 닫기
-      const modalBackdrops = page.locator('.backdrop-blur-lg, .bg-black\\/80, .bg-black\\/70');
+      // 4. 모달 배경 클릭으로 닫기 (최후 수단)
+      const modalBackdrops = page.locator('.fixed.inset-0').filter({ hasText: '' });
       const backdropCount = await modalBackdrops.count();
-      for (let i = 0; i < backdropCount; i++) {
-        const backdrop = modalBackdrops.nth(i);
+      if (backdropCount > 0) {
+        const backdrop = modalBackdrops.first();
         if (await backdrop.isVisible({ timeout: 1000 })) {
           // 모달 배경의 가장자리 클릭 (모달 내용이 아닌)
-          await backdrop.click({ position: { x: 10, y: 10 } });
-          await page.waitForTimeout(300);
+          await backdrop.click({ position: { x: 50, y: 50 }, force: true });
+          await page.waitForTimeout(500);
+          console.log('모달 배경 클릭으로 닫음');
         }
       }
     } catch {
-      // 처리할 모달이 없을 수도 있음
+      console.log('배경 클릭 처리 중 오류 (정상적일 수 있음)');
     }
 
-    // 잠시 대기하여 모든 애니메이션 완료
-    await page.waitForTimeout(1000);
+    // 모든 모달 처리 후 안정화 대기
+    await page.waitForTimeout(2000);
+    console.log('모든 모달 처리 완료');
   },
 
   /**
-   * 튜토리얼을 완료 상태로 설정합니다 (localStorage)
+   * 튜토리얼을 완료 상태로 설정합니다 (localStorage 및 실시간 설정)
    */
   async skipTutorial(page: Page): Promise<void> {
+    // 페이지 로드 전 초기화 스크립트로 설정
     await page.addInitScript(() => {
       const gameSettings = {
         hasSeenTutorial: true,
         tileSwapMode: 'drag',
       };
       localStorage.setItem('game-settings', JSON.stringify(gameSettings));
+
+      // 전역 객체에도 설정하여 React 컴포넌트에서 즉시 인식
+      (window as Window & { __testSkipTutorial?: boolean }).__testSkipTutorial = true;
     });
+
+    // 페이지 로드 후에도 한 번 더 설정
+    await page.evaluate(() => {
+      const gameSettings = {
+        hasSeenTutorial: true,
+        tileSwapMode: 'drag',
+      };
+      localStorage.setItem('game-settings', JSON.stringify(gameSettings));
+
+      // React 상태도 업데이트하도록 이벤트 발생
+      window.dispatchEvent(new CustomEvent('tutorialSkipped', { detail: { hasSeenTutorial: true } }));
+    });
+
+    console.log('튜토리얼 스킵 설정 완료');
   },
 
   /**

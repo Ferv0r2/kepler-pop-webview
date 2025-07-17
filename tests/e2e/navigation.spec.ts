@@ -23,27 +23,17 @@ test.describe('메인 페이지 네비게이션', () => {
     console.log('메인 페이지 제목:', await page.title());
 
     // Challenge 모드 버튼 클릭 (data-testid 사용)
-    const challengeButton = page.locator('[data-testid="challenge-mode-button"]');
-    if (await challengeButton.isVisible({ timeout: 10000 })) {
-      // 타임아웃 증가
-      // 모바일 터치 이벤트로 클릭
-      await authHelper.mobileTab(page, '[data-testid="challenge-mode-button"]');
+    await authHelper.mobileTab(page, '[data-testid="challenge-mode-button"]');
 
-      // 게임 페이지로 이동했는지 확인 (더 긴 대기 시간)
-      await expect(page).toHaveURL(/\/(ko|en|ja|zh|es|pt)\/game/, { timeout: 15000 });
+    // 모바일 환경에서 게임 로딩 대기
+    await authHelper.mobileWaitForStableLoad(page);
 
-      // 모바일 환경에서 게임 로딩 대기
-      await authHelper.mobileWaitForStableLoad(page);
+    // 게임이 로드될 때까지 대기 및 모달 처리
+    await page.waitForTimeout(3000); // 모바일 환경 고려하여 증가
+    await authHelper.closeGameModals(page);
 
-      // 게임이 로드될 때까지 대기 및 모달 처리
-      await page.waitForTimeout(3000); // 모바일 환경 고려하여 증가
-      await authHelper.closeGameModals(page);
-
-      // 게임 그리드가 로드되었는지 확인 (더 긴 타임아웃)
-      await expect(page.locator('[data-testid="game-grid"]')).toBeVisible({ timeout: 20000 });
-    } else {
-      console.log('Challenge 모드 버튼을 찾을 수 없음, 기본 페이지 확인만 진행');
-    }
+    // 게임 그리드가 로드되었는지 확인 (더 긴 타임아웃)
+    await expect(page.locator('[data-testid="game-grid"]')).toBeVisible({ timeout: 20000 });
   });
 
   test('하단 네비게이션 동작 확인', async ({ page }) => {
