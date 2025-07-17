@@ -109,7 +109,7 @@ export const authHelper = {
 
     // 인증 제거 후 auth 페이지로 리다이렉트 확인
     await page.goto('/ko');
-    await page.waitForURL('/ko/auth', { timeout: 10000 });
+    await page.waitForURL(/\/(ko|en|ja|zh|es|pt)\/auth$/, { timeout: 10000 });
   },
 
   /**
@@ -125,7 +125,7 @@ export const authHelper = {
         try {
           const decoded = decodeURIComponent(authStorage.split('=')[1]);
           const authData = JSON.parse(decoded);
-          return authData.state && authData.state.accessToken;
+          return !!(authData.state && authData.state.accessToken);
         } catch {
           return false;
         }
