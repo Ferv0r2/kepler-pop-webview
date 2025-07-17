@@ -3,7 +3,7 @@
   "version": "0.1.2",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --port 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -12,7 +12,12 @@
     "normalize-audio": "tsx scripts/normalize-audio.ts",
     "replace-normalized-audio": "tsx scripts/replace-normalized-audio.ts",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "playwright:install": "playwright install"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -51,6 +56,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@next/eslint-plugin-next": "^15.2.4",
+    "@playwright/test": "^1.54.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -72,6 +78,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^15.5.1",
+    "playwright": "^1.54.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
