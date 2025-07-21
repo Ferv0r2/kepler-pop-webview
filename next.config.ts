@@ -41,9 +41,6 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // 출력 최적화 (standalone은 특수한 배포 환경에서만 사용)
-  // output: 'standalone', // 필요시에만 활성화
-
   // 압축 최적화
   compress: true,
 
