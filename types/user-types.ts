@@ -37,6 +37,8 @@ export type UserInfo = {
   gem: number;
   level: number;
   exp: number;
+  skillPoints: number; // 레벨 시스템 추가
+  expRequiredForNext: number; // 레벨 시스템 추가
   isSubscribed: boolean;
   locale: string;
   gameItems: Partial<Record<GameItemType, number>>;
