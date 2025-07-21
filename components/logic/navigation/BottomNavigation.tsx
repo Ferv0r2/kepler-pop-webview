@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Store, Settings, Play } from 'lucide-react';
+import { Store, Settings, Play, Zap } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { createElement, ElementType, useMemo } from 'react';
@@ -17,6 +17,7 @@ export const BottomNavigation = () => {
     () => [
       { icon: Store, label: t('common.store'), path: `/${locale}/store`, testId: 'nav-store' },
       { icon: Play, label: t('common.play'), path: `/${locale}`, testId: 'nav-play' },
+      { icon: Zap, label: t('techTree.title'), path: `/${locale}/tech-tree`, testId: 'nav-tech-tree' },
       { icon: Settings, label: t('common.settings'), path: `/${locale}/settings`, testId: 'nav-settings' },
     ],
     [t, locale],
