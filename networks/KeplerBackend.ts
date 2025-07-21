@@ -1,3 +1,4 @@
+import type { TechTreeNode, UserTechTreeNode, GameEnhancementEffects } from '@/types/tech-tree-types';
 import { UserInfo } from '@/types/user-types';
 
 import { api } from './FetchAPI';
@@ -136,4 +137,67 @@ export const updateGem = async (amount: number): Promise<void> => {
 export const updateUserInfo = async (userInfo: Partial<UserInfo>): Promise<void> => {
   const response = await api.post('/users/me/update', userInfo);
   if (!response.ok) throw new Error('Failed to update user info');
+};
+
+// 레벨 시스템 API 함수들
+export const updateExperience = async (
+  score: number,
+  mode: 'casual' | 'challenge',
+): Promise<{
+  expGained: number;
+  totalExp: number;
+  currentLevel: number;
+  expRequiredForNext: number;
+  leveledUp: boolean;
+  newSkillPoints?: number;
+}> => {
+  const response = await api.post('/level/update-exp', { score, mode });
+  if (!response.ok) throw new Error('Failed to update experience');
+  return response.json();
+};
+
+export const getLevelInfo = async (): Promise<{
+  currentLevel: number;
+  currentExp: number;
+  expRequiredForNext: number;
+  skillPoints: number;
+  expToNext: number;
+  levelProgress: number;
+}> => {
+  const response = await api.get('/level/info');
+  if (!response.ok) throw new Error('Failed to get level info');
+  return response.json();
+};
+
+// 테크 트리 API 함수들
+export const fetchTechTreeNodes = async (): Promise<TechTreeNode[]> => {
+  const response = await api.get('/tech-tree/nodes');
+  if (!response.ok) throw new Error('Failed to fetch tech tree nodes');
+  return response.json();
+};
+
+export const fetchMyTechTree = async (): Promise<UserTechTreeNode[]> => {
+  const response = await api.get('/tech-tree/my-tree');
+  if (!response.ok) throw new Error('Failed to fetch user tech tree');
+  return response.json();
+};
+
+export const purchaseTechNode = async (
+  nodeId: string,
+): Promise<{
+  success: boolean;
+  newLevel: number;
+  cost: number;
+  remainingGems: number;
+  totalEffect: number;
+}> => {
+  const response = await api.post('/tech-tree/purchase', { nodeId });
+  if (!response.ok) throw new Error('Failed to purchase tech node');
+  return response.json();
+};
+
+export const fetchGameEnhancements = async (): Promise<GameEnhancementEffects> => {
+  const response = await api.get('/tech-tree/enhancements');
+  if (!response.ok) throw new Error('Failed to fetch game enhancements');
+  return response.json();
 };
