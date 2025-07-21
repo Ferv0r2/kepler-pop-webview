@@ -169,6 +169,31 @@
       "mole": "鼹鼠",
       "bomb": "炸弹"
     },
+    "area": {
+      "shovel": "选定的方块",
+      "mole": "选定方块的整行或整列",
+      "bomb": "选定方块及周围8个方块"
+    },
+    "tooltip": {
+      "usage": "使用方法",
+      "longPress": "长按查看帮助",
+      "default": {
+        "description": "此道具的说明正在准备中。",
+        "usage": "选择道具后，点击游戏面板。"
+      },
+      "shovel": {
+        "description": "移除选定的方块。",
+        "usage": "选择道具后，点击要移除的方块。"
+      },
+      "mole": {
+        "description": "移除选定方块的整行或整列。",
+        "usage": "选择道具后，点击任意方块，随机移除其所在的行或列。"
+      },
+      "bomb": {
+        "description": "移除选定方块及周围8个方块。",
+        "usage": "选择道具后，点击作为爆炸中心的方块。"
+      }
+    },
     "shuffleMessage": "消耗{count}次移动次数重新排列方块",
     "shuffleConfirm": "重新排列方块？",
     "shuffleCostMessage": "这将消耗{count}次移动次数",

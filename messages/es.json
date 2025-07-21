@@ -169,6 +169,31 @@
       "mole": "Topo",
       "bomb": "Bomba"
     },
+    "area": {
+      "shovel": "Pieza seleccionada",
+      "mole": "Fila o columna completa de la pieza seleccionada",
+      "bomb": "Pieza seleccionada y 8 piezas circundantes"
+    },
+    "tooltip": {
+      "usage": "Cómo usar",
+      "longPress": "Mantén presionado para ver ayuda",
+      "default": {
+        "description": "La descripción de este ítem está en preparación.",
+        "usage": "Selecciona el ítem, luego toca el tablero de juego."
+      },
+      "shovel": {
+        "description": "Elimina la pieza seleccionada.",
+        "usage": "Selecciona el ítem, luego toca la pieza que quieres eliminar."
+      },
+      "mole": {
+        "description": "Elimina toda la fila o columna de la pieza seleccionada.",
+        "usage": "Selecciona el ítem, luego toca cualquier pieza para eliminar aleatoriamente su fila o columna."
+      },
+      "bomb": {
+        "description": "Elimina la pieza seleccionada y las 8 piezas circundantes.",
+        "usage": "Selecciona el ítem, luego toca la pieza que será el centro de la explosión."
+      }
+    },
     "shuffleMessage": "Fichas mezcladas consumiendo {count} movimientos",
     "shuffleConfirm": "¿Mezclar fichas?",
     "shuffleCostMessage": "Esto consumirá {count} movimientos",

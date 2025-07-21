@@ -170,6 +170,31 @@
       "mole": "Toupeira",
       "bomb": "Bomba"
     },
+    "area": {
+      "shovel": "Peça selecionada",
+      "mole": "Linha ou coluna inteira da peça selecionada",
+      "bomb": "Peça selecionada e 8 peças ao redor"
+    },
+    "tooltip": {
+      "usage": "Como usar",
+      "longPress": "Pressione e segure para ver ajuda",
+      "default": {
+        "description": "A descrição deste item está sendo preparada.",
+        "usage": "Selecione o item, depois toque no tabuleiro do jogo."
+      },
+      "shovel": {
+        "description": "Remove a peça selecionada.",
+        "usage": "Selecione o item, depois toque na peça que deseja remover."
+      },
+      "mole": {
+        "description": "Remove toda a linha ou coluna da peça selecionada.",
+        "usage": "Selecione o item, depois toque em qualquer peça para remover aleatoriamente sua linha ou coluna."
+      },
+      "bomb": {
+        "description": "Remove a peça selecionada e todas as 8 peças ao redor.",
+        "usage": "Selecione o item, depois toque na peça que será o centro da explosão."
+      }
+    },
     "shuffleMessage": "Peças embaralhadas consumindo {count} movimentos",
     "shuffleConfirm": "Embaralhar peças?",
     "shuffleCostMessage": "Isso consumirá {count} movimentos",

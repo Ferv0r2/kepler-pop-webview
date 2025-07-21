@@ -64,7 +64,8 @@
     },
     "step4": {
       "description": "Use special items to clear tiles and create powerful combos.",
-      "instruction": "Select an item, then tap a tile to activate its effect."
+      "instruction": "Long press an item to see its effect area, then use it.",
+      "longPress": "Long press an item to preview which tiles will be affected"
     },
     "step5": {
       "description": "If you can't match any tiles, you need to shuffle them.",
@@ -169,6 +170,12 @@
       "mole": "Mole",
       "bomb": "Bomb"
     },
+    "area": {
+      "shovel": "Selected tile",
+      "mole": "Entire row or column of selected tile",
+      "bomb": "Selected tile and 8 surrounding tiles"
+    },
+
     "shuffleMessage": "Shuffled tiles by consuming {count} moves",
     "shuffleConfirm": "Shuffle tiles?",
     "shuffleCostMessage": "This will consume {count} moves",

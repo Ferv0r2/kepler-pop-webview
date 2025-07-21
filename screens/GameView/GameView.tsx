@@ -14,6 +14,7 @@ import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal'
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
 import { ItemAnimationManager } from '@/components/logic/managers/ItemAnimationManager';
 import { Button } from '@/components/ui/button';
+import { ItemAreaTooltip } from '@/components/ui/ItemAreaTooltip';
 import { PerformanceMonitor } from '@/components/ui/PerformanceMonitor';
 import { Toast } from '@/components/ui/toast';
 import { useBackButton } from '@/hooks/useBackButton';
@@ -227,6 +228,8 @@ export const GameView = () => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showBonusMovesAnimation, setShowBonusMovesAnimation] = useState<number>(0);
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
+  const [longPressItem, setLongPressItem] = useState<GameItemType | null>(null);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const tileRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const t = useTranslations();
   const refillPromiseRef = useRef<Promise<void> | null>(null);
@@ -809,6 +812,36 @@ export const GameView = () => {
     }
     setSelectedGameItem(itemId);
   };
+
+  // 롱터치 관련 핸들러
+  const handleLongPressStart = (itemId: GameItemType) => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+    }
+
+    const timer = setTimeout(() => {
+      setLongPressItem(itemId);
+    }, 300); // 0.3초 후 툴팁 표시
+
+    setLongPressTimer(timer);
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+    setLongPressItem(null);
+  };
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+      }
+    };
+  }, [longPressTimer]);
 
   const activeSelectedGameItem = async (row: number, col: number) => {
     if (!selectedGameItem) return;
@@ -1473,37 +1506,44 @@ export const GameView = () => {
                 transition={{ duration: 0.5, delay: 0.3, type: 'spring' }}
               >
                 {gameItems.map(({ id, count, icon }) => (
-                  <motion.div
-                    key={id}
-                    className={`
-                relative flex flex-col flex-1 text-center items-center p-3 rounded-lg cursor-pointer
-                ${
-                  selectedGameItem === id
-                    ? 'bg-gradient-to-br from-violet-500 to-fuchsia-600 ring-2 ring-white shadow-lg'
-                    : 'bg-gradient-to-br from-slate-700 to-slate-800'
-                }
-                ${count === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                drop-shadow-md transition-all duration-200
-              `}
-                    onClick={() => count > 0 && handleGameItemSelect(id as GameItemType)}
-                    whileHover={{ scale: count > 0 ? 1.05 : 1 }}
-                    whileTap={{ scale: count > 0 ? 0.95 : 1 }}
-                  >
-                    <div className="text-3xl mb-2">
-                      <Image
-                        className={`${selectedGameItem === id ? 'animate-item-selected' : ''}`}
-                        src={icon}
-                        alt={t(`game.items.${id}`)}
-                        width={64}
-                        height={64}
-                        priority
-                      />
-                    </div>
-                    <div className="text-sm font-bold text-white">{t(`game.items.${id}`)}</div>
-                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                      {count}
-                    </div>
-                  </motion.div>
+                  <ItemAreaTooltip key={id} itemType={id as GameItemType} isVisible={longPressItem === id}>
+                    <motion.div
+                      className={`
+                  relative flex flex-col flex-1 text-center items-center p-3 rounded-lg cursor-pointer
+                  ${
+                    selectedGameItem === id
+                      ? 'bg-gradient-to-br from-violet-500 to-fuchsia-600 ring-2 ring-white shadow-lg'
+                      : 'bg-gradient-to-br from-slate-700 to-slate-800'
+                  }
+                  ${count === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                  drop-shadow-md transition-all duration-200
+                `}
+                      onClick={() => count > 0 && handleGameItemSelect(id as GameItemType)}
+                      onTouchStart={() => count > 0 && handleLongPressStart(id as GameItemType)}
+                      onTouchEnd={handleLongPressEnd}
+                      onTouchCancel={handleLongPressEnd}
+                      onMouseDown={() => count > 0 && handleLongPressStart(id as GameItemType)}
+                      onMouseUp={handleLongPressEnd}
+                      onMouseLeave={handleLongPressEnd}
+                      whileHover={{ scale: count > 0 ? 1.05 : 1 }}
+                      whileTap={{ scale: count > 0 ? 0.95 : 1 }}
+                    >
+                      <div className="text-3xl mb-2">
+                        <Image
+                          className={`${selectedGameItem === id ? 'animate-item-selected' : ''}`}
+                          src={icon}
+                          alt={t(`game.items.${id}`)}
+                          width={64}
+                          height={64}
+                          priority
+                        />
+                      </div>
+                      <div className="text-sm font-bold text-white">{t(`game.items.${id}`)}</div>
+                      <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                        {count}
+                      </div>
+                    </motion.div>
+                  </ItemAreaTooltip>
                 ))}
               </motion.div>
             </motion.div>

@@ -4,7 +4,7 @@ import { Press_Start_2P } from 'next/font/google';
 import localFont from 'next/font/local';
 import { ReactNode } from 'react';
 
-import { PreloadDebugger } from '@/components/debug/PreloadDebugger';
+// import { PreloadDebugger } from '@/components/debug/PreloadDebugger';
 import { Logo } from '@/components/logo/Logo';
 import { GlobalPreloadProvider } from '@/components/providers/GlobalPreloadProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
@@ -260,13 +260,13 @@ export default function RootLayout({
               <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
                 <WebViewBridgeProvider>
                   {children}
-                  <PreloadDebugger />
+                  {/* <PreloadDebugger /> */}
                 </WebViewBridgeProvider>
               </GoogleOAuthProvider>
             ) : (
               <WebViewBridgeProvider>
                 {children}
-                <PreloadDebugger />
+                {/* <PreloadDebugger /> */}
               </WebViewBridgeProvider>
             )}
           </GlobalPreloadProvider>

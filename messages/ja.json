@@ -169,6 +169,12 @@
       "mole": "モグラ",
       "bomb": "爆弾"
     },
+    "area": {
+      "shovel": "選択したタイル1個",
+      "mole": "選択したタイルの行または列全体",
+      "bomb": "選択したタイルと周囲8個のタイル"
+    },
+
     "shuffleMessage": "移動回数{count}回を消費してタイルをシャッフルしました",
     "shuffleConfirm": "タイルをシャッフルしますか？",
     "shuffleCostMessage": "移動回数{count}回が消費されます",
