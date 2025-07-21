@@ -316,6 +316,11 @@
       "title": "没有记录",
       "description": "玩这个游戏并注册你的分数在排行榜上！",
       "playNow": "现在玩"
+    },
+    "timer": {
+      "daily": "每日",
+      "weekly": "每周",
+      "monthly": "每月"
     }
   }
 }

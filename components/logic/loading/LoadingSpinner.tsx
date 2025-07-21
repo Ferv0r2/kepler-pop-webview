@@ -39,21 +39,6 @@ export const LoadingSpinner = ({ text = '', variant = 'default', overlay = true 
           }}
         >
           <SpinnerIcon className={`w-12 h-12 ${variant === 'leaderboard' ? 'text-yellow-400' : 'text-white'}`} />
-
-          {/* 외부 링 애니메이션 */}
-          <motion.div
-            className={`absolute inset-0 w-12 h-12 border-2 border-transparent ${
-              variant === 'leaderboard'
-                ? 'border-t-yellow-400/30 border-r-yellow-400/30'
-                : 'border-t-blue-400/30 border-r-blue-400/30'
-            } rounded-full`}
-            animate={{ rotate: -360 }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-          />
         </motion.div>
 
         {/* 로딩 텍스트 */}

@@ -317,6 +317,11 @@
       "title": "Nenhum registro ainda",
       "description": "Jogue o jogo e registre sua pontuação na classificação!",
       "playNow": "Jogar Agora"
+    },
+    "timer": {
+      "daily": "Diário",
+      "weekly": "Semanal",
+      "monthly": "Mensal"
     }
   }
 }

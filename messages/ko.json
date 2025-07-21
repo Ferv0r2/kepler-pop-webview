@@ -316,6 +316,11 @@
       "title": "아직 기록이 없습니다",
       "description": "게임을 플레이하여 리더보드에 등록해보세요!",
       "playNow": "지금 플레이"
+    },
+    "timer": {
+      "daily": "일간",
+      "weekly": "주간",
+      "monthly": "월간"
     }
   }
 }

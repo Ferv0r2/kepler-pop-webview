@@ -316,6 +316,11 @@
       "title": "No records yet",
       "description": "Play the game and register your score on the leaderboard!",
       "playNow": "Play Now"
+    },
+    "timer": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
     }
   }
 }
