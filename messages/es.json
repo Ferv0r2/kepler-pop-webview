@@ -199,6 +199,14 @@
     "shuffleCostMessage": "Esto consumirá {count} movimientos",
     "noMovesAvailable": "No hay movimientos disponibles. ¿Mezclar fichas?",
     "shuffle": "Mezclar",
+    "revive": {
+      "title": "Revivir Juego",
+      "message": "Todos los movimientos han sido consumidos.\n¿Te gustaría revivir con {count} movimientos?",
+      "watchAd": "Ver Anuncio",
+      "useGem": "Usar Gems para Revivir",
+      "giveUp": "Dar Up",
+      "notEnoughGems": "No hay suficientes gemas (actual: {count})"
+    },
     "bonusMoves": "¡Movimientos extra!",
     "gameOver": "Fin del Juego",
     "finalScore": "Puntuación Final",

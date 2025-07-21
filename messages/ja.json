@@ -180,6 +180,14 @@
     "shuffleCostMessage": "移動回数{count}回が消費されます",
     "noMovesAvailable": "移動可能なタイルがありません。タイルをシャッフルしますか？",
     "shuffle": "シャッフル",
+    "revive": {
+      "title": "ゲームを復活させますか？",
+      "message": "すべての移動回数が消費されました。\n{count}回の移動で復活しますか？",
+      "watchAd": "広告を見る",
+      "useGem": "ジェムを使用して復活",
+      "giveUp": "やめる",
+      "notEnoughGems": "ジェム不足（現在：{count}）"
+    },
     "bonusMoves": "ボーナス移動！",
     "gameOver": "ゲームオーバー",
     "finalScore": "最終スコア",

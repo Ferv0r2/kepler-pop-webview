@@ -181,6 +181,14 @@
     "shuffleCostMessage": "This will consume {count} moves",
     "noMovesAvailable": "No moves available. Shuffle tiles?",
     "shuffle": "Shuffle",
+    "revive": {
+      "title": "Revive Game",
+      "message": "All moves have been consumed.\nWould you like to revive with {count} moves?",
+      "watchAd": "Watch Ad",
+      "useGem": "Use Gems to Revive",
+      "giveUp": "Give Up",
+      "notEnoughGems": "Not enough gems (current: {count})"
+    },
     "bonusMoves": "Bonus moves!",
     "gameOver": "Game Over",
     "finalScore": "Final Score",

@@ -200,6 +200,14 @@
     "shuffleCostMessage": "Isso consumirá {count} movimentos",
     "noMovesAvailable": "Nenhum movimento disponível. Embaralhar peças?",
     "shuffle": "Embaralhar",
+    "revive": {
+      "title": "Reviver Jogo",
+      "message": "Todos os movimentos foram consumidos.\nDeseja reviver com {count} movimentos?",
+      "watchAd": "Assistir Anúncio",
+      "useGem": "Usar Gems para Reviver",
+      "giveUp": "Desistir",
+      "notEnoughGems": "Gemas insuficientes (atual: {count})"
+    },
     "bonusMoves": "Movimentos bônus!",
     "gameOver": "Fim de Jogo",
     "finalScore": "Pontuação Final",

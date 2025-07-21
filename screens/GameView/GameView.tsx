@@ -20,6 +20,7 @@ import { Toast } from '@/components/ui/toast';
 import { useBackButton } from '@/hooks/useBackButton';
 import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
+import { useWebViewBridge } from '@/hooks/useWebViewBridge';
 import { updateDroplet, updateGem, updateScore } from '@/networks/KeplerBackend';
 import {
   ANIMATION_DURATION,
@@ -27,6 +28,8 @@ import {
   CHALLENGE_MODE_MOVE_COUNT,
   ENERGY_CONSUME_AMOUNT,
   GRID_SIZE,
+  REVIVE_GEM_COST,
+  REVIVE_BONUS_MOVES,
   HINT_MOVE_INTERVAL_MS,
   SCORE,
   SHOW_EFFECT_TIME_MS,
@@ -46,7 +49,9 @@ import type {
   Reward,
   Artifact,
 } from '@/types/game-types';
-import { createParticles, createOptimizedParticles, createGameOverConfetti } from '@/utils/animation-helper';
+import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
+import type { NativeToWebMessage, EnergyUpdatePayload } from '@/types/native-call';
+import { createParticles, createOptimizedParticles } from '@/utils/animation-helper';
 import { calculateComboBonus, batchUpdateTiles } from '@/utils/game-helper';
 import {
   useOptimizedGridRendering,
@@ -58,12 +63,12 @@ import {
   playComboSound,
   playItemSound,
   playShuffleSound,
-  playGameOverSound,
   preloadAllSounds,
   playRewardSound,
   SoundSettings,
   playArtifactSound,
   playButtonSound,
+  playGameOverSound,
 } from '@/utils/sound-helper';
 
 import { LoadingView } from '../LoadingView/LoadingView';
@@ -171,6 +176,7 @@ export const GameView = () => {
     resetItems,
   } = useGameItem();
   const { settings: soundSettings } = useSound();
+  const { sendMessage, addMessageHandler, isInWebView } = useWebViewBridge();
 
   // 보상 시스템 훅
   const {
@@ -221,6 +227,9 @@ export const GameView = () => {
   const [isNewHighScore, setIsNewHighScore] = useState<boolean>(false);
   const [showRestartConfirmation, setShowRestartConfirmation] = useState(false);
   const [showEnergyModal, setShowEnergyModal] = useState(false);
+
+  const [showReviveOptions, setShowReviveOptions] = useState(false); // 부활 옵션 표시 여부
+  const [hasUsedRevive, setHasUsedRevive] = useState(false); // 부활 사용 여부 (게임당 1번만)
   const [showShuffleConfirmation, setShowShuffleConfirmation] = useState(false);
   const [showShuffleButton, setShowShuffleButton] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
@@ -270,6 +279,31 @@ export const GameView = () => {
       setIsNewHighScore(true);
     }
   }, [gameState.score, currentModeHighScore]);
+
+  // 네이티브 메시지 핸들러 설정
+  useEffect(() => {
+    if (!isInWebView) return;
+
+    const unsubscribeReviveAd = addMessageHandler<NativeToWebMessage<EnergyUpdatePayload>>(
+      NativeToWebMessageType.ENERGY_CHANGE,
+      async (msg) => {
+        const payload = msg.payload;
+        try {
+          if (payload?.status === 'success' && payload.reason === 'revive_ad') {
+            // 부활 광고 시청 성공
+            handleReviveSuccess();
+          }
+        } catch (e) {
+          console.error('부활 광고 처리 실패:', e);
+        }
+      },
+    );
+
+    return () => {
+      unsubscribeReviveAd();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInWebView, addMessageHandler]);
 
   // 게임 종료 시 점수 업데이트
   const updateUserScore = useCallback(
@@ -618,11 +652,14 @@ export const GameView = () => {
         });
 
         if (isGameOver) {
-          runConfetti(() => {
-            createGameOverConfetti();
-          });
-          playGameOverSound(soundSettings);
-          updateUserScore(newScore);
+          // 게임 오버시 부활 옵션 활성화 (아직 부활을 사용하지 않은 경우만)
+          if (!hasUsedRevive) {
+            setShowReviveOptions(true);
+          } else {
+            // 이미 부활을 사용했다면 바로 최종 게임 오버 처리
+            playGameOverSound(soundSettings);
+            updateUserScore(newScore);
+          }
         }
       }
     },
@@ -646,6 +683,7 @@ export const GameView = () => {
       grid,
       checkScoreReward,
       updateUserScore,
+      hasUsedRevive,
     ],
   );
 
@@ -702,19 +740,19 @@ export const GameView = () => {
           isGameOver: prev.moves - 1 <= 0,
         }));
 
-        // 게임 종료 시 점수 업데이트 및 효과
+        // 게임 종료 시 부활 옵션 활성화 (아직 부활을 사용하지 않은 경우만)
         if (gameState.moves - 1 <= 0) {
-          runConfetti(() => {
-            createGameOverConfetti();
-          });
-
-          // 게임 오버 효과음 재생
-          playGameOverSound(soundSettings);
-
-          updateUserScore(gameState.score);
+          if (!hasUsedRevive) {
+            setShowReviveOptions(true);
+          } else {
+            // 이미 부활을 사용했다면 바로 최종 게임 오버 처리
+            playGameOverSound(soundSettings);
+            updateUserScore(gameState.score);
+          }
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       grid,
       setGrid,
@@ -752,6 +790,8 @@ export const GameView = () => {
         setStreakCount(0);
         setIsNewHighScore(false);
         setShowRestartConfirmation(false);
+        setShowReviveOptions(false);
+        setHasUsedRevive(false); // 부활 사용 상태 초기화
 
         // 보상 상태 초기화
         resetRewardState();
@@ -798,6 +838,50 @@ export const GameView = () => {
     if (!userInfo) return;
     // 구매 후 에너지 추가 로직은 네이티브 앱에서 처리
     setShowEnergyModal(false);
+  };
+
+  // 부활 시스템 핸들러들
+  const handleReviveWatchAd = async () => {
+    if (!userInfo || !isInWebView) return;
+
+    // 네이티브 앱에 광고 시청 요청 (부활용)
+    // TODO: type을 ad, 광고 요청에 따른 응답을 받을 수 있는 형태로 native 통신 구조 수정
+    sendMessage({
+      type: WebToNativeMessageType.ENERGY_CHANGE,
+      payload: { amount: 0, reason: 'revive_ad' }, // amount는 0, reason으로 부활 광고임을 표시
+    });
+  };
+
+  const handleReviveUseGem = async () => {
+    if (!userInfo || userInfo.gem < REVIVE_GEM_COST) return;
+
+    try {
+      // 보석 소모
+      await updateGemMutation.mutateAsync(-REVIVE_GEM_COST);
+      handleReviveSuccess();
+    } catch (error) {
+      console.error('Failed to use gem for revive:', error);
+    }
+  };
+
+  const handleReviveSuccess = () => {
+    // 게임 상태 업데이트 (부활 처리)
+    updateGameState({
+      moves: gameState.moves + REVIVE_BONUS_MOVES,
+      isGameOver: false,
+    });
+
+    setShowReviveOptions(false);
+    setHasUsedRevive(true); // 부활 사용 표시
+    playRewardSound(soundSettings);
+  };
+
+  const handleReviveGiveUp = () => {
+    setShowReviveOptions(false);
+
+    // 최종 게임 오버 처리
+    playButtonSound(soundSettings);
+    updateUserScore(gameState.score);
   };
 
   const handleGameItemSelect = (itemId: GameItemType) => {
@@ -1098,17 +1182,17 @@ export const GameView = () => {
       isGameOver,
     }));
 
-    // 게임 종료 시 점수 업데이트
+    // 게임 종료 시 부활 옵션 활성화 (아직 부활을 사용하지 않은 경우만)
     if (isGameOver) {
-      runConfetti(() => {
-        createGameOverConfetti();
-      });
-
-      // 게임 오버 효과음 재생
-      playGameOverSound(soundSettings);
       setIsShuffling(false);
-
-      updateUserScore(gameState.score);
+      if (!hasUsedRevive) {
+        playGameOverSound(soundSettings);
+        setShowReviveOptions(true);
+      } else {
+        // 이미 부활을 사용했다면 바로 최종 게임 오버 처리
+        playGameOverSound(soundSettings);
+        updateUserScore(gameState.score);
+      }
       return;
     }
 
@@ -1395,46 +1479,109 @@ export const GameView = () => {
                             {gameState.score.toLocaleString()}
                           </motion.div>
                         </motion.div>
-                        <motion.div
-                          className="flex flex-col gap-3"
-                          initial={{ y: 20, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ delay: 0.8, duration: 0.5 }}
-                        >
-                          <Button
-                            onClick={handleRestartConfirm}
-                            disabled={!userInfo || userInfo.droplet <= 0}
-                            className={`flex items-center justify-center font-bold py-4 px-6 rounded-lg text-md shadow-lg transition-all duration-300 ${
-                              !userInfo || userInfo.droplet <= 0
-                                ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-gray-300 cursor-not-allowed opacity-50'
-                                : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white hover:shadow-xl'
-                            }`}
+                        {showReviveOptions && !hasUsedRevive ? (
+                          // 부활 옵션 표시
+                          <motion.div
+                            className="flex flex-col gap-3"
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.8, duration: 0.5 }}
                           >
-                            <RefreshCw
-                              className={`w-5 h-5 mr-2 ${
-                                !userInfo || userInfo.droplet <= 0 ? 'text-gray-300' : 'text-white'
-                              }`}
-                            />
-                            <div className="flex items-center gap-2">
-                              <span>{t('game.restart')}</span>
-                              <div className="flex items-center">
-                                <Image src="/icons/droplet.png" alt="Droplet" width={24} height={24} />
-                                <span className="mt-1 font-medium text-md">{`x${ENERGY_CONSUME_AMOUNT}`}</span>
-                              </div>
+                            <div className="text-center">
+                              <p className="text-white/80 text-sm whitespace-pre-wrap mb-2">
+                                {t('game.revive.message', { count: REVIVE_BONUS_MOVES })}
+                              </p>
                             </div>
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              router.back();
-                              playButtonSound(soundSettings);
-                            }}
-                            variant="outline"
-                            className="flex items-center justify-center bg-slate-800/30 border-indigo-500/50 text-white hover:bg-slate-800/50 rounded-lg py-4 text-md"
+
+                            {/* 부활 옵션 가로 배치 */}
+                            <div className="flex gap-3 mb-1">
+                              {/* 광고 시청 옵션 */}
+                              <Button
+                                onClick={handleReviveWatchAd}
+                                disabled={updateGemMutation.isPending}
+                                className="flex-1 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-20"
+                              >
+                                <span className="text-2xl">🎬</span>
+                                <span className="text-md font-medium">{t('game.revive.watchAd')}</span>
+                              </Button>
+
+                              {/* 보석 사용 옵션 */}
+                              <Button
+                                onClick={handleReviveUseGem}
+                                disabled={updateGemMutation.isPending || !userInfo || userInfo.gem < REVIVE_GEM_COST}
+                                className={`flex-1 flex flex-col items-center gap-1 h-20 ${
+                                  userInfo && userInfo.gem >= REVIVE_GEM_COST
+                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
+                                    : 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
+                                }`}
+                              >
+                                <Image src="/icons/gem.png" alt="gem" width={40} height={40} />
+                                <span className="text-md font-medium">
+                                  {t('game.revive.useGem', { count: REVIVE_GEM_COST })}
+                                </span>
+                              </Button>
+                            </div>
+
+                            {userInfo && userInfo.gem < REVIVE_GEM_COST && (
+                              <div className="text-center text-red-400 mt-1">
+                                <p className="text-sm">
+                                  {t('game.revive.notEnoughGems', { count: userInfo?.gem ?? 0 })}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* 포기 버튼 */}
+                            <Button
+                              onClick={handleReviveGiveUp}
+                              disabled={updateGemMutation.isPending}
+                              className="py-6 text-md bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 hover:text-white border border-gray-500/50 hover:border-gray-400/50 transition-all duration-200"
+                            >
+                              {t('game.revive.giveUp')}
+                            </Button>
+                          </motion.div>
+                        ) : (
+                          // 기존 게임 오버 옵션 (부활 포기 후)
+                          <motion.div
+                            className="flex flex-col gap-3"
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.8, duration: 0.5 }}
                           >
-                            <Home className="w-5 h-5 mr-2" />
-                            {t('game.returnToHome')}
-                          </Button>
-                        </motion.div>
+                            <Button
+                              onClick={handleRestartConfirm}
+                              disabled={!userInfo || userInfo.droplet <= 0}
+                              className={`flex items-center justify-center font-bold py-6 px-6 rounded-lg text-md shadow-lg transition-all duration-300 ${
+                                !userInfo || userInfo.droplet <= 0
+                                  ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-gray-300 cursor-not-allowed opacity-50'
+                                  : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white hover:shadow-xl'
+                              }`}
+                            >
+                              <RefreshCw
+                                className={`w-5 h-5 mr-2 ${
+                                  !userInfo || userInfo.droplet <= 0 ? 'text-gray-300' : 'text-white'
+                                }`}
+                              />
+                              <div className="flex items-center gap-2">
+                                <span>{t('game.restart')}</span>
+                                <div className="flex items-center">
+                                  <Image src="/icons/droplet.png" alt="Droplet" width={24} height={24} />
+                                  <span className="mt-1 font-medium text-md">{`x${ENERGY_CONSUME_AMOUNT}`}</span>
+                                </div>
+                              </div>
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                router.back();
+                                playButtonSound(soundSettings);
+                              }}
+                              variant="outline"
+                              className="flex items-center justify-center bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 hover:text-white border border-gray-500/50 hover:border-gray-400/50 transition-all duration-200 rounded-lg py-6 text-md"
+                            >
+                              <Home className="w-5 h-5 mr-2" />
+                              {t('game.returnToHome')}
+                            </Button>
+                          </motion.div>
+                        )}
                       </div>
                     </motion.div>
                   </motion.div>

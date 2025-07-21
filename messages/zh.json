@@ -199,6 +199,14 @@
     "shuffleCostMessage": "这将消耗{count}次移动次数",
     "noMovesAvailable": "没有可移动的方块。重新排列方块？",
     "shuffle": "重新排列",
+    "revive": {
+      "title": "复活游戏",
+      "message": "所有移动次数已消耗。\n是否复活时消耗{count}次移动？",
+      "watchAd": "观看广告",
+      "useGem": "使用宝石复活",
+      "giveUp": "放弃",
+      "notEnoughGems": "宝石不足（当前：{count}）"
+    },
     "bonusMoves": "额外移动！",
     "gameOver": "游戏结束",
     "finalScore": "最终得分",
