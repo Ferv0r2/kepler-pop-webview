@@ -4,7 +4,9 @@ import { Press_Start_2P } from 'next/font/google';
 import localFont from 'next/font/local';
 import { ReactNode } from 'react';
 
+import { PreloadDebugger } from '@/components/debug/PreloadDebugger';
 import { Logo } from '@/components/logo/Logo';
+import { GlobalPreloadProvider } from '@/components/providers/GlobalPreloadProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { WebViewBridgeProvider } from '@/components/providers/WebViewBridgeProvider';
 import { InitialLoaderRemover } from '@/components/ui/InitialLoader';
@@ -253,13 +255,21 @@ export default function RootLayout({
         </div>
         <InitialLoaderRemover />
         <QueryProvider>
-          {process.env.NODE_ENV === 'development' ? (
-            <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
-              <WebViewBridgeProvider>{children}</WebViewBridgeProvider>
-            </GoogleOAuthProvider>
-          ) : (
-            <WebViewBridgeProvider>{children}</WebViewBridgeProvider>
-          )}
+          <GlobalPreloadProvider>
+            {process.env.NODE_ENV === 'development' ? (
+              <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+                <WebViewBridgeProvider>
+                  {children}
+                  <PreloadDebugger />
+                </WebViewBridgeProvider>
+              </GoogleOAuthProvider>
+            ) : (
+              <WebViewBridgeProvider>
+                {children}
+                <PreloadDebugger />
+              </WebViewBridgeProvider>
+            )}
+          </GlobalPreloadProvider>
         </QueryProvider>
       </body>
     </html>

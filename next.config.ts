@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
     // 모바일 기기에 맞는 이미지 크기
     deviceSizes: [640, 750, 828, 1080, 1200],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // 캐시 최적화
+    minimumCacheTTL: 31536000, // 1년
+    // 프리로딩된 이미지에 대한 우선순위 설정
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   // 번들 크기 최적화
