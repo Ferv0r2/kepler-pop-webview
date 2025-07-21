@@ -317,5 +317,35 @@
       "description": "게임을 플레이하여 리더보드에 등록해보세요!",
       "playNow": "지금 플레이"
     }
+  },
+  "techTree": {
+    "title": "테크 트리",
+    "description": "영구 강화로 게임을 더 강력하게!",
+    "loading": "테크 트리 로딩 중...",
+    "loadError": "테크 트리를 불러올 수 없습니다.",
+    "categories": {
+      "all": "전체",
+      "movement": "움직임",
+      "items": "아이템",
+      "shuffle": "셔플",
+      "combo": "콤보",
+      "artifacts": "유물"
+    },
+    "purchase": {
+      "confirm": "구매하시겠습니까?",
+      "success": "구매 완료!",
+      "insufficient": "보석이 부족합니다",
+      "maxLevel": "최대 레벨 달성"
+    }
+  },
+  "level": {
+    "title": "레벨",
+    "experience": "경험치",
+    "skillPoints": "스킬 포인트",
+    "levelUp": "레벨 업!",
+    "newLevel": "레벨 {level} 달성",
+    "skillPointsGained": "스킬 포인트 +{points}",
+    "continue": "계속하기",
+    "openTechTree": "테크 트리 열기"
   }
 }
