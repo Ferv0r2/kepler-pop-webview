@@ -888,11 +888,10 @@ export const GameView = () => {
   };
 
   const handleReviveGiveUp = () => {
-    setShowReviveOptions(false);
-
     // 최종 게임 오버 처리
     playButtonSound(soundSettings);
     updateUserScore(gameState.score);
+    router.back();
   };
 
   const handleGameItemSelect = (itemId: GameItemType) => {
