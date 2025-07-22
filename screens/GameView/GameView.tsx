@@ -2,14 +2,14 @@
 
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cloneDeep } from 'lodash';
 import { ArrowLeft, Settings, Home, RefreshCw, Shuffle, AlertTriangle, Zap, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState, useEffect, type TouchEvent, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, type TouchEvent, useCallback, useRef, useMemo, useReducer } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
+import { MemoryMonitor } from '@/components/debug/MemoryMonitor';
 import { AdLoadingModal } from '@/components/logic/dialogs/AdLoadingModal';
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
@@ -53,7 +53,15 @@ import type {
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import type { NativeToWebMessage, EnergyUpdatePayload } from '@/types/native-call';
 import { createParticles, createOptimizedParticles } from '@/utils/animation-helper';
-import { calculateComboBonus, batchUpdateTiles } from '@/utils/game-helper';
+import { calculateComboBonus } from '@/utils/game-helper';
+import {
+  TimerManager,
+  useMemoryMonitor,
+  shallowCopyGrid,
+  updateGridSelective,
+  gameStateReducer,
+  uiStateReducer,
+} from '@/utils/memory-optimization';
 import {
   useOptimizedGridRendering,
   useRenderPerformance,
@@ -84,6 +92,9 @@ import { useGameSettings } from './hooks/useGameSettings';
 import { useGameWorker } from './hooks/useGameWorker';
 import { useMatchGame } from './hooks/useMatchGame';
 import { useRewardSystem } from './hooks/useRewardSystem';
+
+// 타이머 관리자 인스턴스 (모듈 레벨에서 생성)
+const timerManager = new TimerManager();
 
 const useUpdateDroplet = () => {
   const queryClient = useQueryClient();
@@ -116,6 +127,39 @@ const useUpdateGem = () => {
   });
 };
 
+// 초기 게임 상태
+const initialGameState: GameState = {
+  score: 0,
+  moves: 0,
+  isSwapping: false,
+  isChecking: false,
+  isGameOver: false,
+  combo: 1,
+  turn: 1,
+  isProcessingMatches: false,
+};
+
+// 초기 UI 상태
+const initialUIState = {
+  showScorePopup: null,
+  showBackConfirmation: false,
+  showSettingsMenu: false,
+  showHint: false,
+  showTutorial: false,
+  tutorialStep: 1,
+  showShuffleToast: false,
+  showRestartConfirmation: false,
+  showEnergyModal: false,
+  showReviveOptions: false,
+  isReviveAdLoading: false,
+  showShuffleConfirmation: false,
+  showShuffleButton: false,
+  isShuffling: false,
+  showBonusMovesAnimation: 0,
+  isLoading: true,
+  longPressItem: null,
+};
+
 function applyAutoRemoveArtifacts(
   artifacts: Artifact[],
   grid: GridItem[][],
@@ -144,13 +188,12 @@ function applyAutoRemoveArtifacts(
       }
       if (maxTiles.length > 0) {
         const { row, col } = maxTiles[Math.floor(Math.random() * maxTiles.length)];
-        const newGrid = cloneDeep(grid);
+        const newGrid = shallowCopyGrid(grid);
         newGrid[row][col].isMatched = true;
         setGrid(newGrid);
-        setTimeout(() => {
+        timerManager.setTimeout(() => {
           const { newGrid: afterRemovalGrid } = removeMatchedTiles(newGrid);
           setGrid(afterRemovalGrid);
-
           playArtifactSound(soundSettings);
         }, 200);
       }
@@ -179,6 +222,17 @@ export const GameView = () => {
   const { settings: soundSettings } = useSound();
   const { sendMessage, addMessageHandler, isInWebView } = useWebViewBridge();
 
+  // 메모리 모니터링
+  const { checkMemory } = useMemoryMonitor();
+
+  // 상태 관리 최적화 - useReducer 사용
+  const [gameState, dispatchGameState] = useReducer(gameStateReducer, {
+    ...initialGameState,
+    moves: gameMode === 'casual' ? CASUAL_MODE_MOVE_COUNT : CHALLENGE_MODE_MOVE_COUNT,
+  });
+
+  const [uiState, dispatchUIState] = useReducer(uiStateReducer, initialUIState);
+
   // 보상 시스템 훅
   const {
     rewardState,
@@ -198,48 +252,17 @@ export const GameView = () => {
     row: number;
     col: number;
   } | null>(null);
-  const [gameState, setGameState] = useState<GameState>({
-    score: 0,
-    moves: gameMode === 'casual' ? CASUAL_MODE_MOVE_COUNT : CHALLENGE_MODE_MOVE_COUNT,
-    isSwapping: false,
-    isChecking: false,
-    isGameOver: false,
-    combo: 1,
-    turn: 1,
-    isProcessingMatches: false,
-  });
-  const [showScorePopup, setShowScorePopup] = useState<{
-    score: number;
-    x: number;
-    y: number;
-  } | null>(null);
-  const [showBackConfirmation, setShowBackConfirmation] = useState(false);
-  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
-  const [showHint, setShowHint] = useState<boolean>(false);
+
   const [hintPosition, setHintPosition] = useState<{ row1: number; col1: number; row2: number; col2: number } | null>(
     null,
   );
   const [tileChangeIndex, setTileChangeIndex] = useState<number>(0);
-  const [showTutorial, setShowTutorial] = useState<boolean>(false);
-  const [tutorialStep, setTutorialStep] = useState<number>(1);
   const [streakCount, setStreakCount] = useState<number>(0);
-  const [showShuffleToast, setShowShuffleToast] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isNewHighScore, setIsNewHighScore] = useState<boolean>(false);
-  const [showRestartConfirmation, setShowRestartConfirmation] = useState(false);
-  const [showEnergyModal, setShowEnergyModal] = useState(false);
-
-  const [showReviveOptions, setShowReviveOptions] = useState(false); // 부활 옵션 표시 여부
-  const [hasUsedRevive, setHasUsedRevive] = useState(false); // 부활 사용 여부 (게임당 1번만)
-  const [isReviveAdLoading, setIsReviveAdLoading] = useState(false); // 부활 광고 로딩 상태
-  const [showShuffleConfirmation, setShowShuffleConfirmation] = useState(false);
-  const [showShuffleButton, setShowShuffleButton] = useState(false);
-  const [isShuffling, setIsShuffling] = useState(false);
+  const [hasUsedRevive, setHasUsedRevive] = useState(false);
   const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [showBonusMovesAnimation, setShowBonusMovesAnimation] = useState<number>(0);
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
-  const [longPressItem, setLongPressItem] = useState<GameItemType | null>(null);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const tileRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const t = useTranslations();
@@ -282,6 +305,20 @@ export const GameView = () => {
     }
   }, [gameState.score, currentModeHighScore]);
 
+  // 메모리 모니터링 (개발 환경에서만)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const interval = timerManager.setInterval(() => {
+        const stats = checkMemory();
+        if (stats && stats.percentage > 80) {
+          console.warn(`게임뷰 메모리 사용량: ${stats.percentage.toFixed(1)}%`);
+        }
+      }, 10000); // 10초마다 체크
+
+      return () => timerManager.clearInterval(interval);
+    }
+  }, [checkMemory]);
+
   // 네이티브 메시지 핸들러 설정
   useEffect(() => {
     if (!isInWebView) return;
@@ -299,7 +336,7 @@ export const GameView = () => {
         } finally {
           // 부활 광고 로딩 종료
           if (payload?.reason === 'ad') {
-            setIsReviveAdLoading(false);
+            dispatchUIState({ type: 'isReviveAdLoading', payload: { isReviveAdLoading: false } });
           }
         }
       },
@@ -310,6 +347,16 @@ export const GameView = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInWebView, addMessageHandler]);
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      timerManager.cleanup();
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+      }
+    };
+  }, [longPressTimer]);
 
   // 게임 종료 시 점수 업데이트
   const updateUserScore = useCallback(
@@ -338,7 +385,7 @@ export const GameView = () => {
       isInitializing ||
       isItemAnimating ||
       gameState.isProcessingMatches ||
-      isShuffling
+      uiState.isShuffling
     )
       return;
 
@@ -373,28 +420,34 @@ export const GameView = () => {
   };
 
   const handleDragStart = (row: number, col: number) => {
+    // 드래그 상태 강제 초기화 (이전 드래그가 제대로 정리되지 않은 경우 대비)
+    setIsDragging(false);
+    setDraggedTile(null);
+
     if (
-      gameState.isSwapping ||
       gameState.isChecking ||
       gameState.isGameOver ||
       isInitializing ||
       isItemAnimating ||
       gameState.isProcessingMatches ||
-      isShuffling
+      uiState.isShuffling
     ) {
-      setIsDragging(false);
-      setDraggedTile(null);
       return;
     }
 
-    if (selectedGameItem) {
-      activeSelectedGameItem(row, col);
-      setTileChangeIndex((prev) => prev + 1);
-      return;
-    }
+    // isSwapping 체크를 짧은 지연 후에 수행 (상태 업데이트 완료 대기)
+    timerManager.setTimeout(() => {
+      if (gameState.isSwapping) return;
 
-    setDraggedTile({ row, col });
-    setIsDragging(true);
+      if (selectedGameItem) {
+        activeSelectedGameItem(row, col);
+        setTileChangeIndex((prev) => prev + 1);
+        return;
+      }
+
+      setDraggedTile({ row, col });
+      setIsDragging(true);
+    }, 10);
   };
 
   const handleDragEnter = (row: number, col: number) => {
@@ -406,7 +459,7 @@ export const GameView = () => {
       gameState.isGameOver ||
       isInitializing ||
       isItemAnimating ||
-      isShuffling
+      uiState.isShuffling
     ) {
       setIsDragging(false);
       setDraggedTile(null);
@@ -445,7 +498,8 @@ export const GameView = () => {
 
   const removeMatchedTiles = useCallback(
     (currentGrid: GridItem[][]): { newGrid: GridItem[][]; newTileIds: string[] } => {
-      const newGrid = cloneDeep(currentGrid);
+      // cloneDeep 대신 shallowCopyGrid 사용
+      const newGrid = shallowCopyGrid(currentGrid);
       const newTileIds: string[] = [];
 
       for (let col = 0; col < GRID_SIZE; col++) {
@@ -488,8 +542,42 @@ export const GameView = () => {
     return matchCount * SCORE * combo * (streak > 1 ? streak : 1);
   }, []);
 
-  const updateGameState = useCallback((updates: Partial<GameState>) => {
-    setGameState((prev) => ({ ...prev, ...updates }));
+  const updateGameStateOptimized = useCallback((updates: Partial<GameState>) => {
+    // 키를 액션 타입으로 매핑
+    const keyToActionType: Record<string, string> = {
+      score: 'UPDATE_SCORE',
+      moves: 'UPDATE_MOVES',
+      combo: 'UPDATE_COMBO',
+      turn: 'UPDATE_TURN',
+      isSwapping: 'SET_SWAPPING',
+      isChecking: 'SET_CHECKING',
+      isGameOver: 'SET_GAME_OVER',
+      isProcessingMatches: 'SET_PROCESSING',
+    };
+
+    // 배치 업데이트를 위한 reducer 사용
+    Object.entries(updates).forEach(([key, value]) => {
+      const actionType = keyToActionType[key];
+
+      if (!actionType) {
+        console.error(`❌ 지원되지 않는 키: ${key}`, { key, value });
+        return;
+      }
+
+      dispatchGameState({
+        type: actionType as
+          | 'UPDATE_SCORE'
+          | 'UPDATE_MOVES'
+          | 'UPDATE_COMBO'
+          | 'UPDATE_TURN'
+          | 'SET_SWAPPING'
+          | 'SET_CHECKING'
+          | 'SET_GAME_OVER'
+          | 'SET_PROCESSING'
+          | 'RESET',
+        payload: { [key]: value },
+      });
+    });
   }, []);
 
   const processMatches = useCallback(
@@ -499,6 +587,7 @@ export const GameView = () => {
       isFirstMatch = false,
       swappedTiles?: { row: number; col: number }[],
       currentCombo = gameState.combo,
+      currentMoves?: number,
     ) => {
       if (matches.length === 0) return;
 
@@ -510,13 +599,13 @@ export const GameView = () => {
       matchScore = modifiedScore;
 
       const bonusMoves = calculateComboBonus(nextCombo);
-      const shouldDecreaseMoves = isFirstMatch && !selectedGameItem;
-      const movesAdjustment = shouldDecreaseMoves ? -1 : 0;
-      const newMoves = gameState.moves + movesAdjustment + bonusMoves;
+      // 보너스 moves만 추가 (기본 moves 감소는 swapTiles에서 이미 처리됨)
+      const baseMoves = currentMoves ?? gameState.moves;
+      const newMoves = baseMoves + bonusMoves;
       const newScore = gameState.score + matchScore;
 
       // 상태 업데이트
-      updateGameState({
+      updateGameStateOptimized({
         isProcessingMatches: true,
         isChecking: true,
         score: newScore,
@@ -541,9 +630,12 @@ export const GameView = () => {
         const centerRow = matches.reduce((sum, m) => sum + m.row, 0) / matches.length;
         const centerCol = matches.reduce((sum, m) => sum + m.col, 0) / matches.length;
 
-        setShowScorePopup({ score: matchScore, x: centerCol, y: centerRow });
+        dispatchUIState({
+          type: 'showScorePopup',
+          payload: { showScorePopup: { score: matchScore, x: centerCol, y: centerRow } },
+        });
         if (bonusMoves > 0) {
-          setShowBonusMovesAnimation(bonusMoves);
+          dispatchUIState({ type: 'showBonusMovesAnimation', payload: { showBonusMovesAnimation: bonusMoves } });
         }
 
         // 파티클 효과
@@ -556,13 +648,19 @@ export const GameView = () => {
           createOptimizedParticles(x, y, color);
         });
 
-        setTimeout(() => setShowScorePopup(null), SHOW_EFFECT_TIME_MS);
+        timerManager.setTimeout(
+          () => dispatchUIState({ type: 'showScorePopup', payload: { showScorePopup: null } }),
+          SHOW_EFFECT_TIME_MS,
+        );
         if (bonusMoves > 0) {
-          setTimeout(() => setShowBonusMovesAnimation(0), SHOW_EFFECT_TIME_MS);
+          timerManager.setTimeout(
+            () => dispatchUIState({ type: 'showBonusMovesAnimation', payload: { showBonusMovesAnimation: 0 } }),
+            SHOW_EFFECT_TIME_MS,
+          );
         }
       }
 
-      // 매칭된 타일 업데이트
+      // 매칭된 타일 업데이트 (최적화된 업데이트 사용)
       const tileUpdates: Array<{ row: number; col: number; changes: Partial<GridItem> }> = [];
 
       matches.forEach(({ row, col }, index) => {
@@ -599,13 +697,12 @@ export const GameView = () => {
         }
       });
 
-      // 그리드 업데이트
-      const newGrid = cloneDeep(currentGrid);
-      batchUpdateTiles(newGrid, tileUpdates);
+      // 그리드 업데이트 (최적화된 방식 사용)
+      const newGrid = updateGridSelective(currentGrid, tileUpdates);
       setGrid(newGrid);
 
       // 매칭 애니메이션 대기
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => timerManager.setTimeout(() => resolve(undefined), 200));
 
       // 타일 제거 및 리필
       const { newGrid: afterRemovalGrid, newTileIds } = removeMatchedTiles(newGrid);
@@ -615,7 +712,7 @@ export const GameView = () => {
       // 리필 애니메이션이 있는 경우에만 대기
       if (newTileIds.length > 0) {
         // 리필 애니메이션 완료까지 대기
-        const refillPromise = new Promise<void>((resolve) => setTimeout(resolve, 300)); // Dummy promise
+        const refillPromise = new Promise<void>((resolve) => timerManager.setTimeout(resolve, 300));
         refillPromiseRef.current = refillPromise;
 
         await refillPromise;
@@ -623,13 +720,13 @@ export const GameView = () => {
       }
 
       // 추가 대기 시간 (애니메이션 완전 완료 보장)
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => timerManager.setTimeout(() => resolve(undefined), 50));
 
       // 다음 매칭 확인
       const newMatches = findMatches(afterRemovalGrid);
       if (newMatches.length > 0) {
         // 연쇄 매칭 발견 - 재귀 호출
-        await processMatches(newMatches, afterRemovalGrid, false, undefined, nextCombo);
+        await processMatches(newMatches, afterRemovalGrid, false, undefined, nextCombo, undefined);
       } else {
         // 연쇄 매칭이 완전히 끝났을 때만 보상 체크 (첫 번째 매치에서만)
         if (isFirstMatch && newMoves > 0) {
@@ -649,7 +746,8 @@ export const GameView = () => {
 
         // 상태 업데이트 및 게임 오버 처리
         const isGameOver = newMoves <= 0;
-        updateGameState({
+
+        updateGameStateOptimized({
           isSwapping: false,
           isChecking: false,
           isProcessingMatches: false,
@@ -660,7 +758,7 @@ export const GameView = () => {
         if (isGameOver) {
           // 게임 오버시 부활 옵션 활성화 (아직 부활을 사용하지 않은 경우만)
           if (!hasUsedRevive) {
-            setShowReviveOptions(true);
+            dispatchUIState({ type: 'showReviveOptions', payload: { showReviveOptions: true } });
           } else {
             // 이미 부활을 사용했다면 바로 최종 게임 오버 처리
             playGameOverSound(soundSettings);
@@ -669,6 +767,7 @@ export const GameView = () => {
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       gameState.combo,
       gameState.moves,
@@ -678,27 +777,26 @@ export const GameView = () => {
       streakCount,
       applyArtifactEffects,
       selectedGameItem,
-      updateGameState,
       setGrid,
       removeMatchedTiles,
       findMatches,
       soundSettings,
-      runConfetti,
       gameMode,
       rewardState.activeArtifacts,
       grid,
       checkScoreReward,
       updateUserScore,
       hasUsedRevive,
+      // updateGameStateOptimized와 runConfetti는 안정적인 함수 참조이므로 제외
     ],
   );
 
   const swapTiles = useCallback(
     async (row1: number, col1: number, row2: number, col2: number) => {
-      setGameState((prev) => ({ ...prev, isSwapping: true }));
-      let newGrid = cloneDeep(grid);
+      dispatchGameState({ type: 'SET_SWAPPING', payload: { isSwapping: true } });
+      let newGrid = shallowCopyGrid(grid);
 
-      setShowHint(false);
+      dispatchUIState({ type: 'showHint', payload: { showHint: false } });
 
       const swappedTiles = [
         { row: row1, col: col1 },
@@ -713,12 +811,19 @@ export const GameView = () => {
       setSelectedTile(null);
 
       // 스와핑 애니메이션 대기
-      await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
+      await new Promise((resolve) => timerManager.setTimeout(() => resolve(undefined), ANIMATION_DURATION));
 
       const matches = findMatches(newGrid);
 
       // 추가 대기 시간
-      await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION + 50));
+      await new Promise((resolve) => timerManager.setTimeout(() => resolve(undefined), ANIMATION_DURATION + 50));
+
+      // 스왑할 때마다 무조건 moves 감소 (매칭 성공/실패 관계없이)
+      const newMoves = gameState.moves - 1;
+      const isGameOver = newMoves <= 0;
+
+      dispatchGameState({ type: 'UPDATE_MOVES', payload: { moves: newMoves } });
+      dispatchGameState({ type: 'UPDATE_TURN', payload: { turn: gameState.turn + 1 } });
 
       if (matches.length > 0) {
         const now = Date.now();
@@ -729,27 +834,26 @@ export const GameView = () => {
         }
         setLastMatchTime(now);
 
-        // 매칭 처리 (async 함수로 변경)
-        await processMatches(matches, newGrid, true, swappedTiles);
+        // 매칭 처리
+        await processMatches(matches, newGrid, true, swappedTiles, gameState.combo, newMoves);
+        // processMatches 완료 후 확실히 상태 리셋
+        dispatchGameState({ type: 'SET_SWAPPING', payload: { isSwapping: false } });
       } else {
         // 매칭이 없으면 되돌리기
-        newGrid = cloneDeep(newGrid);
+        newGrid = shallowCopyGrid(newGrid);
         const temp2 = { ...newGrid[row1][col1] };
         newGrid[row1][col1] = { ...newGrid[row2][col2] };
         newGrid[row2][col2] = temp2;
         setGrid(newGrid);
-        setGameState((prev) => ({
-          ...prev,
-          moves: prev.moves - 1,
-          turn: prev.turn + 1,
-          isSwapping: false,
-          isGameOver: prev.moves - 1 <= 0,
-        }));
+
+        // 상태 리셋
+        dispatchGameState({ type: 'SET_SWAPPING', payload: { isSwapping: false } });
+        dispatchGameState({ type: 'SET_GAME_OVER', payload: { isGameOver } });
 
         // 게임 종료 시 부활 옵션 활성화 (아직 부활을 사용하지 않은 경우만)
-        if (gameState.moves - 1 <= 0) {
+        if (isGameOver) {
           if (!hasUsedRevive) {
-            setShowReviveOptions(true);
+            dispatchUIState({ type: 'showReviveOptions', payload: { showReviveOptions: true } });
           } else {
             // 이미 부활을 사용했다면 바로 최종 게임 오버 처리
             playGameOverSound(soundSettings);
@@ -767,50 +871,56 @@ export const GameView = () => {
       processMatches,
       gameState.moves,
       gameState.score,
-      runConfetti,
       soundSettings,
       updateUserScore,
+      hasUsedRevive,
+      gameState.turn,
     ],
   );
 
+  // 나머지 핸들러들도 최적화된 방식으로 수정...
   const restartGame = () => {
-    // 에너지 상태를 최신으로 업데이트
-
     // 에너지 소모
     updateDropletMutation.mutate(-ENERGY_CONSUME_AMOUNT, {
       onSuccess: () => {
-        setGameState({
-          score: 0,
-          moves: gameMode === 'casual' ? CASUAL_MODE_MOVE_COUNT : CHALLENGE_MODE_MOVE_COUNT,
-          isSwapping: false,
-          isChecking: false,
-          isGameOver: false,
-          combo: 1,
-          turn: 0,
-          isProcessingMatches: false,
+        dispatchGameState({
+          type: 'RESET',
+          payload: {
+            score: 0,
+            moves: gameMode === 'casual' ? CASUAL_MODE_MOVE_COUNT : CHALLENGE_MODE_MOVE_COUNT,
+            isSwapping: false,
+            isChecking: false,
+            isGameOver: false,
+            combo: 1,
+            turn: 0,
+            isProcessingMatches: false,
+          },
         });
+
         setTileChangeIndex(0);
         setGrid(createInitialGrid());
         setSelectedTile(null);
-        setShowScorePopup(null);
         setStreakCount(0);
         setIsNewHighScore(false);
-        setShowRestartConfirmation(false);
-        setShowReviveOptions(false);
-        setHasUsedRevive(false); // 부활 사용 상태 초기화
-        setIsReviveAdLoading(false); // 부활 광고 로딩 상태 초기화
+        setHasUsedRevive(false);
 
-        // 보상 상태 초기화
-        resetRewardState();
+        dispatchUIState({
+          type: 'BATCH_UPDATE',
+          payload: {
+            showRestartConfirmation: false,
+            showReviveOptions: false,
+            isReviveAdLoading: false,
+            isShuffling: false,
+            showShuffleConfirmation: false,
+            showShuffleButton: false,
+          },
+        });
 
-        // 드래그 관련 상태 초기화
         setIsDragging(false);
         setDraggedTile(null);
 
-        // 셔플 관련 상태 초기화
-        setIsShuffling(false);
-        setShowShuffleConfirmation(false);
-        setShowShuffleButton(false);
+        // 보상 상태 초기화
+        resetRewardState();
 
         // 아이템 관련 상태 초기화
         resetItems();
@@ -820,11 +930,11 @@ export const GameView = () => {
 
   const handleRestartConfirm = () => {
     playButtonSound(soundSettings);
-    setShowRestartConfirmation(false);
+    dispatchUIState({ type: 'showRestartConfirmation', payload: { showRestartConfirmation: false } });
 
     // 에너지가 부족한 경우 에너지 모달 표시
     if (!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT) {
-      setShowEnergyModal(true);
+      dispatchUIState({ type: 'showEnergyModal', payload: { showEnergyModal: true } });
       return;
     }
 
@@ -832,19 +942,19 @@ export const GameView = () => {
   };
 
   const handleRestartCancel = () => {
-    setShowRestartConfirmation(false);
+    dispatchUIState({ type: 'showRestartConfirmation', payload: { showRestartConfirmation: false } });
   };
 
   const handleWatchAd = async () => {
     if (!userInfo) return;
     // 광고 시청 후 에너지 추가 로직은 네이티브 앱에서 처리
-    setShowEnergyModal(false);
+    dispatchUIState({ type: 'showEnergyModal', payload: { showEnergyModal: false } });
   };
 
   const handlePurchase = async () => {
     if (!userInfo) return;
     // 구매 후 에너지 추가 로직은 네이티브 앱에서 처리
-    setShowEnergyModal(false);
+    dispatchUIState({ type: 'showEnergyModal', payload: { showEnergyModal: false } });
   };
 
   // 부활 시스템 핸들러들
@@ -852,10 +962,9 @@ export const GameView = () => {
     if (!userInfo || !isInWebView) return;
 
     // 부활 광고 로딩 시작
-    setIsReviveAdLoading(true);
+    dispatchUIState({ type: 'isReviveAdLoading', payload: { isReviveAdLoading: true } });
 
     // 네이티브 앱에 광고 시청 요청 (부활용)
-    // TODO: type을 ad, 광고 요청에 따른 응답을 받을 수 있는 형태로 native 통신 구조 수정
     sendMessage({
       type: WebToNativeMessageType.ENERGY_CHANGE,
       payload: { amount: 0, reason: 'ad' },
@@ -876,19 +985,25 @@ export const GameView = () => {
 
   const handleReviveSuccess = () => {
     // 게임 상태 업데이트 (부활 처리)
-    updateGameState({
+    updateGameStateOptimized({
       moves: gameState.moves + REVIVE_BONUS_MOVES,
       isGameOver: false,
     });
 
-    setShowReviveOptions(false);
-    setHasUsedRevive(true); // 부활 사용 표시
-    setIsReviveAdLoading(false); // 광고 로딩 종료
+    dispatchUIState({
+      type: 'BATCH_UPDATE',
+      payload: {
+        showReviveOptions: false,
+        isReviveAdLoading: false,
+      },
+    });
+
+    setHasUsedRevive(true);
     playRewardSound(soundSettings);
   };
 
   const handleReviveGiveUp = () => {
-    setShowReviveOptions(false);
+    dispatchUIState({ type: 'showReviveOptions', payload: { showReviveOptions: false } });
 
     // 최종 게임 오버 처리
     playButtonSound(soundSettings);
@@ -914,8 +1029,8 @@ export const GameView = () => {
       clearTimeout(longPressTimer);
     }
 
-    const timer = setTimeout(() => {
-      setLongPressItem(itemId);
+    const timer = timerManager.setTimeout(() => {
+      dispatchUIState({ type: 'longPressItem', payload: { longPressItem: itemId } });
     }, 300); // 0.3초 후 툴팁 표시
 
     setLongPressTimer(timer);
@@ -923,20 +1038,11 @@ export const GameView = () => {
 
   const handleLongPressEnd = () => {
     if (longPressTimer) {
-      clearTimeout(longPressTimer);
+      timerManager.clearTimeout(longPressTimer);
       setLongPressTimer(null);
     }
-    setLongPressItem(null);
+    dispatchUIState({ type: 'longPressItem', payload: { longPressItem: null } });
   };
-
-  // 컴포넌트 언마운트 시 타이머 정리
-  useEffect(() => {
-    return () => {
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-      }
-    };
-  }, [longPressTimer]);
 
   const activeSelectedGameItem = async (row: number, col: number) => {
     if (!selectedGameItem) return;
@@ -979,7 +1085,7 @@ export const GameView = () => {
       const bonusMoves = calculateComboBonus(gameState.combo);
 
       // 상태 업데이트
-      updateGameState({
+      updateGameStateOptimized({
         score: gameState.score + itemScore,
         moves: gameState.moves + bonusMoves,
         combo: gameState.combo + 1,
@@ -989,43 +1095,56 @@ export const GameView = () => {
       const centerRow = GRID_SIZE / 2;
       const centerCol = GRID_SIZE / 2;
 
-      setShowScorePopup({ score: itemScore, x: centerCol, y: centerRow });
+      dispatchUIState({
+        type: 'showScorePopup',
+        payload: { showScorePopup: { score: itemScore, x: centerCol, y: centerRow } },
+      });
       if (bonusMoves > 0) {
-        setShowBonusMovesAnimation(bonusMoves);
+        dispatchUIState({ type: 'showBonusMovesAnimation', payload: { showBonusMovesAnimation: bonusMoves } });
       }
 
       const x = (centerCol + 0.5) / GRID_SIZE;
       const y = (centerRow + 0.5) / GRID_SIZE;
       createParticles(x, y, 'purple');
 
-      setTimeout(() => setShowScorePopup(null), SHOW_EFFECT_TIME_MS);
+      timerManager.setTimeout(
+        () => dispatchUIState({ type: 'showScorePopup', payload: { showScorePopup: null } }),
+        SHOW_EFFECT_TIME_MS,
+      );
       if (bonusMoves > 0) {
-        setTimeout(() => setShowBonusMovesAnimation(0), SHOW_EFFECT_TIME_MS);
+        timerManager.setTimeout(
+          () => dispatchUIState({ type: 'showBonusMovesAnimation', payload: { showBonusMovesAnimation: 0 } }),
+          SHOW_EFFECT_TIME_MS,
+        );
       }
     }
 
     setGrid(updatedGrid);
 
-    setTimeout(async () => {
+    timerManager.setTimeout(async () => {
       const afterRemovalGrid = removeMatchedTiles(updatedGrid);
       setGrid(afterRemovalGrid.newGrid);
-      await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
+      await new Promise((resolve) => timerManager.setTimeout(() => resolve(undefined), ANIMATION_DURATION));
       const matches = findMatches(afterRemovalGrid.newGrid);
       if (matches.length > 0) {
-        processMatches(matches, afterRemovalGrid.newGrid, true);
+        processMatches(matches, afterRemovalGrid.newGrid, true, undefined, gameState.combo, undefined);
       } else {
-        setGameState((prev) => ({
-          ...prev,
+        updateGameStateOptimized({
           isSwapping: false,
           isChecking: false,
           combo: 1,
-        }));
+        });
 
         // 아이템 사용 후 매칭 가능 여부 확인
         const possibleMove = findPossibleMove();
-        if (possibleMove && (showShuffleConfirmation || showShuffleButton)) {
-          setShowShuffleConfirmation(false);
-          setShowShuffleButton(false);
+        if (possibleMove && (uiState.showShuffleConfirmation || uiState.showShuffleButton)) {
+          dispatchUIState({
+            type: 'BATCH_UPDATE',
+            payload: {
+              showShuffleConfirmation: false,
+              showShuffleButton: false,
+            },
+          });
         }
       }
     }, ANIMATION_DURATION);
@@ -1037,34 +1156,34 @@ export const GameView = () => {
       router.back();
       return;
     }
-    setShowBackConfirmation(true);
+    dispatchUIState({ type: 'showBackConfirmation', payload: { showBackConfirmation: true } });
   };
 
   const handleBackConfirm = () => {
     playButtonSound(soundSettings);
-    setShowBackConfirmation(false);
+    dispatchUIState({ type: 'showBackConfirmation', payload: { showBackConfirmation: false } });
     router.back();
   };
 
   const handleSettingsClick = () => {
     playButtonSound(soundSettings);
-    setShowSettingsMenu(!showSettingsMenu);
+    dispatchUIState({ type: 'showSettingsMenu', payload: { showSettingsMenu: !uiState.showSettingsMenu } });
   };
 
   const closeTutorial = () => {
-    setShowTutorial(false);
+    dispatchUIState({ type: 'showTutorial', payload: { showTutorial: false } });
     setHasSeenTutorial(true);
   };
 
   const prevTutorialStep = () => {
-    if (tutorialStep > 0) {
-      setTutorialStep(tutorialStep - 1);
+    if (uiState.tutorialStep > 0) {
+      dispatchUIState({ type: 'tutorialStep', payload: { tutorialStep: uiState.tutorialStep - 1 } });
     }
   };
 
   const nextTutorialStep = () => {
-    if (tutorialStep < TUTORIAL_TOTAL_STEP) {
-      setTutorialStep(tutorialStep + 1);
+    if (uiState.tutorialStep < TUTORIAL_TOTAL_STEP) {
+      dispatchUIState({ type: 'tutorialStep', payload: { tutorialStep: uiState.tutorialStep + 1 } });
     } else {
       playButtonSound(soundSettings);
       closeTutorial();
@@ -1093,15 +1212,26 @@ export const GameView = () => {
   }, [findMatches, grid]);
 
   useEffect(() => {
-    if (grid.length > 0 && !gameState.isSwapping && !gameState.isChecking && gameState.moves > 0 && !isShuffling) {
+    if (
+      grid.length > 0 &&
+      !gameState.isSwapping &&
+      !gameState.isChecking &&
+      gameState.moves > 0 &&
+      !uiState.isShuffling
+    ) {
       const possibleMove = findPossibleMove();
-      if (!possibleMove && !showShuffleConfirmation && !showShuffleButton) {
+      if (!possibleMove && !uiState.showShuffleConfirmation && !uiState.showShuffleButton) {
         // 가능한 이동이 없고 셔플 관련 UI가 표시되지 않았을 때만 표시
-        setShowShuffleConfirmation(true);
-      } else if (possibleMove && (showShuffleConfirmation || showShuffleButton)) {
+        dispatchUIState({ type: 'showShuffleConfirmation', payload: { showShuffleConfirmation: true } });
+      } else if (possibleMove && (uiState.showShuffleConfirmation || uiState.showShuffleButton)) {
         // 가능한 이동이 생기면 셔플 관련 UI 모두 숨기기
-        setShowShuffleConfirmation(false);
-        setShowShuffleButton(false);
+        dispatchUIState({
+          type: 'BATCH_UPDATE',
+          payload: {
+            showShuffleConfirmation: false,
+            showShuffleButton: false,
+          },
+        });
       }
     }
   }, [
@@ -1109,34 +1239,39 @@ export const GameView = () => {
     gameState.isSwapping,
     gameState.isChecking,
     gameState.moves,
-    isShuffling,
+    uiState.isShuffling,
     findPossibleMove,
-    showShuffleConfirmation,
-    showShuffleButton,
+    uiState.showShuffleConfirmation,
+    uiState.showShuffleButton,
   ]);
 
   // 섞기 중일 때 기존 섞기 팝업들 숨기기
   useEffect(() => {
-    if (isShuffling) {
-      setShowShuffleConfirmation(false);
-      setShowShuffleButton(false);
+    if (uiState.isShuffling) {
+      dispatchUIState({
+        type: 'BATCH_UPDATE',
+        payload: {
+          showShuffleConfirmation: false,
+          showShuffleButton: false,
+        },
+      });
     }
-  }, [isShuffling]);
+  }, [uiState.isShuffling]);
 
   useEffect(() => {
     setGrid(createInitialGrid());
     // 초기화 완료 후 isInitializing을 false로 설정
-    const timer = setTimeout(() => {
+    const timer = timerManager.setTimeout(() => {
       setIsInitializing(false);
     }, SHOW_EFFECT_TIME_MS);
 
-    return () => clearTimeout(timer);
+    return () => timerManager.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!hasSeenTutorial) {
-      setShowTutorial(true);
+      dispatchUIState({ type: 'showTutorial', payload: { showTutorial: true } });
     }
   }, [hasSeenTutorial]);
 
@@ -1145,7 +1280,7 @@ export const GameView = () => {
     const ensureSoundsLoaded = async () => {
       try {
         await preloadAllSounds();
-        console.log('GameView: 효과음 로드 확인 완료');
+        // 효과음 로드 확인 완료
       } catch (error) {
         console.warn('GameView: 효과음 로드 실패:', error);
       }
@@ -1156,27 +1291,32 @@ export const GameView = () => {
 
   useEffect(() => {
     if (lastMatchTime > 0 && !gameState.isSwapping && !gameState.isChecking && !gameState.isGameOver) {
-      const timer = setTimeout(() => {
+      const timer = timerManager.setTimeout(() => {
         const possibleMove = findPossibleMove();
         if (possibleMove) {
           setHintPosition(possibleMove);
-          setShowHint(true);
-          setTimeout(() => {
-            setShowHint(false);
+          dispatchUIState({ type: 'showHint', payload: { showHint: true } });
+          timerManager.setTimeout(() => {
+            dispatchUIState({ type: 'showHint', payload: { showHint: false } });
           }, SHOW_HINT_TIME_MS);
         }
       }, HINT_MOVE_INTERVAL_MS);
-      return () => clearTimeout(timer);
+      return () => timerManager.clearTimeout(timer);
     }
   }, [lastMatchTime, gameState.isSwapping, gameState.isChecking, gameState.isGameOver, findPossibleMove]);
 
   useBackButton(() => {
-    setShowBackConfirmation(true);
+    dispatchUIState({ type: 'showBackConfirmation', payload: { showBackConfirmation: true } });
   });
 
   const handleShuffleConfirm = () => {
-    setShowShuffleConfirmation(false);
-    setShowShuffleButton(false);
+    dispatchUIState({
+      type: 'BATCH_UPDATE',
+      payload: {
+        showShuffleConfirmation: false,
+        showShuffleButton: false,
+      },
+    });
 
     // 셔플 효과음 재생
     playShuffleSound(soundSettings);
@@ -1186,19 +1326,18 @@ export const GameView = () => {
     const newMoves = Math.max(0, gameState.moves - shuffleCost);
     const isGameOver = newMoves <= 0;
 
-    setGameState((prev) => ({
-      ...prev,
+    updateGameStateOptimized({
       moves: newMoves,
-      turn: prev.turn + 1,
+      turn: gameState.turn + 1,
       isGameOver,
-    }));
+    });
 
     // 게임 종료 시 부활 옵션 활성화 (아직 부활을 사용하지 않은 경우만)
     if (isGameOver) {
-      setIsShuffling(false);
+      dispatchUIState({ type: 'isShuffling', payload: { isShuffling: false } });
       if (!hasUsedRevive) {
         playGameOverSound(soundSettings);
-        setShowReviveOptions(true);
+        dispatchUIState({ type: 'showReviveOptions', payload: { showReviveOptions: true } });
       } else {
         // 이미 부활을 사용했다면 바로 최종 게임 오버 처리
         playGameOverSound(soundSettings);
@@ -1208,16 +1347,24 @@ export const GameView = () => {
     }
 
     // 섞기 중 상태 활성화
-    setIsShuffling(true);
+    dispatchUIState({ type: 'isShuffling', payload: { isShuffling: true } });
 
     // 섞기 로딩 시간 (1.5초)
-    setTimeout(() => {
-      setIsShuffling(false);
-      setShowShuffleToast(true);
-      setTimeout(() => setShowShuffleToast(false), 2000);
+    timerManager.setTimeout(() => {
+      dispatchUIState({
+        type: 'BATCH_UPDATE',
+        payload: {
+          isShuffling: false,
+          showShuffleToast: true,
+        },
+      });
+      timerManager.setTimeout(
+        () => dispatchUIState({ type: 'showShuffleToast', payload: { showShuffleToast: false } }),
+        2000,
+      );
     }, 1500);
 
-    setTimeout(() => {
+    timerManager.setTimeout(() => {
       const newGrid = shuffleGrid();
       setGrid(newGrid);
     }, 1000);
@@ -1231,10 +1378,9 @@ export const GameView = () => {
       // 보상 타입에 따른 처리
       if (reward.type === 'moves') {
         // 이동 횟수 추가
-        setGameState((prev) => ({
-          ...prev,
-          moves: prev.moves + reward.value,
-        }));
+        updateGameStateOptimized({
+          moves: gameState.moves + reward.value,
+        });
       } else if (reward.type === 'items') {
         // 아이템 추가
         const itemId = reward.id.split('_')[1] as GameItemType;
@@ -1245,15 +1391,17 @@ export const GameView = () => {
       playRewardSound(soundSettings);
       // artifact는 이미 selectRewardBase에서 처리됨
     },
-    [selectRewardBase, soundSettings, addItem, updateGemMutation],
+    [selectRewardBase, soundSettings, addItem, updateGemMutation, updateGameStateOptimized, gameState.moves],
   );
 
-  if (isLoading) {
-    return <LoadingView onLoadComplete={() => setIsLoading(false)} />;
+  if (uiState.isLoading) {
+    return <LoadingView onLoadComplete={() => dispatchUIState({ type: 'isLoading', payload: { isLoading: false } })} />;
   }
 
   return (
     <>
+      <MemoryMonitor enabled={process.env.NODE_ENV === 'development'} />
+
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-[1000]">
         {itemAnimation && (
           <ItemAnimationManager
@@ -1413,7 +1561,7 @@ export const GameView = () => {
                     >
                       {Math.max(gameState.moves, 0)}
                       <AnimatePresence>
-                        {showBonusMovesAnimation > 0 && (
+                        {uiState.showBonusMovesAnimation > 0 && (
                           <motion.div
                             initial={{ opacity: 0, scale: 0.5, y: 0 }}
                             animate={{ opacity: 1, scale: 1, y: -20 }}
@@ -1421,7 +1569,7 @@ export const GameView = () => {
                             transition={{ duration: 0.8 }}
                             className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-green-400 font-bold text-lg z-20"
                           >
-                            +{showBonusMovesAnimation}
+                            +{uiState.showBonusMovesAnimation}
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -1490,7 +1638,7 @@ export const GameView = () => {
                             {gameState.score.toLocaleString()}
                           </motion.div>
                         </motion.div>
-                        {showReviveOptions && !hasUsedRevive ? (
+                        {uiState.showReviveOptions && !hasUsedRevive ? (
                           // 부활 옵션 표시
                           <motion.div
                             className="flex flex-col gap-3"
@@ -1509,7 +1657,7 @@ export const GameView = () => {
                               {/* 광고 시청 옵션 */}
                               <Button
                                 onClick={handleReviveWatchAd}
-                                disabled={updateGemMutation.isPending || isReviveAdLoading}
+                                disabled={updateGemMutation.isPending || uiState.isReviveAdLoading}
                                 className="flex-1 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-20 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <span className="text-2xl">🎬</span>
@@ -1521,12 +1669,12 @@ export const GameView = () => {
                                 onClick={handleReviveUseGem}
                                 disabled={
                                   updateGemMutation.isPending ||
-                                  isReviveAdLoading ||
+                                  uiState.isReviveAdLoading ||
                                   !userInfo ||
                                   userInfo.gem < REVIVE_GEM_COST
                                 }
                                 className={`flex-1 flex flex-col items-center gap-1 h-20 ${
-                                  userInfo && userInfo.gem >= REVIVE_GEM_COST && !isReviveAdLoading
+                                  userInfo && userInfo.gem >= REVIVE_GEM_COST && !uiState.isReviveAdLoading
                                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
                                     : 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
                                 }`}
@@ -1549,7 +1697,7 @@ export const GameView = () => {
                             {/* 포기 버튼 */}
                             <Button
                               onClick={handleReviveGiveUp}
-                              disabled={updateGemMutation.isPending || isReviveAdLoading}
+                              disabled={updateGemMutation.isPending || uiState.isReviveAdLoading}
                               className="py-6 text-md bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 hover:text-white border border-gray-500/50 hover:border-gray-400/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {t('game.revive.giveUp')}
@@ -1622,11 +1770,11 @@ export const GameView = () => {
                       isSelected={selectedTile?.row === rowIndex && selectedTile?.col === colIndex}
                       isDragged={draggedTile?.row === rowIndex && draggedTile?.col === colIndex}
                       showHint={
-                        showHint &&
+                        uiState.showHint &&
                         ((hintPosition?.row1 === rowIndex && hintPosition?.col1 === colIndex) ||
                           (hintPosition?.row2 === rowIndex && hintPosition?.col2 === colIndex))
                       }
-                      isShuffling={isShuffling}
+                      isShuffling={uiState.isShuffling}
                       onTileClick={() => tileSwapMode === 'select' && handleTileClick(rowIndex, colIndex)}
                       onMouseDown={() => tileSwapMode === 'drag' && handleDragStart(rowIndex, colIndex)}
                       onMouseEnter={() => tileSwapMode === 'drag' && handleDragEnter(rowIndex, colIndex)}
@@ -1643,7 +1791,7 @@ export const GameView = () => {
                 )}
 
                 <AnimatePresence>
-                  {showScorePopup && (
+                  {uiState.showScorePopup && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.5, y: 0 }}
                       animate={{ opacity: 1, scale: 1, y: -30 }}
@@ -1651,12 +1799,12 @@ export const GameView = () => {
                       transition={{ duration: 0.8 }}
                       className="absolute text-yellow-300 font-bold text-xl z-20"
                       style={{
-                        left: `${(showScorePopup.x / GRID_SIZE) * 100}%`,
-                        top: `${(showScorePopup.y / GRID_SIZE) * 100}%`,
+                        left: `${(uiState.showScorePopup.x / GRID_SIZE) * 100}%`,
+                        top: `${(uiState.showScorePopup.y / GRID_SIZE) * 100}%`,
                         transform: 'translate(-50%, -50%)',
                       }}
                     >
-                      +{showScorePopup.score}
+                      +{uiState.showScorePopup.score}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -1669,7 +1817,7 @@ export const GameView = () => {
                 transition={{ duration: 0.5, delay: 0.3, type: 'spring' }}
               >
                 {gameItems.map(({ id, count, icon }) => (
-                  <ItemAreaTooltip key={id} itemType={id as GameItemType} isVisible={longPressItem === id}>
+                  <ItemAreaTooltip key={id} itemType={id as GameItemType} isVisible={uiState.longPressItem === id}>
                     <motion.div
                       className={`
                   relative flex flex-col flex-1 text-center items-center p-3 rounded-lg cursor-pointer
@@ -1715,7 +1863,7 @@ export const GameView = () => {
       </div>
 
       <ConfirmationModal
-        isOpen={showBackConfirmation}
+        isOpen={uiState.showBackConfirmation}
         title={t('modal.confirmExit')}
         message={
           <div className="space-y-3">
@@ -1728,11 +1876,11 @@ export const GameView = () => {
         confirmText={t('common.exit')}
         cancelText={t('common.continue')}
         onConfirm={handleBackConfirm}
-        onCancel={() => setShowBackConfirmation(false)}
+        onCancel={() => dispatchUIState({ type: 'showBackConfirmation', payload: { showBackConfirmation: false } })}
       />
 
       <ConfirmationModal
-        isOpen={showRestartConfirmation}
+        isOpen={uiState.showRestartConfirmation}
         title={t('game.restartConfirm')}
         message={
           <div className="space-y-3">
@@ -1752,7 +1900,7 @@ export const GameView = () => {
 
       {/* 셔플 확인 알림 */}
       <AnimatePresence>
-        {showShuffleConfirmation && (
+        {uiState.showShuffleConfirmation && (
           <motion.div
             className="fixed top-22 left-8 right-8 z-50"
             initial={{ opacity: 0, x: 40, scale: 0.8 }}
@@ -1775,8 +1923,13 @@ export const GameView = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    setShowShuffleConfirmation(false);
-                    setShowShuffleButton(true);
+                    dispatchUIState({
+                      type: 'BATCH_UPDATE',
+                      payload: {
+                        showShuffleConfirmation: false,
+                        showShuffleButton: true,
+                      },
+                    });
                   }}
                   className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
                 >
@@ -1797,7 +1950,7 @@ export const GameView = () => {
 
       {/* 섞기 버튼 */}
       <AnimatePresence>
-        {showShuffleButton && (
+        {uiState.showShuffleButton && (
           <motion.div
             className="fixed left-4 top-16 flex justify-center z-10"
             initial={{ opacity: 0, scale: 0.8 }}
@@ -1808,8 +1961,13 @@ export const GameView = () => {
               variant="ghost"
               size="icon"
               onClick={() => {
-                setShowShuffleConfirmation(true);
-                setShowShuffleButton(false);
+                dispatchUIState({
+                  type: 'BATCH_UPDATE',
+                  payload: {
+                    showShuffleConfirmation: true,
+                    showShuffleButton: false,
+                  },
+                });
               }}
               className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-full"
             >
@@ -1820,50 +1978,59 @@ export const GameView = () => {
       </AnimatePresence>
 
       <EnergyModal
-        isOpen={showEnergyModal}
-        onClose={() => setShowEnergyModal(false)}
+        isOpen={uiState.showEnergyModal}
+        onClose={() => dispatchUIState({ type: 'showEnergyModal', payload: { showEnergyModal: false } })}
         onWatchAd={handleWatchAd}
         onPurchase={handlePurchase}
         isLoading={false}
       />
 
       <SettingsMenu
-        isOpen={showSettingsMenu}
+        isOpen={uiState.showSettingsMenu}
         tileSwapMode={tileSwapMode}
         onChangeTileSwapMode={(mode) => {
           playButtonSound(soundSettings);
           setTileSwapMode(mode);
         }}
-        onClose={() => setShowSettingsMenu(false)}
+        onClose={() => dispatchUIState({ type: 'showSettingsMenu', payload: { showSettingsMenu: false } })}
         onShowTutorial={() => {
           playButtonSound(soundSettings);
-          setShowTutorial(true);
-          setTutorialStep(1);
+          dispatchUIState({
+            type: 'BATCH_UPDATE',
+            payload: {
+              showTutorial: true,
+              tutorialStep: 1,
+            },
+          });
         }}
         onShowBackConfirmation={() => {
           playButtonSound(soundSettings);
-          setShowBackConfirmation(true);
+          dispatchUIState({ type: 'showBackConfirmation', payload: { showBackConfirmation: true } });
         }}
         onShowRestartConfirmation={() => {
           playButtonSound(soundSettings);
-          setShowRestartConfirmation(true);
+          dispatchUIState({ type: 'showRestartConfirmation', payload: { showRestartConfirmation: true } });
         }}
         onShowEnergyModal={() => {
           playButtonSound(soundSettings);
-          setShowEnergyModal(true);
+          dispatchUIState({ type: 'showEnergyModal', payload: { showEnergyModal: true } });
         }}
       />
 
       <TutorialDialog
-        isOpen={showTutorial}
+        isOpen={uiState.showTutorial}
         onClose={closeTutorial}
         onNextStep={nextTutorialStep}
         onPrevStep={prevTutorialStep}
-        currentStep={tutorialStep}
+        currentStep={uiState.tutorialStep}
         gameItems={gameItems}
       />
 
-      <Toast isOpen={showShuffleToast} icon={Shuffle} message={t('game.shuffleMessage', { count: getShuffleCost() })} />
+      <Toast
+        isOpen={uiState.showShuffleToast}
+        icon={Shuffle}
+        message={t('game.shuffleMessage', { count: getShuffleCost() })}
+      />
 
       <PerformanceMonitor enabled={process.env.NODE_ENV === 'development'} />
 
@@ -1880,7 +2047,7 @@ export const GameView = () => {
 
       {/* 섞기 중 로딩 화면 */}
       <AnimatePresence>
-        {isShuffling && (
+        {uiState.isShuffling && (
           <motion.div
             className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-xl z-20 backdrop-blur-md"
             initial={{ opacity: 0 }}
@@ -1927,7 +2094,7 @@ export const GameView = () => {
         )}
       </AnimatePresence>
 
-      <AdLoadingModal isOpen={isReviveAdLoading} />
+      <AdLoadingModal isOpen={uiState.isReviveAdLoading} />
     </>
   );
 };
