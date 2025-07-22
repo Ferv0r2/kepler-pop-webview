@@ -49,7 +49,7 @@ const useUpdateGem = () => {
 
 export const MainView = () => {
   const router = useRouter();
-  const { data: userInfo, isLoading } = useUser();
+  const { data: userInfo, isLoading, refetch: refetchUser } = useUser();
   const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
   const t = useTranslations();
 
@@ -148,16 +148,35 @@ export const MainView = () => {
   const handleStartGame = async (mode: 'casual' | 'challenge') => {
     playButtonSound(soundSettings);
 
-    if (!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT) {
-      setShowEnergyModal(true);
-      return;
-    }
+    // 게임 시작 전 최신 사용자 정보 가져오기
+    try {
+      const { data: latestUserInfo } = await refetchUser();
+      const currentUserInfo = latestUserInfo || userInfo;
 
-    updateDropletMutation.mutate(-ENERGY_CONSUME_AMOUNT, {
-      onSuccess: () => {
-        router.push(`/game?mode=${mode}`);
-      },
-    });
+      if (!currentUserInfo || currentUserInfo.droplet < ENERGY_CONSUME_AMOUNT) {
+        setShowEnergyModal(true);
+        return;
+      }
+
+      updateDropletMutation.mutate(-ENERGY_CONSUME_AMOUNT, {
+        onSuccess: () => {
+          router.push(`/game?mode=${mode}`);
+        },
+      });
+    } catch (error) {
+      console.error('사용자 정보 갱신 실패:', error);
+      // 실패 시 기존 userInfo로 진행
+      if (!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT) {
+        setShowEnergyModal(true);
+        return;
+      }
+
+      updateDropletMutation.mutate(-ENERGY_CONSUME_AMOUNT, {
+        onSuccess: () => {
+          router.push(`/game?mode=${mode}`);
+        },
+      });
+    }
   };
 
   const handleWatchAd = async () => {
