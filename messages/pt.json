@@ -112,7 +112,6 @@
     "insufficientGems": "Gemas insuficientes",
     "confirmPurchase": "Confirmar Compra",
     "confirmPurchaseMessage": "Tem certeza de que deseja comprar este item?",
-    "currentGems": "Gemas atuais: {userGem}, Custo de gemas: {gemCost}",
     "bestValue": "Melhor Valor",
     "popular": "Popular",
     "limited": "Limitado",
@@ -357,9 +356,7 @@
     "timer": {
       "daily": "Diário",
       "weekly": "Semanal",
-      "monthly": "Mensal",
-      "resetUntil": "Reiniciar até:",
-      "calculating": "Calculando..."
+      "monthly": "Mensal"
     }
   }
 }

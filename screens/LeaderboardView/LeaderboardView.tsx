@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, RefreshCw, AlertCircle, Users, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useState, useCallback, useEffect } from 'react';
 
 import { LeaderboardEntry } from '@/components/logic/leaderboard/LeaderboardEntry';
@@ -20,7 +20,6 @@ import { calculateNextResetTime, formatTimeRemaining } from '@/utils/time-helper
 
 export const LeaderboardView = () => {
   const t = useTranslations();
-  const locale = useLocale();
   const router = useRouter();
   const { data: userInfo } = useUser();
   const [showFilters, setShowFilters] = useState(false);
@@ -160,11 +159,9 @@ export const LeaderboardView = () => {
             >
               <div className="flex items-center justify-center gap-2 text-sm">
                 <Clock className="w-4 h-4 text-yellow-400" />
-                <span className="text-gray-300">
-                  {t(`leaderboard.timer.${filters.period}`)} {t('leaderboard.timer.resetUntil')}
-                </span>
+                <span className="text-gray-300">{t(`leaderboard.timer.${filters.period}`)} 리셋까지:</span>
                 <span className="font-mono font-bold text-yellow-400">
-                  {timeRemaining > 0 ? formatTimeRemaining(timeRemaining, locale) : t('leaderboard.timer.calculating')}
+                  {timeRemaining > 0 ? formatTimeRemaining(timeRemaining) : '계산 중...'}
                 </span>
               </div>
             </motion.div>

@@ -112,7 +112,6 @@
     "insufficientGems": "보석이 부족합니다",
     "confirmPurchase": "구매 확인",
     "confirmPurchaseMessage": "정말로 이 상품을 구매하시겠습니까?",
-    "currentGems": "현재 보석: {userGem}개 / 필요 보석: {gemCost}개",
     "bestValue": "최고 가치",
     "popular": "인기",
     "limited": "한정",
@@ -338,9 +337,7 @@
     "timer": {
       "daily": "일간",
       "weekly": "주간",
-      "monthly": "월간",
-      "resetUntil": "리셋까지:",
-      "calculating": "계산 중..."
+      "monthly": "월간"
     }
   }
 }

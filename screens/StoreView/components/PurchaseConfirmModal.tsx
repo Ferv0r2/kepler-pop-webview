@@ -103,7 +103,7 @@ export const PurchaseConfirmModal = ({
                   <span className="text-red-300 text-md font-medium">{t('store.insufficientGems')}</span>
                 </div>
                 <p className="text-red-400 text-md mt-1">
-                  {t('store.currentGems', { userGem, gemCost: item?.gemCost || 0 })}
+                  현재 보석: {userGem}개 / 필요 보석: {item.gemCost}개
                 </p>
               </div>
             )}

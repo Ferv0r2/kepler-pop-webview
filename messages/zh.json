@@ -111,7 +111,6 @@
     "insufficientGems": "宝石不足",
     "confirmPurchase": "确认购买",
     "confirmPurchaseMessage": "您确定要购买此物品吗？",
-    "currentGems": "当前宝石: {userGem}, 宝石成本: {gemCost}",
     "bestValue": "最佳价值",
     "popular": "热门",
     "limited": "限量",
@@ -356,9 +355,7 @@
     "timer": {
       "daily": "每日",
       "weekly": "每周",
-      "monthly": "每月",
-      "resetUntil": "重置直到:",
-      "calculating": "计算中..."
+      "monthly": "每月"
     }
   }
 }

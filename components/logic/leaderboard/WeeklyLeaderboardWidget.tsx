@@ -10,7 +10,6 @@ import { useState, useEffect } from 'react';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import type { LeaderboardEntry } from '@/networks/types/leaderboard';
 import { formatNumber } from '@/utils/format-helper';
-import { formatTimeRemaining, calculateTimeToNextWeek } from '@/utils/time-helper';
 
 interface WeeklyLeaderboardWidgetProps {
   locale: string;
@@ -31,15 +30,30 @@ export const WeeklyLeaderboardWidget = ({ locale }: WeeklyLeaderboardWidgetProps
   // 주간 리더보드 리셋까지 남은 시간 계산
   useEffect(() => {
     const updateTimer = () => {
-      const timeLeft = calculateTimeToNextWeek();
-      setTimeRemaining(formatTimeRemaining(timeLeft, locale));
+      const now = new Date();
+      const nextMonday = new Date();
+      nextMonday.setDate(now.getDate() + ((7 - now.getDay() + 1) % 7 || 7));
+      nextMonday.setHours(0, 0, 0, 0);
+
+      const diff = nextMonday.getTime() - now.getTime();
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      if (days > 0) {
+        setTimeRemaining(`${days}일 ${hours}시간`);
+      } else if (hours > 0) {
+        setTimeRemaining(`${hours}시간 ${minutes}분`);
+      } else {
+        setTimeRemaining(`${minutes}분`);
+      }
     };
 
     updateTimer();
     const interval = setInterval(updateTimer, 60000); // 1분마다 업데이트
 
     return () => clearInterval(interval);
-  }, [locale]);
+  }, []);
 
   const handleViewAll = () => {
     router.push(`/${locale}/leaderboard`);
@@ -79,7 +93,7 @@ export const WeeklyLeaderboardWidget = ({ locale }: WeeklyLeaderboardWidgetProps
             </h3>
             <div className="flex items-center gap-1 text-xs text-gray-400">
               <Clock className="w-3 h-3" />
-              <span>{timeRemaining}</span>
+              <span>{timeRemaining} 남음</span>
             </div>
           </div>
         </div>
