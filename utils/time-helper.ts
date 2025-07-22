@@ -33,23 +33,46 @@ export const calculateTimeToNextDay = (): number => {
 };
 
 /**
- * 밀리초를 "X일 Y시간 Z분 W초" 형태로 포맷팅합니다
+ * 밀리초를 현재 로케일에 맞게 포맷팅합니다 (Intl API 사용)
  */
-export const formatTimeRemaining = (ms: number): string => {
+export const formatTimeRemaining = (ms: number, locale = 'ko'): string => {
   const days = Math.floor(ms / (1000 * 60 * 60 * 24));
   const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((ms % (1000 * 60)) / 1000);
 
+  // 가장 큰 단위 두 개를 표시
   if (days > 0) {
-    return `${days}일 ${hours}시간 ${minutes}분`;
+    const dayPart = new Intl.NumberFormat(locale).format(days) + getTimeUnitLabel('day', locale);
+    const hourPart = new Intl.NumberFormat(locale).format(hours) + getTimeUnitLabel('hour', locale);
+    return `${dayPart} ${hourPart}`;
   } else if (hours > 0) {
-    return `${hours}시간 ${minutes}분 ${seconds}초`;
+    const hourPart = new Intl.NumberFormat(locale).format(hours) + getTimeUnitLabel('hour', locale);
+    const minutePart = new Intl.NumberFormat(locale).format(minutes) + getTimeUnitLabel('minute', locale);
+    return `${hourPart} ${minutePart}`;
   } else if (minutes > 0) {
-    return `${minutes}분 ${seconds}초`;
+    const minutePart = new Intl.NumberFormat(locale).format(minutes) + getTimeUnitLabel('minute', locale);
+    return minutePart;
   } else {
-    return `${seconds}초`;
+    const secondPart = new Intl.NumberFormat(locale).format(seconds) + getTimeUnitLabel('second', locale);
+    return secondPart;
   }
+};
+
+/**
+ * 로케일에 맞는 시간 단위 라벨을 반환합니다
+ */
+export const getTimeUnitLabel = (unit: 'day' | 'hour' | 'minute' | 'second', locale = 'ko'): string => {
+  const units = {
+    ko: { day: '일', hour: '시간', minute: '분', second: '초' },
+    en: { day: 'd', hour: 'h', minute: 'm', second: 's' },
+    ja: { day: '日', hour: '時間', minute: '分', second: '秒' },
+    zh: { day: '天', hour: '小时', minute: '分', second: '秒' },
+    es: { day: 'd', hour: 'h', minute: 'm', second: 's' },
+    pt: { day: 'd', hour: 'h', minute: 'm', second: 's' },
+  };
+
+  return units[locale as keyof typeof units]?.[unit] || units.en[unit];
 };
 
 /**

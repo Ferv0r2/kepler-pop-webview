@@ -111,6 +111,7 @@
     "insufficientGems": "ジェムが不足しています",
     "confirmPurchase": "購入を確定",
     "confirmPurchaseMessage": "本当にこの商品を購入しますか？",
+    "currentGems": "現在のジェム: {userGem}, ジェムコスト: {gemCost}",
     "bestValue": "最高価値",
     "popular": "人気",
     "limited": "限定",
@@ -336,7 +337,9 @@
     "timer": {
       "daily": "デイリー",
       "weekly": "ウィークリー",
-      "monthly": "マンスリー"
+      "monthly": "マンスリー",
+      "resetUntil": "リセットまで:",
+      "calculating": "計算中..."
     }
   }
 }

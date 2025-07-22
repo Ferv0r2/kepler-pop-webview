@@ -112,6 +112,7 @@
     "insufficientGems": "Insufficient gems",
     "confirmPurchase": "Confirm Purchase",
     "confirmPurchaseMessage": "Are you sure you want to purchase this item?",
+    "currentGems": "Current gems: {userGem}, Gem cost: {gemCost}",
     "bestValue": "Best Value",
     "popular": "Popular",
     "limited": "Limited",
@@ -337,7 +338,9 @@
     "timer": {
       "daily": "Daily",
       "weekly": "Weekly",
-      "monthly": "Monthly"
+      "monthly": "Monthly",
+      "resetUntil": "Reset until:",
+      "calculating": "Calculating..."
     }
   }
 }
