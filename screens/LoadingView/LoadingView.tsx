@@ -206,7 +206,7 @@ export const LoadingView = ({ onLoadComplete, minLoadingTime = DEFAULT_LOADING_T
         >
           <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 border border-white/10">
             <div className="text-yellow-300 text-sm font-medium mb-2">{t('loading.tip')}</div>
-            <p className="text-white/80 text-sm">{t('loading.challengeTip')}</p>
+            <p className="text-white/80 text-sm">{t('loading.gradeTip')}</p>
           </div>
         </motion.div>
       </div>

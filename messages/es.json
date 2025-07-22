@@ -249,7 +249,9 @@
   },
   "loading": {
     "tip": "💡 Consejo",
-    "challengeTip": "¡En el modo Desafío, combina fichas con niveles más altos para obtener puntuaciones más altas!",
+    "gradeTip": "¡En el modo Desafío, combina fichas con niveles más altos para obtener puntuaciones más altas!",
+    "adWaiting": "Esperando respuesta de publicidad...",
+    "adWaitingSubtitle": "Por favor, espera un momento. La publicidad comenzará pronto.",
     "messages": {
       "loadingAssets": "Cargando recursos del juego",
       "preparingTiles": "Preparando fichas",

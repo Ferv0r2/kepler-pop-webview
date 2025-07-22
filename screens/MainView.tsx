@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, useMemo } from 'react';
 
+import { AdLoadingModal } from '@/components/logic/dialogs/AdLoadingModal';
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
 import { ExitModal } from '@/components/logic/dialogs/ExitModal';
 import { WeeklyLeaderboardWidget } from '@/components/logic/leaderboard/WeeklyLeaderboardWidget';
@@ -55,6 +56,7 @@ export const MainView = () => {
   const [showEnergyModal, setShowEnergyModal] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [isAdLoading, setIsAdLoading] = useState(false);
   const updateDropletMutation = useUpdateDroplet();
   const updateGemMutation = useUpdateGem();
 
@@ -108,6 +110,10 @@ export const MainView = () => {
           }
         } catch (e) {
           console.error('에너지 변경 실패:', e);
+        } finally {
+          if (payload?.reason === 'ad') {
+            setIsAdLoading(false);
+          }
         }
       },
     );
@@ -142,12 +148,6 @@ export const MainView = () => {
   const handleStartGame = async (mode: 'casual' | 'challenge') => {
     playButtonSound(soundSettings);
 
-    // 에너지 상태를 최신으로 업데이트
-    try {
-    } catch (error) {
-      console.warn('Failed to refresh energy status:', error);
-    }
-
     if (!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT) {
       setShowEnergyModal(true);
       return;
@@ -162,12 +162,16 @@ export const MainView = () => {
 
   const handleWatchAd = async () => {
     if (isLoading || !userInfo) return;
+
+    // 광고 로딩 시작
+    setIsAdLoading(true);
+    setShowEnergyModal(false);
+
     sendMessage({
       type: WebToNativeMessageType.ENERGY_CHANGE,
       payload: { amount: AD_ENERGY_REWARD_AMOUNT, reason: 'ad' },
     });
     playButtonSound(soundSettings);
-    setShowEnergyModal(false);
   };
 
   const handlePurchase = () => {
@@ -296,6 +300,7 @@ export const MainView = () => {
         isLoading={isLoading}
       />
       <ExitModal isOpen={showExitModal} onConfirm={handleExitConfirm} onCancel={handleExitCancel} />
+      <AdLoadingModal isOpen={isAdLoading} />
     </>
   );
 };

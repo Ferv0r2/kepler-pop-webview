@@ -250,7 +250,9 @@
   },
   "loading": {
     "tip": "💡 Dica",
-    "challengeTip": "No modo Desafio, combine peças com níveis mais altos para ganhar pontuações mais altas!",
+    "gradeTip": "No modo Desafio, combine peças com níveis mais altos para ganhar pontuações mais altas!",
+    "adWaiting": "Aguardando resposta de publicidade...",
+    "adWaitingSubtitle": "Por favor, aguarde um momento. A publicidade começará em breve.",
     "messages": {
       "loadingAssets": "Carregando recursos do jogo",
       "preparingTiles": "Preparando peças",

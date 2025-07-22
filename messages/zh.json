@@ -249,7 +249,9 @@
   },
   "loading": {
     "tip": "💡 提示",
-    "challengeTip": "在挑战模式中匹配高等级方块以获得更高分数！",
+    "gradeTip": "在挑战模式中匹配高等级方块以获得更高分数！",
+    "adWaiting": "等待广告响应...",
+    "adWaitingSubtitle": "请稍等，广告即将开始。",
     "messages": {
       "loadingAssets": "正在加载游戏资源",
       "preparingTiles": "正在准备方块",

@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 import { useState, useEffect, type TouchEvent, useCallback, useRef, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
+import { AdLoadingModal } from '@/components/logic/dialogs/AdLoadingModal';
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
 import { ItemAnimationManager } from '@/components/logic/managers/ItemAnimationManager';
@@ -230,6 +231,7 @@ export const GameView = () => {
 
   const [showReviveOptions, setShowReviveOptions] = useState(false); // 부활 옵션 표시 여부
   const [hasUsedRevive, setHasUsedRevive] = useState(false); // 부활 사용 여부 (게임당 1번만)
+  const [isReviveAdLoading, setIsReviveAdLoading] = useState(false); // 부활 광고 로딩 상태
   const [showShuffleConfirmation, setShowShuffleConfirmation] = useState(false);
   const [showShuffleButton, setShowShuffleButton] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
@@ -289,12 +291,16 @@ export const GameView = () => {
       async (msg) => {
         const payload = msg.payload;
         try {
-          if (payload?.status === 'success' && payload.reason === 'revive_ad') {
-            // 부활 광고 시청 성공
+          if (payload?.status === 'success') {
             handleReviveSuccess();
           }
         } catch (e) {
           console.error('부활 광고 처리 실패:', e);
+        } finally {
+          // 부활 광고 로딩 종료
+          if (payload?.reason === 'ad') {
+            setIsReviveAdLoading(false);
+          }
         }
       },
     );
@@ -792,6 +798,7 @@ export const GameView = () => {
         setShowRestartConfirmation(false);
         setShowReviveOptions(false);
         setHasUsedRevive(false); // 부활 사용 상태 초기화
+        setIsReviveAdLoading(false); // 부활 광고 로딩 상태 초기화
 
         // 보상 상태 초기화
         resetRewardState();
@@ -844,11 +851,14 @@ export const GameView = () => {
   const handleReviveWatchAd = async () => {
     if (!userInfo || !isInWebView) return;
 
+    // 부활 광고 로딩 시작
+    setIsReviveAdLoading(true);
+
     // 네이티브 앱에 광고 시청 요청 (부활용)
     // TODO: type을 ad, 광고 요청에 따른 응답을 받을 수 있는 형태로 native 통신 구조 수정
     sendMessage({
       type: WebToNativeMessageType.ENERGY_CHANGE,
-      payload: { amount: 0, reason: 'revive_ad' }, // amount는 0, reason으로 부활 광고임을 표시
+      payload: { amount: 0, reason: 'ad' },
     });
   };
 
@@ -873,6 +883,7 @@ export const GameView = () => {
 
     setShowReviveOptions(false);
     setHasUsedRevive(true); // 부활 사용 표시
+    setIsReviveAdLoading(false); // 광고 로딩 종료
     playRewardSound(soundSettings);
   };
 
@@ -1498,8 +1509,8 @@ export const GameView = () => {
                               {/* 광고 시청 옵션 */}
                               <Button
                                 onClick={handleReviveWatchAd}
-                                disabled={updateGemMutation.isPending}
-                                className="flex-1 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-20"
+                                disabled={updateGemMutation.isPending || isReviveAdLoading}
+                                className="flex-1 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white h-20 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <span className="text-2xl">🎬</span>
                                 <span className="text-md font-medium">{t('game.revive.watchAd')}</span>
@@ -1508,9 +1519,14 @@ export const GameView = () => {
                               {/* 보석 사용 옵션 */}
                               <Button
                                 onClick={handleReviveUseGem}
-                                disabled={updateGemMutation.isPending || !userInfo || userInfo.gem < REVIVE_GEM_COST}
+                                disabled={
+                                  updateGemMutation.isPending ||
+                                  isReviveAdLoading ||
+                                  !userInfo ||
+                                  userInfo.gem < REVIVE_GEM_COST
+                                }
                                 className={`flex-1 flex flex-col items-center gap-1 h-20 ${
-                                  userInfo && userInfo.gem >= REVIVE_GEM_COST
+                                  userInfo && userInfo.gem >= REVIVE_GEM_COST && !isReviveAdLoading
                                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
                                     : 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
                                 }`}
@@ -1533,8 +1549,8 @@ export const GameView = () => {
                             {/* 포기 버튼 */}
                             <Button
                               onClick={handleReviveGiveUp}
-                              disabled={updateGemMutation.isPending}
-                              className="py-6 text-md bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 hover:text-white border border-gray-500/50 hover:border-gray-400/50 transition-all duration-200"
+                              disabled={updateGemMutation.isPending || isReviveAdLoading}
+                              className="py-6 text-md bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 hover:text-white border border-gray-500/50 hover:border-gray-400/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {t('game.revive.giveUp')}
                             </Button>
@@ -1910,6 +1926,8 @@ export const GameView = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AdLoadingModal isOpen={isReviveAdLoading} />
     </>
   );
 };

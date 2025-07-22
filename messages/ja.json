@@ -230,7 +230,9 @@
   },
   "loading": {
     "tip": "💡 ヒント",
-    "challengeTip": "チャレンジモードで高い階級のタイルをマッチさせてより高いスコアを獲得しよう！",
+    "gradeTip": "高い階級のタイルをマッチさせてより高いスコアを獲得しよう！",
+    "adWaiting": "広告応答待ち中...",
+    "adWaitingSubtitle": "少し待ってください。広告がすぐに始まります。",
     "messages": {
       "loadingAssets": "ゲームアセットを読み込み中",
       "preparingTiles": "タイルを準備中",

@@ -231,7 +231,9 @@
   },
   "loading": {
     "tip": "💡 Tip",
-    "challengeTip": "Match tiles with higher tiers in Challenge mode to get higher scores!",
+    "gradeTip": "Match tiles with higher tiers to get higher scores!",
+    "adWaiting": "Waiting for ad response...",
+    "adWaitingSubtitle": "Please wait a moment. The ad will start soon.",
     "messages": {
       "loadingAssets": "Loading game assets",
       "preparingTiles": "Preparing tiles",
