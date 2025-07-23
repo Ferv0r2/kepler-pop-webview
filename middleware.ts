@@ -42,52 +42,63 @@ export function middleware(request: NextRequest) {
   const response = intlMiddleware(request);
 
   const authStorage = request.cookies.get('auth-storage')?.value;
-  let hasAccessToken = false;
+  let hasValidAuth = false;
   let refreshTokenExpired = false;
 
   if (authStorage) {
     try {
       const authData = typeof authStorage === 'string' ? JSON.parse(authStorage) : authStorage;
-      hasAccessToken = !!authData.state?.accessToken;
+      const accessToken = authData.state?.accessToken;
       const refreshToken = authData.state?.refreshToken;
-      if (!refreshToken) {
-        refreshTokenExpired = true;
-      } else {
-        const payload = parseJwt(refreshToken);
+
+      // access token이 있고, refresh token이 유효하면 인증된 것으로 간주
+      if (accessToken && refreshToken) {
+        const refreshPayload = parseJwt(refreshToken);
         if (
-          !payload ||
-          typeof payload !== 'object' ||
-          payload === null ||
-          !('exp' in payload) ||
-          typeof (payload as { exp?: number }).exp !== 'number' ||
-          (payload as { exp: number }).exp * 1000 < Date.now()
+          refreshPayload &&
+          typeof refreshPayload === 'object' &&
+          refreshPayload !== null &&
+          'exp' in refreshPayload &&
+          typeof (refreshPayload as { exp?: number }).exp === 'number' &&
+          (refreshPayload as { exp: number }).exp * 1000 > Date.now()
         ) {
+          hasValidAuth = true;
+          console.log('[Middleware] Valid auth found, refresh token valid');
+        } else {
           refreshTokenExpired = true;
+          console.log('[Middleware] Refresh token expired');
         }
+      } else {
+        refreshTokenExpired = true;
+        console.log('[Middleware] Missing tokens');
       }
     } catch (error) {
-      console.error('Failed to parse auth storage:', error);
+      console.error('[Middleware] Failed to parse auth storage:', error);
       const response = NextResponse.next();
       response.cookies.delete('auth-storage');
       return response;
     }
   } else {
     refreshTokenExpired = true;
+    console.log('[Middleware] No auth storage found');
   }
 
   const currentLocale = getPreferredLocale(request);
-
   const pathname = request.nextUrl.pathname;
 
+  // 로그인 페이지 접근
   if (pathname.includes('/auth')) {
-    if (hasAccessToken) {
+    if (hasValidAuth) {
+      console.log('[Middleware] Already authenticated, redirecting to home');
       const redirectUrl = new URL(`/${currentLocale}`, request.url);
       return NextResponse.redirect(redirectUrl);
     }
     return response;
   }
 
-  if (!hasAccessToken || refreshTokenExpired) {
+  // 인증이 필요한 페이지 접근
+  if (!hasValidAuth || refreshTokenExpired) {
+    console.log('[Middleware] Auth required, redirecting to login');
     const response = NextResponse.next();
     response.cookies.delete('auth-storage');
     const redirectUrl = new URL(`/${currentLocale}/auth`, request.url);

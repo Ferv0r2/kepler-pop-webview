@@ -188,7 +188,6 @@ export const MainView = () => {
         onSuccess: () => {
           // 게임 시작 애니메이션을 위해 약간의 지연
           setTimeout(() => {
-            setIsGameStarting(false);
             router.push(`/game?mode=${mode}`);
           }, 1000);
         },
