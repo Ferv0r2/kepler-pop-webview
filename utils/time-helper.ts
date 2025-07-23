@@ -1,33 +1,44 @@
 /**
- * 주간 리더보드 리셋까지 남은 시간을 계산합니다
+ * 주간 리더보드 리셋까지 남은 시간을 계산합니다 (UTC 기준)
+ * 백엔드와 일치하도록 월요일 기준으로 계산
  */
 export const calculateTimeToNextWeek = (): number => {
   const now = new Date();
-  const nextMonday = new Date();
-  nextMonday.setDate(now.getDate() + ((7 - now.getDay() + 1) % 7 || 7));
-  nextMonday.setHours(0, 0, 0, 0);
+
+  // UTC 기준으로 요일 계산
+  const dayOfWeek = now.getUTCDay();
+  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
+  // UTC 기준으로 다음 주 월요일 자정 계산
+  const nextMonday = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysToMonday + 7, 0, 0, 0, 0),
+  );
 
   return nextMonday.getTime() - now.getTime();
 };
 
 /**
- * 월간 리더보드 리셋까지 남은 시간을 계산합니다
+ * 월간 리더보드 리셋까지 남은 시간을 계산합니다 (UTC 기준)
+ * 백엔드와 일치하도록 매월 1일 자정 기준으로 계산
  */
 export const calculateTimeToNextMonth = (): number => {
   const now = new Date();
-  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0);
+
+  // UTC 기준으로 다음달 1일 자정 계산
+  const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0, 0));
 
   return nextMonth.getTime() - now.getTime();
 };
 
 /**
- * 일간 리더보드 리셋까지 남은 시간을 계산합니다
+ * 일간 리더보드 리셋까지 남은 시간을 계산합니다 (UTC 기준)
+ * 백엔드와 일치하도록 자정 기준으로 계산
  */
 export const calculateTimeToNextDay = (): number => {
   const now = new Date();
-  const nextDay = new Date();
-  nextDay.setDate(now.getDate() + 1);
-  nextDay.setHours(0, 0, 0, 0);
+
+  // UTC 기준으로 다음날 자정 계산
+  const nextDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0));
 
   return nextDay.getTime() - now.getTime();
 };
@@ -94,15 +105,19 @@ export const formatTimeRemainingCompact = (ms: number): string => {
  * 리더보드 기간에 따른 다음 리셋 시간을 계산합니다
  */
 export const calculateNextResetTime = (period: 'daily' | 'weekly' | 'monthly' | 'all'): number => {
-  switch (period) {
-    case 'daily':
-      return calculateTimeToNextDay();
-    case 'weekly':
-      return calculateTimeToNextWeek();
-    case 'monthly':
-      return calculateTimeToNextMonth();
-    case 'all':
-    default:
-      return 0; // 전체 기간은 리셋이 없음
-  }
+  const timeRemaining = (() => {
+    switch (period) {
+      case 'daily':
+        return calculateTimeToNextDay();
+      case 'weekly':
+        return calculateTimeToNextWeek();
+      case 'monthly':
+        return calculateTimeToNextMonth();
+      case 'all':
+      default:
+        return 0; // 전체 기간은 리셋이 없음
+    }
+  })();
+
+  return timeRemaining;
 };
