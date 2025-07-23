@@ -1496,7 +1496,9 @@ export const GameView = () => {
                             {gameState.score.toLocaleString()}
                           </motion.div>
                         </motion.div>
-                        {showReviveOptions && !hasUsedRevive ? (
+                        {showReviveOptions && hasUsedRevive ? (
+                          // TODO: 화이트 아웃 이슈 해결 후 주석 해제
+                          // {showReviveOptions && !hasUsedRevive ? (
                           // 부활 옵션 표시
                           <motion.div
                             className="flex flex-col gap-3"
