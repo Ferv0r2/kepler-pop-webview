@@ -499,6 +499,7 @@ export const GameView = () => {
       isFirstMatch = false,
       swappedTiles?: { row: number; col: number }[],
       currentCombo = gameState.combo,
+      currentScore?: number,
     ) => {
       if (matches.length === 0) return;
 
@@ -513,7 +514,8 @@ export const GameView = () => {
       const shouldDecreaseMoves = isFirstMatch && !selectedGameItem;
       const movesAdjustment = shouldDecreaseMoves ? -1 : 0;
       const newMoves = gameState.moves + movesAdjustment + bonusMoves;
-      const newScore = gameState.score + matchScore;
+      const baseScore = currentScore ?? gameState.score;
+      const newScore = baseScore + matchScore;
 
       // 상태 업데이트
       updateGameState({
@@ -629,7 +631,7 @@ export const GameView = () => {
       const newMatches = findMatches(afterRemovalGrid);
       if (newMatches.length > 0) {
         // 연쇄 매칭 발견 - 재귀 호출
-        await processMatches(newMatches, afterRemovalGrid, false, undefined, nextCombo);
+        await processMatches(newMatches, afterRemovalGrid, false, undefined, nextCombo, newScore);
       } else {
         // 연쇄 매칭이 완전히 끝났을 때만 보상 체크 (첫 번째 매치에서만)
         if (isFirstMatch && newMoves > 0) {
@@ -730,7 +732,7 @@ export const GameView = () => {
         setLastMatchTime(now);
 
         // 매칭 처리 (async 함수로 변경)
-        await processMatches(matches, newGrid, true, swappedTiles);
+        await processMatches(matches, newGrid, true, swappedTiles, gameState.combo, gameState.score);
       } else {
         // 매칭이 없으면 되돌리기
         newGrid = cloneDeep(newGrid);
@@ -973,14 +975,18 @@ export const GameView = () => {
       }
     }
 
-    // 아이템으로 제거된 타일들에 대한 점수 계산 및 추가
+    // 아이템으로 제거된 타일들에 대한 점수 계산
+    let itemScore = 0;
+    let totalScore = gameState.score;
+
     if (removedTileCount > 0) {
-      const itemScore = calculateMatchScore(removedTileCount, gameState.combo, streakCount);
+      itemScore = calculateMatchScore(removedTileCount, gameState.combo, streakCount);
       const bonusMoves = calculateComboBonus(gameState.combo);
+      totalScore = gameState.score + itemScore;
 
       // 상태 업데이트
       updateGameState({
-        score: gameState.score + itemScore,
+        score: totalScore,
         moves: gameState.moves + bonusMoves,
         combo: gameState.combo + 1,
       });
@@ -1012,7 +1018,8 @@ export const GameView = () => {
       await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
       const matches = findMatches(afterRemovalGrid.newGrid);
       if (matches.length > 0) {
-        processMatches(matches, afterRemovalGrid.newGrid, true);
+        // 아이템으로 얻은 점수를 포함한 총 점수를 전달
+        processMatches(matches, afterRemovalGrid.newGrid, true, undefined, gameState.combo + 1, totalScore);
       } else {
         setGameState((prev) => ({
           ...prev,
