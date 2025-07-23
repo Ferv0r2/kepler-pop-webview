@@ -9,9 +9,9 @@ import { useTranslations } from 'next-intl';
 import { useState, useEffect, type TouchEvent, useCallback, useRef, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-import { AdLoadingModal } from '@/components/logic/dialogs/AdLoadingModal';
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
+import { LoadingModal } from '@/components/logic/dialogs/LoadingModal';
 import { ItemAnimationManager } from '@/components/logic/managers/ItemAnimationManager';
 import { Button } from '@/components/ui/button';
 import { ItemAreaTooltip } from '@/components/ui/ItemAreaTooltip';
@@ -1933,7 +1933,7 @@ export const GameView = () => {
         )}
       </AnimatePresence>
 
-      <AdLoadingModal isOpen={isReviveAdLoading} />
+      <LoadingModal isOpen={isReviveAdLoading} type="ad" />
     </>
   );
 };

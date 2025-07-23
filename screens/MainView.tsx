@@ -6,9 +6,9 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, useMemo } from 'react';
 
-import { AdLoadingModal } from '@/components/logic/dialogs/AdLoadingModal';
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
 import { ExitModal } from '@/components/logic/dialogs/ExitModal';
+import { LoadingModal } from '@/components/logic/dialogs/LoadingModal';
 import { WeeklyLeaderboardWidget } from '@/components/logic/leaderboard/WeeklyLeaderboardWidget';
 import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
@@ -57,6 +57,7 @@ export const MainView = () => {
   const [showExitModal, setShowExitModal] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isAdLoading, setIsAdLoading] = useState(false);
+  const [isGameStarting, setIsGameStarting] = useState(false);
   const updateDropletMutation = useUpdateDroplet();
   const updateGemMutation = useUpdateGem();
 
@@ -148,32 +149,51 @@ export const MainView = () => {
   const handleStartGame = async (mode: 'casual' | 'challenge') => {
     playButtonSound(soundSettings);
 
+    // 게임 시작 로딩 표시
+    setIsGameStarting(true);
+
     // 게임 시작 전 최신 사용자 정보 가져오기
     try {
       const { data: latestUserInfo } = await refetchUser();
       const currentUserInfo = latestUserInfo || userInfo;
 
       if (!currentUserInfo || currentUserInfo.droplet < ENERGY_CONSUME_AMOUNT) {
+        setIsGameStarting(false);
         setShowEnergyModal(true);
         return;
       }
 
       updateDropletMutation.mutate(-ENERGY_CONSUME_AMOUNT, {
         onSuccess: () => {
-          router.push(`/game?mode=${mode}`);
+          // 게임 시작 애니메이션을 위해 약간의 지연
+          setTimeout(() => {
+            setIsGameStarting(false);
+            router.push(`/game?mode=${mode}`);
+          }, 1000);
+        },
+        onError: () => {
+          setIsGameStarting(false);
         },
       });
     } catch (error) {
       console.error('사용자 정보 갱신 실패:', error);
       // 실패 시 기존 userInfo로 진행
       if (!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT) {
+        setIsGameStarting(false);
         setShowEnergyModal(true);
         return;
       }
 
       updateDropletMutation.mutate(-ENERGY_CONSUME_AMOUNT, {
         onSuccess: () => {
-          router.push(`/game?mode=${mode}`);
+          // 게임 시작 애니메이션을 위해 약간의 지연
+          setTimeout(() => {
+            setIsGameStarting(false);
+            router.push(`/game?mode=${mode}`);
+          }, 1000);
+        },
+        onError: () => {
+          setIsGameStarting(false);
         },
       });
     }
@@ -319,7 +339,8 @@ export const MainView = () => {
         isLoading={isLoading}
       />
       <ExitModal isOpen={showExitModal} onConfirm={handleExitConfirm} onCancel={handleExitCancel} />
-      <AdLoadingModal isOpen={isAdLoading} />
+      <LoadingModal isOpen={isAdLoading} type="ad" />
+      <LoadingModal isOpen={isGameStarting} type="game" />
     </>
   );
 };

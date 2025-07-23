@@ -234,6 +234,13 @@
     "gradeTip": "高い階級のタイルをマッチさせてより高いスコアを獲得しよう！",
     "adWaiting": "広告応答待ち中...",
     "adWaitingSubtitle": "少し待ってください。広告がすぐに始まります。",
+    "gameStarting": "ゲームを開始しています...",
+    "gameStartingSubtitle": "新しい冒険が始まります！",
+    "saving": "保存中...",
+    "savingSubtitle": "進行状況を安全に保存しています。",
+    "connecting": "接続中...",
+    "connectingSubtitle": "サーバーに接続しています。",
+    "pleaseWait": "少々お待ちください...",
     "messages": {
       "loadingAssets": "ゲームアセットを読み込み中",
       "preparingTiles": "タイルを準備中",

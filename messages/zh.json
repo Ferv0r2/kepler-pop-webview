@@ -253,6 +253,13 @@
     "gradeTip": "在挑战模式中匹配高等级方块以获得更高分数！",
     "adWaiting": "等待广告响应...",
     "adWaitingSubtitle": "请稍等，广告即将开始。",
+    "gameStarting": "正在开始游戏...",
+    "gameStartingSubtitle": "新的冒险即将开始！",
+    "saving": "正在保存...",
+    "savingSubtitle": "正在安全地保存您的进度。",
+    "connecting": "正在连接...",
+    "connectingSubtitle": "正在连接到服务器。",
+    "pleaseWait": "请稍等...",
     "messages": {
       "loadingAssets": "正在加载游戏资源",
       "preparingTiles": "正在准备方块",

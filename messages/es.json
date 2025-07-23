@@ -253,6 +253,13 @@
     "gradeTip": "¡En el modo Desafío, combina fichas con niveles más altos para obtener puntuaciones más altas!",
     "adWaiting": "Esperando respuesta de publicidad...",
     "adWaitingSubtitle": "Por favor, espera un momento. La publicidad comenzará pronto.",
+    "gameStarting": "Iniciando juego...",
+    "gameStartingSubtitle": "¡Una nueva aventura comienza!",
+    "saving": "Guardando...",
+    "savingSubtitle": "Guardando tu progreso de manera segura.",
+    "connecting": "Conectando...",
+    "connectingSubtitle": "Conectando al servidor.",
+    "pleaseWait": "Por favor espera...",
     "messages": {
       "loadingAssets": "Cargando recursos del juego",
       "preparingTiles": "Preparando fichas",

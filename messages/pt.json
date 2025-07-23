@@ -254,6 +254,13 @@
     "gradeTip": "No modo Desafio, combine peças com níveis mais altos para ganhar pontuações mais altas!",
     "adWaiting": "Aguardando resposta de publicidade...",
     "adWaitingSubtitle": "Por favor, aguarde um momento. A publicidade começará em breve.",
+    "gameStarting": "Iniciando jogo...",
+    "gameStartingSubtitle": "Uma nova aventura começa!",
+    "saving": "Salvando...",
+    "savingSubtitle": "Salvando seu progresso de forma segura.",
+    "connecting": "Conectando...",
+    "connectingSubtitle": "Conectando ao servidor.",
+    "pleaseWait": "Por favor, aguarde...",
     "messages": {
       "loadingAssets": "Carregando recursos do jogo",
       "preparingTiles": "Preparando peças",

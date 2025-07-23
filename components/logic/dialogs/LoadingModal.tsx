@@ -1,14 +1,87 @@
 'use client';
 
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Zap } from 'lucide-react';
+import { Zap, Loader2, Play, Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
-interface AdLoadingModalProps {
-  isOpen: boolean;
-  message?: string;
+export type LoadingType = 'default' | 'ad' | 'game' | 'save' | 'network';
+
+interface ColorConfig {
+  primary: string;
+  secondary: string;
+  glow: string;
 }
+
+interface LoadingModalProps {
+  isOpen: boolean;
+  title?: string;
+  subtitle?: string;
+  type?: LoadingType;
+  showProgress?: boolean;
+  customIcon?: React.ReactNode;
+}
+
+// 타입별 기본 설정
+const getTypeConfig = (type: LoadingType, t: ReturnType<typeof useTranslations>) => {
+  switch (type) {
+    case 'ad':
+      return {
+        title: t('loading.adWaiting'),
+        subtitle: t('loading.adWaitingSubtitle'),
+        icon: <Zap className="w-6 h-6 text-yellow-400" />,
+        colors: {
+          primary: 'blue',
+          secondary: 'purple',
+          glow: 'rgba(59,130,246,0.4)',
+        },
+      };
+    case 'game':
+      return {
+        title: t('loading.gameStarting'),
+        subtitle: t('loading.gameStartingSubtitle'),
+        icon: <Play className="w-6 h-6 text-green-400" />,
+        colors: {
+          primary: 'green',
+          secondary: 'emerald',
+          glow: 'rgba(34,197,94,0.4)',
+        },
+      };
+    case 'save':
+      return {
+        title: t('loading.saving'),
+        subtitle: t('loading.savingSubtitle'),
+        icon: <Shield className="w-6 h-6 text-blue-400" />,
+        colors: {
+          primary: 'blue',
+          secondary: 'cyan',
+          glow: 'rgba(59,130,246,0.4)',
+        },
+      };
+    case 'network':
+      return {
+        title: t('loading.connecting'),
+        subtitle: t('loading.connectingSubtitle'),
+        icon: <Loader2 className="w-6 h-6 text-orange-400" />,
+        colors: {
+          primary: 'orange',
+          secondary: 'amber',
+          glow: 'rgba(249,115,22,0.4)',
+        },
+      };
+    default:
+      return {
+        title: t('loading.pleaseWait'),
+        subtitle: t('loading.processing'),
+        icon: <Loader2 className="w-6 h-6 text-blue-400" />,
+        colors: {
+          primary: 'blue',
+          secondary: 'purple',
+          glow: 'rgba(59,130,246,0.4)',
+        },
+      };
+  }
+};
 
 // 간소화된 별 필드 컴포넌트
 const StarField = ({ count = 15 }: { count?: number }) => {
@@ -55,14 +128,15 @@ const StarField = ({ count = 15 }: { count?: number }) => {
 };
 
 // 중앙 로딩 스피너 컴포넌트
-const LoadingSpinner = () => {
+const LoadingSpinner = ({ icon, colors }: { icon: React.ReactNode; colors: ColorConfig }) => {
   const shouldReduceMotion = useReducedMotion();
+  const { primary, secondary } = colors;
 
   return (
     <div className="relative flex items-center justify-center">
       {/* 외부 회전 링 */}
       <motion.div
-        className="w-20 h-20 border-4 border-blue-500/30 border-t-blue-400 rounded-full"
+        className={`w-20 h-20 border-4 border-${primary}-500/30 border-t-${primary}-400 rounded-full`}
         animate={shouldReduceMotion ? {} : { rotate: 360 }}
         transition={{
           duration: 2,
@@ -73,7 +147,7 @@ const LoadingSpinner = () => {
 
       {/* 내부 회전 링 */}
       <motion.div
-        className="absolute w-12 h-12 border-3 border-purple-500/40 border-b-purple-400 rounded-full"
+        className={`absolute w-12 h-12 border-3 border-${secondary}-500/40 border-b-${secondary}-400 rounded-full`}
         animate={shouldReduceMotion ? {} : { rotate: -360 }}
         transition={{
           duration: 1.5,
@@ -92,22 +166,25 @@ const LoadingSpinner = () => {
           ease: 'easeInOut',
         }}
       >
-        <Zap className="w-6 h-6 text-yellow-400" />
+        {icon}
       </motion.div>
     </div>
   );
 };
 
 // 진행 표시 펄스 효과
-const ProgressPulse = () => {
+const ProgressPulse = ({ colors, show = true }: { colors: ColorConfig; show?: boolean }) => {
   const shouldReduceMotion = useReducedMotion();
+  const { primary, secondary } = colors;
+
+  if (!show) return null;
 
   return (
     <div className="flex justify-center gap-3 mt-6">
       {[0, 1, 2].map((index) => (
         <motion.div
           key={index}
-          className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400"
+          className={`w-2 h-2 rounded-full bg-gradient-to-r from-${primary}-400 to-${secondary}-400`}
           animate={
             shouldReduceMotion
               ? {}
@@ -128,9 +205,22 @@ const ProgressPulse = () => {
   );
 };
 
-export const AdLoadingModal = ({ isOpen, message }: AdLoadingModalProps) => {
+export const LoadingModal = ({
+  isOpen,
+  title,
+  subtitle,
+  type = 'default',
+  showProgress = true,
+  customIcon,
+}: LoadingModalProps) => {
   const t = useTranslations();
   const shouldReduceMotion = useReducedMotion();
+
+  const config = getTypeConfig(type, t);
+  const finalTitle = title || config.title;
+  const finalSubtitle = subtitle || config.subtitle;
+  const finalIcon = customIcon || config.icon;
+  const colors = config.colors;
 
   return (
     <AnimatePresence mode="wait">
@@ -154,7 +244,10 @@ export const AdLoadingModal = ({ isOpen, message }: AdLoadingModalProps) => {
 
           {/* 메인 모달 */}
           <motion.div
-            className="relative bg-gradient-to-br from-slate-900/95 via-blue-900/90 to-slate-900/95 rounded-3xl p-8 w-full max-w-sm border border-blue-400/30 shadow-[0_0_30px_rgba(59,130,246,0.4)] backdrop-blur-xl"
+            className={`relative bg-gradient-to-br from-slate-900/95 via-${colors.primary}-900/90 to-slate-900/95 rounded-3xl p-8 w-full max-w-sm border border-${colors.primary}-400/30 backdrop-blur-xl`}
+            style={{
+              boxShadow: `0 0 30px ${colors.glow}`,
+            }}
             initial={{ scale: 0.9, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -189,7 +282,7 @@ export const AdLoadingModal = ({ isOpen, message }: AdLoadingModalProps) => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
               >
-                <LoadingSpinner />
+                <LoadingSpinner icon={finalIcon} colors={colors} />
               </motion.div>
 
               {/* 메시지 텍스트 */}
@@ -199,24 +292,33 @@ export const AdLoadingModal = ({ isOpen, message }: AdLoadingModalProps) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.5 }}
               >
-                <h3 className="text-xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
-                  {message || t('loading.adWaiting')}
+                <h3
+                  className={`text-xl font-bold bg-gradient-to-r from-white via-${colors.primary}-100 to-${colors.secondary}-100 bg-clip-text text-transparent`}
+                >
+                  {finalTitle}
                 </h3>
 
-                <p className="text-white/70 text-sm leading-relaxed">{t('loading.adWaitingSubtitle')}</p>
+                {finalSubtitle && <p className="text-white/70 text-sm leading-relaxed">{finalSubtitle}</p>}
               </motion.div>
 
               {/* 진행 표시 */}
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.5 }}>
-                <ProgressPulse />
+                <ProgressPulse colors={colors} show={showProgress} />
               </motion.div>
             </div>
 
             {/* 글로우 효과 */}
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-blue-500/5 to-transparent pointer-events-none" />
+            <div
+              className={`absolute inset-0 rounded-3xl bg-gradient-to-t from-${colors.primary}-500/5 to-transparent pointer-events-none`}
+            />
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
   );
+};
+
+// 기존 AdLoadingModal과의 호환성을 위한 래퍼
+export const AdLoadingModal = ({ isOpen, message }: { isOpen: boolean; message?: string }) => {
+  return <LoadingModal isOpen={isOpen} title={message} type="ad" />;
 };
