@@ -4,13 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Download, CheckCircle, XCircle, Activity } from 'lucide-react';
 import { useState } from 'react';
 
-import { useGlobalPreload } from '@/components/providers/GlobalPreloadProvider';
+import { useGlobalPreloader } from '@/hooks/useGlobalPreloader';
 
 /**
  * 개발 환경에서 프리로딩 상태를 보여주는 디버그 컴포넌트
  */
 export const PreloadDebugger = () => {
-  const { preloadingState } = useGlobalPreload();
+  const preloadingState = useGlobalPreloader();
   const [isVisible, setIsVisible] = useState(false);
 
   // 프로덕션에서는 렌더링하지 않음
