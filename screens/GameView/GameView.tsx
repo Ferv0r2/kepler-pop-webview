@@ -756,17 +756,14 @@ export const GameView = () => {
         });
 
         if (isGameOver) {
-          // TODO: 화이트 아웃 발생
           // 게임 오버시 부활 옵션 활성화 (아직 부활을 사용하지 않은 경우만)
-          // if (!hasUsedRevive) {
-          //   dispatchUIState({ type: 'showReviveOptions', payload: { showReviveOptions: true } });
-          // } else {
-          //   // 이미 부활을 사용했다면 바로 최종 게임 오버 처리
-          //   playGameOverSound(soundSettings);
-          //   updateUserScore(newScore);
-          // }
-          playGameOverSound(soundSettings);
-          updateUserScore(newScore);
+          if (!hasUsedRevive) {
+            dispatchUIState({ type: 'showReviveOptions', payload: { showReviveOptions: true } });
+          } else {
+            // 이미 부활을 사용했다면 바로 최종 게임 오버 처리
+            playGameOverSound(soundSettings);
+            updateUserScore(newScore);
+          }
         }
       }
     },
@@ -1641,7 +1638,9 @@ export const GameView = () => {
                             {gameState.score.toLocaleString()}
                           </motion.div>
                         </motion.div>
-                        {uiState.showReviveOptions && !hasUsedRevive ? (
+                        {uiState.showReviveOptions && hasUsedRevive ? (
+                          // TODO: whiteout 발생
+                          // {uiState.showReviveOptions && !hasUsedRevive ? (
                           // 부활 옵션 표시
                           <motion.div
                             className="flex flex-col gap-3"
