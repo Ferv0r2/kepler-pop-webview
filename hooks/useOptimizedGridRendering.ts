@@ -1,4 +1,3 @@
-import { cloneDeep } from 'lodash';
 import { useMemo, useCallback, useRef, useEffect } from 'react';
 
 import type { GridItem } from '@/types/game-types';
@@ -56,7 +55,7 @@ export const useOptimizedGridRendering = (grid: GridItem[][], options: Optimized
     if (cached) return cached;
 
     const startTime = performance.now();
-    const optimizedGrid = cloneDeep(grid);
+    const optimizedGrid = structuredClone(grid);
     const endTime = performance.now();
 
     const MAX_CACHE_SIZE = 5;

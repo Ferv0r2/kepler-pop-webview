@@ -1,5 +1,3 @@
-import { cloneDeep } from 'lodash';
-
 import type { GridItem, TileType } from '@/types/game-types';
 
 /**
@@ -149,7 +147,7 @@ export const createNewTile = (): GridItem => {
  * 그리드의 빈 공간을 채우는 함수
  */
 export const fillEmptySpaces = (grid: GridItem[][], emptyValue: GridItem | null = null): GridItem[][] => {
-  const newGrid = cloneDeep(grid);
+  const newGrid = structuredClone(grid);
   const rows = newGrid.length;
   const cols = newGrid[0]?.length || 0;
 

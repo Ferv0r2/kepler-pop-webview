@@ -1,5 +1,4 @@
 // Web Worker for heavy game computations
-import { cloneDeep } from 'lodash';
 
 import type { GridItem } from '@/types/game-types';
 import { findMatches, findPossibleMoves } from '@/utils/performance-helper';
@@ -65,7 +64,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
 
       case 'PROCESS_GRID':
         if (!payload.grid) throw new Error('Grid is required for PROCESS_GRID');
-        result = cloneDeep(payload.grid);
+        result = structuredClone(payload.grid);
         break;
 
       default:

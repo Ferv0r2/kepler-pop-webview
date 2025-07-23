@@ -2,7 +2,6 @@
 
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cloneDeep } from 'lodash';
 import { ArrowLeft, Settings, Home, RefreshCw, Shuffle, AlertTriangle, Zap, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -144,7 +143,7 @@ function applyAutoRemoveArtifacts(
       }
       if (maxTiles.length > 0) {
         const { row, col } = maxTiles[Math.floor(Math.random() * maxTiles.length)];
-        const newGrid = cloneDeep(grid);
+        const newGrid = structuredClone(grid);
         newGrid[row][col].isMatched = true;
         setGrid(newGrid);
         setTimeout(() => {
@@ -445,7 +444,7 @@ export const GameView = () => {
 
   const removeMatchedTiles = useCallback(
     (currentGrid: GridItem[][]): { newGrid: GridItem[][]; newTileIds: string[] } => {
-      const newGrid = cloneDeep(currentGrid);
+      const newGrid = structuredClone(currentGrid);
       const newTileIds: string[] = [];
 
       for (let col = 0; col < GRID_SIZE; col++) {
@@ -602,7 +601,7 @@ export const GameView = () => {
       });
 
       // 그리드 업데이트
-      const newGrid = cloneDeep(currentGrid);
+      const newGrid = structuredClone(currentGrid);
       batchUpdateTiles(newGrid, tileUpdates);
       setGrid(newGrid);
 
@@ -698,7 +697,7 @@ export const GameView = () => {
   const swapTiles = useCallback(
     async (row1: number, col1: number, row2: number, col2: number) => {
       setGameState((prev) => ({ ...prev, isSwapping: true }));
-      let newGrid = cloneDeep(grid);
+      let newGrid = structuredClone(grid);
 
       setShowHint(false);
 
@@ -735,7 +734,7 @@ export const GameView = () => {
         await processMatches(matches, newGrid, true, swappedTiles, gameState.combo, gameState.score);
       } else {
         // 매칭이 없으면 되돌리기
-        newGrid = cloneDeep(newGrid);
+        newGrid = structuredClone(newGrid);
         const temp2 = { ...newGrid[row1][col1] };
         newGrid[row1][col1] = { ...newGrid[row2][col2] };
         newGrid[row2][col2] = temp2;

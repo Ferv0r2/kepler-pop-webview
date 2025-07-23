@@ -1,6 +1,5 @@
 'use client';
 
-import { cloneDeep } from 'lodash';
 import { useState } from 'react';
 
 import { DIRECTIONS } from '@/screens/GameView/constants/game-config';
@@ -122,13 +121,13 @@ export const useGameItem = (): UseGameItemReturn => {
   };
 
   const removeTile = (grid: GridItem[][], row: number, col: number): GridItem[][] => {
-    const newGrid = cloneDeep(grid);
+    const newGrid = structuredClone(grid);
     newGrid[row][col].isMatched = true;
     return newGrid;
   };
 
   const removeRow = (grid: GridItem[][], row: number): GridItem[][] => {
-    const newGrid = cloneDeep(grid);
+    const newGrid = structuredClone(grid);
     for (let col = 0; col < newGrid[row].length; col++) {
       newGrid[row][col].isMatched = true;
     }
@@ -136,7 +135,7 @@ export const useGameItem = (): UseGameItemReturn => {
   };
 
   const removeCol = (grid: GridItem[][], col: number): GridItem[][] => {
-    const newGrid = cloneDeep(grid);
+    const newGrid = structuredClone(grid);
     for (let row = 0; row < newGrid.length; row++) {
       newGrid[row][col].isMatched = true;
     }
@@ -144,7 +143,7 @@ export const useGameItem = (): UseGameItemReturn => {
   };
 
   const removeAdjacentTiles = (grid: GridItem[][], row: number, col: number): GridItem[][] => {
-    const newGrid = cloneDeep(grid);
+    const newGrid = structuredClone(grid);
     newGrid[row][col].isMatched = true;
 
     for (const [dx, dy] of DIRECTIONS) {

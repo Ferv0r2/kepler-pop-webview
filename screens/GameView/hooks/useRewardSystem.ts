@@ -1,6 +1,5 @@
 'use client';
 
-import { cloneDeep } from 'lodash';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -230,7 +229,7 @@ export const useRewardSystem = (gameItems: GameItem[]): UseRewardSystemReturn =>
         if (idParts[0] === 'artifact' && idParts.length >= 4) {
           artifactId = `${idParts[1]}_${idParts[2]}`;
         }
-        const artifact = artifactId ? cloneDeep(ARTIFACTS[artifactId as ArtifactId]) : undefined;
+        const artifact = artifactId ? structuredClone(ARTIFACTS[artifactId as ArtifactId]) : undefined;
         if (artifact) {
           artifact.isActive = true;
           // 중복 방지: 이미 활성화된 유물인지 확인
@@ -250,7 +249,7 @@ export const useRewardSystem = (gameItems: GameItem[]): UseRewardSystemReturn =>
   // 유물 효과 적용
   const applyArtifactEffects = useCallback(
     (grid: GridItem[][], combo: number, baseScore: number) => {
-      const modifiedGrid = cloneDeep(grid);
+      const modifiedGrid = structuredClone(grid);
       const modifiedCombo = combo;
       let modifiedScore = baseScore;
 
