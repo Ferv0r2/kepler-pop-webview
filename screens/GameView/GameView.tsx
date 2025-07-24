@@ -229,7 +229,7 @@ export const GameView = () => {
   const [showEnergyModal, setShowEnergyModal] = useState(false);
 
   const [showReviveOptions, setShowReviveOptions] = useState(false); // 부활 옵션 표시 여부
-  const [hasUsedRevive, setHasUsedRevive] = useState(false); // 부활 사용 여부 (게임당 1번만)
+  const [hasUsedRevive, setHasUsedRevive] = useState(true); // 부활 사용 여부 (게임당 1번만) TODO: 화이트 아웃 이슈 해결 후 주석 해제
   const [isReviveAdLoading, setIsReviveAdLoading] = useState(false); // 부활 광고 로딩 상태
   const [showShuffleConfirmation, setShowShuffleConfirmation] = useState(false);
   const [showShuffleButton, setShowShuffleButton] = useState(false);
@@ -798,7 +798,7 @@ export const GameView = () => {
         setIsNewHighScore(false);
         setShowRestartConfirmation(false);
         setShowReviveOptions(false);
-        setHasUsedRevive(false); // 부활 사용 상태 초기화
+        // setHasUsedRevive(false); // 부활 사용 상태 초기화, TODO: 화이트 아웃 이슈 해결 후 주석 해제
         setIsReviveAdLoading(false); // 부활 광고 로딩 상태 초기화
 
         // 보상 상태 초기화
