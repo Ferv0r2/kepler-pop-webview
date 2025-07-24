@@ -1274,7 +1274,7 @@ export const GameView = () => {
         )}
       </div>
       <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
-        <header className="fixed w-full h-16 inset-0 z-20 p-4">
+        <header className="fixed w-full h-16 inset-0 z-20 p-2">
           <div className="flex justify-between items-center">
             <Button
               variant="ghost"
@@ -1297,7 +1297,7 @@ export const GameView = () => {
           </div>
         </header>
 
-        <main className="w-full max-w-lg mx-auto flex flex-col items-center relative z-10 p-2">
+        <main className="w-full max-w-lg mx-auto flex flex-col items-center relative z-10">
           <motion.div
             className="w-full flex flex-col items-center relative z-10 p-2"
             initial={{ y: -20, opacity: 0 }}
@@ -1614,10 +1614,11 @@ export const GameView = () => {
 
               <div
                 data-testid="game-grid"
-                className="grid gap-1.5 place-items-center"
+                className="grid gap-1.5 place-items-center w-full mx-auto"
                 style={{
                   gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
                   touchAction: 'none',
+                  maxWidth: 'calc(100vw - 1rem)',
                 }}
               >
                 {optimizedGrid.map((row, rowIndex) =>
