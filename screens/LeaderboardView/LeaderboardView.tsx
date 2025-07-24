@@ -194,7 +194,7 @@ export const LeaderboardView = () => {
         </AnimatePresence>
 
         {/* 리더보드 리스트 */}
-        <div className="flex-1 overflow-y-auto min-h-[400px]">
+        <div className="flex-1 overflow-y-auto max-h-[400px]">
           {error ? (
             <motion.div className="text-center py-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
@@ -223,7 +223,7 @@ export const LeaderboardView = () => {
 
               {/* 더 보기 버튼 */}
               {hasMore && (
-                <motion.div className="text-center pt-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <Button
                     onClick={loadMore}
                     disabled={isLoading}
@@ -248,23 +248,31 @@ export const LeaderboardView = () => {
         </div>
 
         {/* 내 순위 고정 표시 */}
-        <motion.div
-          className="sticky bottom-4 mt-4 mb-2 bg-gray-900/90 backdrop-blur-md rounded-lg border border-gray-700 p-2"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <div className="text-xs text-gray-400 text-center mb-2">{t('leaderboard.myRank')}</div>
-          {leaderboardData?.currentUserEntry ? (
+        {isLoading ? (
+          <motion.div
+            className="sticky bottom-4 mt-4 mb-2 bg-gray-900/90 backdrop-blur-md rounded-lg border border-gray-700 p-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <div className="text-xs text-gray-400 text-center mb-2">{t('leaderboard.myRank')}</div>
+            <LeaderboardEntrySkeleton showRankChange={filters.period !== 'all'} />
+          </motion.div>
+        ) : leaderboardData?.currentUserEntry ? (
+          <motion.div
+            className="sticky bottom-4 mt-4 mb-2 bg-gray-900/90 backdrop-blur-md rounded-lg border border-gray-700 p-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <div className="text-xs text-gray-400 text-center mb-2">{t('leaderboard.myRank')}</div>
             <LeaderboardEntry
               entry={leaderboardData.currentUserEntry}
               index={0}
               showRankChange={filters.period !== 'all'}
             />
-          ) : (
-            <LeaderboardEntrySkeleton showRankChange={filters.period !== 'all'} />
-          )}
-        </motion.div>
+          </motion.div>
+        ) : null}
       </main>
 
       <footer className="sticky left-0 bottom-0 z-10">

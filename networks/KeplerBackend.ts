@@ -49,21 +49,55 @@ export const getLeaderboard = async (filters: LeaderboardFilters): Promise<Leade
   if (filters.limit) params.append('limit', filters.limit.toString());
   if (filters.offset) params.append('offset', filters.offset.toString());
 
-  const response = await api.get(`/leaderboard?${params.toString()}`);
-  if (!response.ok) throw new Error('Failed to fetch leaderboard');
+  // 사용자가 로그인했는지 확인하여 적절한 엔드포인트 선택
+  try {
+    // 먼저 인증된 엔드포인트 시도 (currentUserEntry 포함)
+    const response = await api.get(`/leaderboard/me?${params.toString()}`);
+    if (!response.ok) {
+      // 인증 실패 시 공개 엔드포인트 사용
+      const publicResponse = await api.get(`/leaderboard?${params.toString()}`);
+      if (!publicResponse.ok) throw new Error('Failed to fetch leaderboard');
 
-  const data = await response.json();
-  const result = {
-    leaderboard: data.leaderboard || [],
-    currentUserEntry: data.currentUserEntry,
-    totalCount: data.totalCount || 0,
-    period: data.period || filters.period,
-    mode: data.mode || filters.mode,
-    scope: data.scope || filters.scope,
-    lastUpdated: data.lastUpdated ? new Date(data.lastUpdated) : new Date(),
-  };
+      const data = await publicResponse.json();
+      return {
+        leaderboard: data.leaderboard || [],
+        currentUserEntry: undefined, // 비인증 사용자는 currentUserEntry 없음
+        totalCount: data.totalCount || 0,
+        period: data.period || filters.period,
+        mode: data.mode || filters.mode,
+        scope: data.scope || filters.scope,
+        lastUpdated: data.lastUpdated ? new Date(data.lastUpdated) : new Date(),
+      };
+    }
 
-  return result;
+    const data = await response.json();
+    const result = {
+      leaderboard: data.leaderboard || [],
+      currentUserEntry: data.currentUserEntry,
+      totalCount: data.totalCount || 0,
+      period: data.period || filters.period,
+      mode: data.mode || filters.mode,
+      scope: data.scope || filters.scope,
+      lastUpdated: data.lastUpdated ? new Date(data.lastUpdated) : new Date(),
+    };
+
+    return result;
+  } catch {
+    // 인증 오류 시 공개 엔드포인트로 폴백
+    const publicResponse = await api.get(`/leaderboard?${params.toString()}`);
+    if (!publicResponse.ok) throw new Error('Failed to fetch leaderboard');
+
+    const data = await publicResponse.json();
+    return {
+      leaderboard: data.leaderboard || [],
+      currentUserEntry: undefined,
+      totalCount: data.totalCount || 0,
+      period: data.period || filters.period,
+      mode: data.mode || filters.mode,
+      scope: data.scope || filters.scope,
+      lastUpdated: data.lastUpdated ? new Date(data.lastUpdated) : new Date(),
+    };
+  }
 };
 
 export const getLeaderboardStats = async (
