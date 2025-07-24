@@ -17,7 +17,7 @@ import { EnergyDisplay } from '@/components/ui/EnergyDisplay';
 import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import { useRouter } from '@/i18n/routing';
-import { updateDroplet, updateGem } from '@/networks/KeplerBackend';
+import { getDropletStatus, updateDroplet, updateGem } from '@/networks/KeplerBackend';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import type { NativeToWebMessage, EnergyUpdatePayload, PurchaseResultPayload } from '@/types/native-call';
 import { itemVariants } from '@/utils/animation-helper';
@@ -49,7 +49,7 @@ const useUpdateGem = () => {
 
 export const MainView = () => {
   const router = useRouter();
-  const { data: userInfo, isLoading, refetch: refetchUser } = useUser();
+  const { data: userInfo, isLoading } = useUser();
   const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
   const t = useTranslations();
 
@@ -154,10 +154,9 @@ export const MainView = () => {
 
     // 게임 시작 전 최신 사용자 정보 가져오기
     try {
-      const { data: latestUserInfo } = await refetchUser();
-      const currentUserInfo = latestUserInfo || userInfo;
+      const { droplet } = await getDropletStatus();
 
-      if (!currentUserInfo || currentUserInfo.droplet < ENERGY_CONSUME_AMOUNT) {
+      if (!userInfo || droplet < ENERGY_CONSUME_AMOUNT) {
         setIsGameStarting(false);
         setShowEnergyModal(true);
         return;
@@ -167,7 +166,6 @@ export const MainView = () => {
         onSuccess: () => {
           // 게임 시작 애니메이션을 위해 약간의 지연
           setTimeout(() => {
-            setIsGameStarting(false);
             router.push(`/game?mode=${mode}`);
           }, 1000);
         },
@@ -177,24 +175,6 @@ export const MainView = () => {
       });
     } catch (error) {
       console.error('사용자 정보 갱신 실패:', error);
-      // 실패 시 기존 userInfo로 진행
-      if (!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT) {
-        setIsGameStarting(false);
-        setShowEnergyModal(true);
-        return;
-      }
-
-      updateDropletMutation.mutate(-ENERGY_CONSUME_AMOUNT, {
-        onSuccess: () => {
-          // 게임 시작 애니메이션을 위해 약간의 지연
-          setTimeout(() => {
-            router.push(`/game?mode=${mode}`);
-          }, 1000);
-        },
-        onError: () => {
-          setIsGameStarting(false);
-        },
-      });
     }
   };
 
