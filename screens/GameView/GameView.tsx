@@ -226,7 +226,7 @@ export const GameView = () => {
   const [showEnergyModal, setShowEnergyModal] = useState(false);
 
   const [showReviveOptions, setShowReviveOptions] = useState(false); // 부활 옵션 표시 여부
-  const [hasUsedRevive, setHasUsedRevive] = useState(true); // 부활 사용 여부 (게임당 1번만) TODO: 화이트 아웃 이슈 해결 후 주석 해제
+  const [hasUsedRevive, setHasUsedRevive] = useState(false); // 부활 사용 여부 (게임당 1번만)
   const [isReviveAdLoading, setIsReviveAdLoading] = useState(false); // 부활 광고 로딩 상태
   const [showShuffleConfirmation, setShowShuffleConfirmation] = useState(false);
   const [showShuffleButton, setShowShuffleButton] = useState(false);
@@ -815,13 +815,10 @@ export const GameView = () => {
     playButtonSound(soundSettings);
     setShowRestartConfirmation(false);
 
-    // 에너지가 부족한 경우 에너지 모달 표시
-    if (!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT) {
-      setShowEnergyModal(true);
-      return;
+    // 에너지가 충분한 경우만 게임 재시작
+    if (userInfo && userInfo.droplet >= ENERGY_CONSUME_AMOUNT) {
+      restartGame();
     }
-
-    restartGame();
   };
 
   const handleRestartCancel = () => {
@@ -1743,10 +1740,17 @@ export const GameView = () => {
                 {t('game.restartMessage', { count: ENERGY_CONSUME_AMOUNT })}
               </p>
             </div>
+            {(!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT) && (
+              <div className="flex items-start gap-2 bg-red-400/10 p-2 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <p className="text-red-300 text-sm font-medium">{t('game.notEnoughEnergy')}</p>
+              </div>
+            )}
           </div>
         }
         confirmText={t('modal.confirm')}
         cancelText={t('modal.cancel')}
+        isConfirmDisabled={!userInfo || userInfo.droplet < ENERGY_CONSUME_AMOUNT}
         onConfirm={handleRestartConfirm}
         onCancel={handleRestartCancel}
       />

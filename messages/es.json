@@ -222,6 +222,7 @@
     "restart": "Reiniciar",
     "restartConfirm": "¿Estás seguro de que quieres reiniciar el juego?",
     "restartMessage": "Reiniciar reseteará tu progreso actual y consumirá {count} gota de energía.",
+    "notEnoughEnergy": "No hay suficiente energía (gotas)",
     "insufficientEnergy": "Energía Insuficiente",
     "insufficientEnergyMessage": "No tienes suficientes gotas de energía para reiniciar el juego. ¿Te gustaría recargar tu energía?",
     "shuffling": "Mezclando fichas...",

@@ -14,6 +14,7 @@ export type ConfirmationModalProps = {
   confirmText?: string;
   cancelText?: string;
   variant?: 'default' | 'destructive' | 'success' | 'info';
+  isConfirmDisabled?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -25,6 +26,7 @@ export const ConfirmationModal = ({
   confirmText,
   cancelText,
   variant = 'default',
+  isConfirmDisabled,
   onConfirm,
   onCancel,
 }: ConfirmationModalProps) => {
@@ -39,6 +41,7 @@ export const ConfirmationModal = ({
           confirmText={confirmText || t('modal.confirm')}
           cancelText={cancelText || t('modal.cancel')}
           variant={variant}
+          isConfirmDisabled={isConfirmDisabled}
           onConfirm={onConfirm}
           onCancel={onCancel}
         />
@@ -53,6 +56,7 @@ const ModalContent = ({
   confirmText,
   cancelText,
   variant,
+  isConfirmDisabled,
   onConfirm,
   onCancel,
 }: Omit<ConfirmationModalProps, 'isOpen'>) => {
@@ -213,12 +217,13 @@ const ModalContent = ({
           </Button>
           <Button
             onClick={onConfirm}
-            disabled={!isPresent}
+            disabled={!isPresent || isConfirmDisabled}
             className={`
               ${variant === 'destructive' ? 'bg-red-600 hover:bg-red-700' : ''}
               ${variant === 'success' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
               ${variant === 'info' ? 'bg-cyan-600 hover:bg-cyan-700' : ''}
               ${variant === 'default' ? 'bg-white text-black hover:bg-white/90' : ''}
+              ${isConfirmDisabled ? 'opacity-50 cursor-not-allowed' : ''}
               transition-all duration-200 shadow-lg
             `}
           >
