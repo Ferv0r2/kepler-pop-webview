@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 
 import { useAuthStore } from '@/store/authStore';
+import { initializeLottieAnimations } from '@/utils/lottie-preloader';
 
 // JWT payload 파싱 함수
 function parseJwt(token: string): { exp?: number } | null {
@@ -102,6 +103,7 @@ export function GlobalPreloadProvider({ children }: GlobalPreloadProviderProps) 
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [tokenMigrated, setTokenMigrated] = useState(false);
+  const [lottieLoaded, setLottieLoaded] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
 
   // 토큰 마이그레이션 실행
@@ -131,6 +133,18 @@ export function GlobalPreloadProvider({ children }: GlobalPreloadProviderProps) 
     } catch (error) {
       console.warn('[GlobalPreloadProvider] Font loading failed:', error);
       setFontsLoaded(true); // 폰트 로딩 실패해도 진행
+    }
+  }, []);
+
+  // Lottie 애니메이션 로딩
+  const loadLottieAnimations = useCallback(async () => {
+    try {
+      await initializeLottieAnimations();
+      setLottieLoaded(true);
+      console.log('[GlobalPreloadProvider] Lottie animations loaded successfully');
+    } catch (error) {
+      console.warn('[GlobalPreloadProvider] Lottie loading failed:', error);
+      setLottieLoaded(true); // 로딩 실패해도 진행
     }
   }, []);
 
@@ -168,18 +182,19 @@ export function GlobalPreloadProvider({ children }: GlobalPreloadProviderProps) 
 
   // 로딩 진행률 계산
   useEffect(() => {
-    const completed = [tokenMigrated, fontsLoaded, assetsLoaded].filter(Boolean).length;
-    const total = 3;
+    const completed = [tokenMigrated, fontsLoaded, assetsLoaded, lottieLoaded].filter(Boolean).length;
+    const total = 4;
     setLoadProgress((completed / total) * 100);
-  }, [tokenMigrated, fontsLoaded, assetsLoaded]);
+  }, [tokenMigrated, fontsLoaded, assetsLoaded, lottieLoaded]);
 
   // 초기 로딩 시작
   useEffect(() => {
     loadFonts();
     loadAssets();
-  }, [loadFonts, loadAssets]);
+    loadLottieAnimations();
+  }, [loadFonts, loadAssets, loadLottieAnimations]);
 
-  const allLoaded = tokenMigrated && fontsLoaded && assetsLoaded;
+  const allLoaded = tokenMigrated && fontsLoaded && assetsLoaded && lottieLoaded;
 
   return (
     <GlobalPreloadContext.Provider

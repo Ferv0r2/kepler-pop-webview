@@ -15,6 +15,7 @@ import { LoadingModal } from '@/components/logic/dialogs/LoadingModal';
 import { ItemAnimationManager } from '@/components/logic/managers/ItemAnimationManager';
 import { Button } from '@/components/ui/button';
 import { ItemAreaTooltip } from '@/components/ui/ItemAreaTooltip';
+import { ConfettiManager } from '@/components/ui/LottieConfetti';
 import { PerformanceMonitor } from '@/components/ui/PerformanceMonitor';
 import { Toast } from '@/components/ui/toast';
 import { useBackButton } from '@/hooks/useBackButton';
@@ -53,11 +54,7 @@ import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-c
 import type { NativeToWebMessage, EnergyUpdatePayload } from '@/types/native-call';
 import { createParticles, createOptimizedParticles } from '@/utils/animation-helper';
 import { calculateComboBonus, batchUpdateTiles } from '@/utils/game-helper';
-import {
-  useOptimizedGridRendering,
-  useRenderPerformance,
-  useConfettiOptimizer,
-} from '@/utils/performance-optimization';
+import { useOptimizedGridRendering, useRenderPerformance } from '@/utils/performance-optimization';
 import {
   playMatchSound,
   playComboSound,
@@ -247,7 +244,6 @@ export const GameView = () => {
   // 성능 최적화 훅
   const { grid: optimizedGrid, hasChanges } = useOptimizedGridRendering(grid);
   const { renderCount } = useRenderPerformance('GameView');
-  const runConfetti = useConfettiOptimizer();
 
   // Web Worker 훅
   const { isWorkerAvailable } = useGameWorker({ enabled: true });
@@ -553,9 +549,7 @@ export const GameView = () => {
         const level = (currentGrid[matches[0].row][matches[0].col].tier || 1) as TierType;
         const itemType = (currentGrid[matches[0].row][matches[0].col].type || 1) as TileType;
         const color = tileConfig[itemType]?.color[level]?.replace('text-', '') || 'red';
-        runConfetti(() => {
-          createOptimizedParticles(x, y, color);
-        });
+        createOptimizedParticles(x, y, color);
 
         setTimeout(() => setShowScorePopup(null), SHOW_EFFECT_TIME_MS);
         if (bonusMoves > 0) {
@@ -684,7 +678,6 @@ export const GameView = () => {
       removeMatchedTiles,
       findMatches,
       soundSettings,
-      runConfetti,
       gameMode,
       rewardState.activeArtifacts,
       grid,
@@ -768,7 +761,6 @@ export const GameView = () => {
       processMatches,
       gameState.moves,
       gameState.score,
-      runConfetti,
       soundSettings,
       updateUserScore,
     ],
@@ -1259,7 +1251,7 @@ export const GameView = () => {
   }
 
   return (
-    <>
+    <ConfettiManager>
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-[1000]">
         {itemAnimation && (
           <ItemAnimationManager
@@ -1937,6 +1929,6 @@ export const GameView = () => {
       </AnimatePresence>
 
       <LoadingModal isOpen={isReviveAdLoading} type="ad" />
-    </>
+    </ConfettiManager>
   );
 };

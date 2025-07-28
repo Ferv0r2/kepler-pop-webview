@@ -371,16 +371,16 @@ body {
   animation: pulse-glow 1.5s infinite;
 }
 
-/* Confetti 성능 최적화 */
-canvas {
+/* Lottie 애니메이션 성능 최적화 */
+.lottie-animation {
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
 }
 
-/* Confetti 컨테이너 최적화 */
-.confetti-container {
+/* Lottie confetti 컨테이너 최적화 */
+.lottie-confetti-container {
   position: fixed;
   top: 0;
   left: 0;

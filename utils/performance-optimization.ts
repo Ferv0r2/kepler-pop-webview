@@ -171,62 +171,7 @@ export const createMemoCache = <T>() => {
   };
 };
 
-// Confetti 성능 최적화 훅
-export const useConfettiOptimizer = () => {
-  const isConfettiRunningRef = useRef(false);
-  const confettiQueueRef = useRef<Array<() => void>>([]);
-
-  const runConfetti = useCallback((confettiFn: () => void) => {
-    if (isConfettiRunningRef.current) {
-      // 이미 confetti가 실행 중이면 큐에 추가
-      confettiQueueRef.current.push(confettiFn);
-      return;
-    }
-
-    isConfettiRunningRef.current = true;
-
-    // 메인 스레드 블로킹 방지를 위해 requestIdleCallback 사용
-    const runWithIdleCallback = () => {
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(
-          () => {
-            confettiFn();
-
-            // 다음 프레임에서 큐 처리
-            requestAnimationFrame(() => {
-              isConfettiRunningRef.current = false;
-
-              // 큐에 있는 다음 confetti 실행
-              const nextConfetti = confettiQueueRef.current.shift();
-              if (nextConfetti) {
-                runConfetti(nextConfetti);
-              }
-            });
-          },
-          { timeout: 100 },
-        );
-      } else {
-        // requestIdleCallback이 지원되지 않는 경우 requestAnimationFrame 사용
-        requestAnimationFrame(() => {
-          confettiFn();
-
-          setTimeout(() => {
-            isConfettiRunningRef.current = false;
-
-            const nextConfetti = confettiQueueRef.current.shift();
-            if (nextConfetti) {
-              runConfetti(nextConfetti);
-            }
-          }, 50);
-        });
-      }
-    };
-
-    runWithIdleCallback();
-  }, []);
-
-  return runConfetti;
-};
+// 이전 Confetti 최적화 훅은 Lottie 기반 시스템으로 교체되어 제거됨
 
 // 렌더링 우선순위 관리 훅
 export const useRenderPriority = () => {
