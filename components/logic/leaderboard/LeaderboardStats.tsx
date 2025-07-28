@@ -79,7 +79,7 @@ export const LeaderboardStats = ({ stats, isLoading = false }: LeaderboardStatsP
               <item.icon className={`w-5 h-5 ${item.color}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-400 truncate">{item.label}</p>
+              <p className="text-sm text-gray-400 truncate">{item.label}</p>
               <p className={`text-lg font-bold ${item.color} truncate`}>{item.value}</p>
             </div>
           </div>

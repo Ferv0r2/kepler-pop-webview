@@ -158,12 +158,12 @@ export const LeaderboardView = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="flex items-center justify-center gap-2 text-sm">
+              <div className="flex items-center justify-center gap-2 text-md">
                 <Clock className="w-4 h-4 text-yellow-400" />
                 <span className="text-gray-300">
                   {t(`leaderboard.timer.${filters.period}`)} {t('leaderboard.timer.resetUntil')}
                 </span>
-                <span className="font-mono font-bold text-yellow-400">
+                <span className="font-bold text-yellow-400">
                   {timeRemaining > 0 ? formatTimeRemaining(timeRemaining, locale) : t('leaderboard.timer.calculating')}
                 </span>
               </div>
@@ -255,7 +255,7 @@ export const LeaderboardView = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <div className="text-xs text-gray-400 text-center mb-2">{t('leaderboard.myRank')}</div>
+            <div className="text-sm text-gray-400 text-center mb-2">{t('leaderboard.myRank')}</div>
             <LeaderboardEntrySkeleton showRankChange={filters.period !== 'all'} />
           </motion.div>
         ) : leaderboardData?.currentUserEntry ? (
@@ -265,7 +265,7 @@ export const LeaderboardView = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <div className="text-xs text-gray-400 text-center mb-2">{t('leaderboard.myRank')}</div>
+            <div className="text-sm text-gray-400 text-center mb-2">{t('leaderboard.myRank')}</div>
             <LeaderboardEntry
               entry={leaderboardData.currentUserEntry}
               index={0}

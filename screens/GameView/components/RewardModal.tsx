@@ -79,9 +79,7 @@ export const RewardModal = ({ isOpen, rewards, timeRemaining, onSelectReward }: 
               transition={{ delay: 0.25 }}
             >
               <div className="text-xs text-white/60 mb-0.5">{t('game.reward.timeRemaining')}</div>
-              <div
-                className={`text-base font-mono font-bold ${timeRemaining <= 10 ? 'text-red-400' : 'text-green-400'}`}
-              >
+              <div className={`text-base font-bold ${timeRemaining <= 10 ? 'text-red-400' : 'text-green-400'}`}>
                 {formatTime(timeRemaining)}
               </div>
               <div className="w-full bg-slate-700 rounded-full h-1.5 mt-1">
