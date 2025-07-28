@@ -790,7 +790,7 @@ export const GameView = () => {
         setIsNewHighScore(false);
         setShowRestartConfirmation(false);
         setShowReviveOptions(false);
-        // setHasUsedRevive(false); // 부활 사용 상태 초기화, TODO: 화이트 아웃 이슈 해결 후 주석 해제
+        setHasUsedRevive(false); // 부활 사용 상태 초기화
         setIsReviveAdLoading(false); // 부활 광고 로딩 상태 초기화
 
         // 보상 상태 초기화
@@ -867,7 +867,7 @@ export const GameView = () => {
   const handleReviveSuccess = () => {
     // 게임 상태 업데이트 (부활 처리)
     updateGameState({
-      moves: gameState.moves + REVIVE_BONUS_MOVES,
+      moves: REVIVE_BONUS_MOVES,
       isGameOver: false,
     });
 
@@ -1485,10 +1485,7 @@ export const GameView = () => {
                             {gameState.score.toLocaleString()}
                           </motion.div>
                         </motion.div>
-                        {showReviveOptions && hasUsedRevive ? (
-                          // TODO: 화이트 아웃 이슈 해결 후 주석 해제
-                          // {showReviveOptions && !hasUsedRevive ? (
-                          // 부활 옵션 표시
+                        {showReviveOptions && !hasUsedRevive ? (
                           <motion.div
                             className="flex flex-col gap-3"
                             initial={{ y: 20, opacity: 0 }}
