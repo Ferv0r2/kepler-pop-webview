@@ -351,5 +351,15 @@
       "resetUntil": "Reset until:",
       "calculating": "Calculating..."
     }
+  },
+  "level": {
+    "levelUp": "Level Up!",
+    "newLevel": "New Level:",
+    "skillPointsReward": "Skill Points Reward",
+    "skillPoints": "Skill Points",
+    "totalAvailable": "Available",
+    "viewTechTree": "View Tech Tree",
+    "expGained": "Experience Gained:",
+    "progress": "Progress"
   }
 }
