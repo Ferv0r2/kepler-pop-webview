@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
 import { EnergyModal } from '@/components/logic/dialogs/EnergyModal';
+import { LevelUpModal } from '@/components/logic/dialogs/LevelUpModal';
 import { LoadingModal } from '@/components/logic/dialogs/LoadingModal';
 import { ItemAnimationManager } from '@/components/logic/managers/ItemAnimationManager';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import { ConfettiManager } from '@/components/ui/LottieConfetti';
 import { PerformanceMonitor } from '@/components/ui/PerformanceMonitor';
 import { Toast } from '@/components/ui/toast';
 import { useBackButton } from '@/hooks/useBackButton';
+import { useUpdateExperience } from '@/hooks/useLevel';
 import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import { useWebViewBridge } from '@/hooks/useWebViewBridge';
@@ -175,6 +177,9 @@ export const GameView = () => {
   const { settings: soundSettings } = useSound();
   const { sendMessage, addMessageHandler, isInWebView } = useWebViewBridge();
 
+  // 레벨 시스템 훅
+  const updateExperienceMutation = useUpdateExperience();
+
   // 보상 시스템 훅
   const {
     rewardState,
@@ -224,6 +229,20 @@ export const GameView = () => {
   const [isNewHighScore, setIsNewHighScore] = useState<boolean>(false);
   const [showRestartConfirmation, setShowRestartConfirmation] = useState(false);
   const [showEnergyModal, setShowEnergyModal] = useState(false);
+
+  // 레벨 시스템 상태
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [levelUpData, setLevelUpData] = useState<{
+    newLevel: number;
+    skillPointsGained: number;
+    availableSkillPoints: number;
+  } | null>(null);
+  const [experienceData, setExperienceData] = useState<{
+    expGained: number;
+    currentExp: number;
+    expForNextLevel: number;
+    progressToNext: number;
+  } | null>(null);
 
   const [showReviveOptions, setShowReviveOptions] = useState(false); // 부활 옵션 표시 여부
   const [hasUsedRevive, setHasUsedRevive] = useState(false); // 부활 사용 여부 (게임당 1번만)
@@ -312,17 +331,40 @@ export const GameView = () => {
       if (!userInfo) return;
 
       // 이미 업데이트 중이면 중복 호출 방지
-      if (updateScoreMutation.isPending) return;
+      if (updateScoreMutation.isPending || updateExperienceMutation.isPending) return;
 
       try {
         // 모든 점수를 백엔드로 전송 (기간별 점수 업데이트를 위해)
         // 백엔드에서 최고점수 vs 기간별 점수를 각각 처리함
         await updateScoreMutation.mutateAsync({ score: finalScore, mode: gameMode });
+
+        // 경험치 업데이트 (PRD: 게임 종료 시 경험치 변화 표시)
+        const levelUpdateResult = await updateExperienceMutation.mutateAsync({ score: finalScore });
+
+        // 경험치 정보 저장 (결과 화면에 표시용)
+        setExperienceData({
+          expGained: levelUpdateResult.expGained,
+          currentExp: levelUpdateResult.currentExp,
+          expForNextLevel: levelUpdateResult.expForNextLevel,
+          progressToNext:
+            (levelUpdateResult.currentExp - levelUpdateResult.expForCurrentLevel) /
+            (levelUpdateResult.expForNextLevel - levelUpdateResult.expForCurrentLevel),
+        });
+
+        // 레벨업이 발생한 경우 축하 모달 표시
+        if (levelUpdateResult.leveledUp && levelUpdateResult.newLevel) {
+          setLevelUpData({
+            newLevel: levelUpdateResult.newLevel,
+            skillPointsGained: levelUpdateResult.skillPointsGained,
+            availableSkillPoints: levelUpdateResult.availableSkillPoints,
+          });
+          setShowLevelUpModal(true);
+        }
       } catch (error) {
-        console.error('Failed to update score:', error);
+        console.error('Failed to update score or experience:', error);
       }
     },
-    [userInfo, updateScoreMutation, gameMode],
+    [userInfo, updateScoreMutation, updateExperienceMutation, gameMode],
   );
 
   const handleTileClick = (row: number, col: number) => {
@@ -1484,6 +1526,33 @@ export const GameView = () => {
                           >
                             {gameState.score.toLocaleString()}
                           </motion.div>
+
+                          {/* PRD: 게임 종료 시 경험치 변화량 표시 */}
+                          {experienceData && (
+                            <motion.div
+                              className="mt-3 pt-3 border-t border-yellow-500/20"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.8, duration: 0.5 }}
+                            >
+                              <div className="flex items-center justify-center gap-2 mb-1">
+                                <span className="text-blue-300 text-sm">{t('level.expGained')}</span>
+                                <span className="text-blue-400 font-bold">+{experienceData.expGained}</span>
+                              </div>
+                              <div className="flex items-center justify-center gap-1">
+                                <span className="text-blue-300/80 text-xs">{t('level.progress')}:</span>
+                                <div className="bg-gray-700 h-1.5 rounded-full w-16">
+                                  <div
+                                    className="bg-gradient-to-r from-blue-400 to-purple-500 h-full rounded-full transition-all duration-500"
+                                    style={{ width: `${Math.min(100, experienceData.progressToNext * 100)}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-blue-300/80 text-xs">
+                                  {Math.round(experienceData.progressToNext * 100)}%
+                                </span>
+                              </div>
+                            </motion.div>
+                          )}
                         </motion.div>
                         {showReviveOptions && !hasUsedRevive ? (
                           <motion.div
@@ -1928,6 +1997,20 @@ export const GameView = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 레벨업 축하 모달 */}
+      <LevelUpModal
+        isOpen={showLevelUpModal}
+        onClose={() => setShowLevelUpModal(false)}
+        newLevel={levelUpData?.newLevel || 0}
+        skillPointsGained={levelUpData?.skillPointsGained || 0}
+        availableSkillPoints={levelUpData?.availableSkillPoints || 0}
+        onViewTechTree={() => {
+          setShowLevelUpModal(false);
+          // TODO: 테크트리 페이지로 이동
+          console.log('Navigate to tech tree');
+        }}
+      />
 
       <LoadingModal isOpen={isReviveAdLoading} type="ad" />
     </ConfettiManager>
