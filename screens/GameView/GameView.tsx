@@ -696,11 +696,11 @@ export const GameView = () => {
 
         if (isGameOver) {
           // 게임 오버시 부활 옵션 활성화 (아직 부활을 사용하지 않은 경우만)
+          playGameOverSound(soundSettings);
           if (!hasUsedRevive) {
             setShowReviveOptions(true);
           } else {
             // 이미 부활을 사용했다면 바로 최종 게임 오버 처리
-            playGameOverSound(soundSettings);
             updateUserScore(newScore);
           }
         }
@@ -1233,12 +1233,11 @@ export const GameView = () => {
     // 게임 종료 시 부활 옵션 활성화 (아직 부활을 사용하지 않은 경우만)
     if (isGameOver) {
       setIsShuffling(false);
+      playGameOverSound(soundSettings);
       if (!hasUsedRevive) {
-        playGameOverSound(soundSettings);
         setShowReviveOptions(true);
       } else {
         // 이미 부활을 사용했다면 바로 최종 게임 오버 처리
-        playGameOverSound(soundSettings);
         updateUserScore(gameState.score);
       }
       return;
