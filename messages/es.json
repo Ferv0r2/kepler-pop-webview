@@ -368,5 +368,15 @@
       "resetUntil": "Reiniciar hasta:",
       "calculating": "Calculando..."
     }
+  },
+  "level": {
+    "levelUp": "Nivel Up!",
+    "newLevel": "Nuevo Nivel:",
+    "skillPointsReward": "Puntos de Habilidad",
+    "skillPoints": "Puntos de Habilidad",
+    "totalAvailable": "Disponible",
+    "viewTechTree": "Ver Árbol de Habilidades",
+    "expGained": "Experiencia Ganada:",
+    "progress": "Progreso"
   }
 }

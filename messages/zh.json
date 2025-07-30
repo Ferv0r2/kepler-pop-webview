@@ -368,5 +368,15 @@
       "resetUntil": "重置直到:",
       "calculating": "计算中..."
     }
+  },
+  "level": {
+    "levelUp": "升级",
+    "newLevel": "新等级",
+    "skillPointsReward": "技能点奖励",
+    "skillPoints": "技能点",
+    "totalAvailable": "可用",
+    "viewTechTree": "查看技能树",
+    "expGained": "经验值获得",
+    "progress": "进度"
   }
 }

@@ -349,5 +349,15 @@
       "resetUntil": "リセットまで:",
       "calculating": "計算中..."
     }
+  },
+  "level": {
+    "levelUp": "レベルアップ",
+    "newLevel": "新しいレベル",
+    "skillPointsReward": "スキルポイント報酬",
+    "skillPoints": "スキルポイント",
+    "totalAvailable": "利用可能",
+    "viewTechTree": "テクニックツリーを見る",
+    "expGained": "経験値獲得",
+    "progress": "進捗"
   }
 }

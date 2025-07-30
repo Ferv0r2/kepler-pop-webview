@@ -57,7 +57,7 @@ export const LevelUpModal = ({
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ delay: 0.2, duration: 0.6, type: 'spring' }}
                 >
-                  <Image src="/icons/trophy.png" alt="Level Up" width={40} height={40} />
+                  <Image src="/icons/trophy.png" alt="Level Up" width={48} height={48} />
                 </motion.div>
 
                 {/* 레벨업 메시지 */}
