@@ -99,7 +99,7 @@ export const SettingsView = () => {
     return <LoadingView />;
   }
 
-  const { nickname: userNickname, level, gameMoney, gem, profileImage } = userInfo;
+  const { nickname: userNickname, gameMoney, gem, profileImage } = userInfo;
 
   const handleSave = async () => {
     if (!hasChanges) return;
@@ -162,7 +162,6 @@ export const SettingsView = () => {
       <header className="sticky w-full left-0 top-0 z-10">
         <TopNavigation
           name={userNickname}
-          level={level}
           gameMoney={gameMoney}
           gem={gem}
           profileImage={profileImage || '/plants/sprout.png'}

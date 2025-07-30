@@ -124,7 +124,7 @@ export const StoreView = () => {
     return <LoadingView />;
   }
 
-  const { nickname, level, gameMoney, gem, profileImage } = userInfo;
+  const { nickname, gameMoney, gem, profileImage } = userInfo;
 
   const dropletItems = STORE_ITEMS.filter((item) => item.type === 'droplet');
   const gemItems = STORE_ITEMS.filter((item) => item.type === 'gems');
@@ -135,7 +135,6 @@ export const StoreView = () => {
         <header className="sticky w-full left-0 top-0 z-10">
           <TopNavigation
             name={nickname}
-            level={level}
             gameMoney={gameMoney}
             gem={gem}
             profileImage={profileImage || '/plants/sprout.png'}

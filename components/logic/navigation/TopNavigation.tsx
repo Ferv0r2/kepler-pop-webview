@@ -5,13 +5,12 @@ import { useLevel } from '@/hooks/useLevel';
 
 export interface TopNavigationProps {
   name: string;
-  level: number;
   gameMoney: number;
   gem: number;
   profileImage: string;
 }
 
-export const TopNavigation = ({ name, level, gem, profileImage }: TopNavigationProps) => {
+export const TopNavigation = ({ name, gem, profileImage }: TopNavigationProps) => {
   // 실시간 레벨 정보 가져오기
   const { data: levelInfo } = useLevel();
 
@@ -34,9 +33,9 @@ export const TopNavigation = ({ name, level, gem, profileImage }: TopNavigationP
             height={48}
             className="rounded-full border-2 border-purple-400 shadow-lg"
           />
-          {level && (
+          {levelInfo?.level && (
             <div className="absolute -bottom-1 -right-1 bg-purple-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
-              {level}
+              {levelInfo.level}
             </div>
           )}
         </motion.div>

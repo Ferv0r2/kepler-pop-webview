@@ -144,7 +144,7 @@ export const MainView = () => {
     return <LoadingView />;
   }
 
-  const { nickname, level, gameMoney, gem, profileImage } = userInfo;
+  const { nickname, gameMoney, gem, profileImage } = userInfo;
 
   const handleStartGame = async (mode: 'casual' | 'challenge') => {
     playButtonSound(soundSettings);
@@ -214,7 +214,6 @@ export const MainView = () => {
         <header className="sticky w-full left-0 top-0 z-10">
           <TopNavigation
             name={nickname}
-            level={level}
             gameMoney={gameMoney}
             gem={gem}
             profileImage={profileImage || '/plants/sprout.png'}

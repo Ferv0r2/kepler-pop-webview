@@ -19,7 +19,7 @@ export const LevelUpModal = ({
   newLevel,
   skillPointsGained,
   availableSkillPoints,
-  onViewTechTree,
+  // onViewTechTree,
 }: LevelUpModalProps) => {
   const t = useTranslations();
 
@@ -83,26 +83,36 @@ export const LevelUpModal = ({
                   </div>
                 </motion.div>
 
-                {/* 스킬포인트 획득 */}
+                {/* 스킬포인트 시스템 (커밍 순) */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.6, duration: 0.5 }}
-                  className="bg-slate-800/40 p-4 rounded-xl border border-blue-400/30 mb-6"
+                  className="bg-slate-800/40 p-4 rounded-xl border border-gray-400/30 mb-6 relative overflow-hidden"
                 >
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Image src="/icons/gem.png" alt="Skill Points" width={24} height={24} />
-                    <span className="text-blue-300 font-medium">{t('level.skillPointsReward')}</span>
+                  {/* 커밍 순 오버레이 */}
+                  <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-gray-300 text-lg font-bold mb-4">🚀 Coming Soon</div>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <span className="text-blue-400 text-lg font-bold">
-                      +{skillPointsGained} {t('level.skillPoints')}
-                    </span>
-                  </div>
-                  <div className="text-center mt-1">
-                    <span className="text-blue-300/80 text-sm">
-                      {t('level.totalAvailable')}: {availableSkillPoints}
-                    </span>
+
+                  {/* 기존 콘텐츠 (흐리게 표시) */}
+                  <div className="opacity-30">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Image src="/icons/gem.png" alt="Skill Points" width={24} height={24} />
+                      <span className="text-blue-300 font-medium">{t('level.skillPointsReward')}</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="text-blue-400 text-lg font-bold">
+                        +{skillPointsGained} {t('level.skillPoints')}
+                      </span>
+                    </div>
+                    <div className="text-center mt-1">
+                      <span className="text-blue-300/80 text-sm">
+                        {t('level.totalAvailable')}: {availableSkillPoints}
+                      </span>
+                    </div>
                   </div>
                 </motion.div>
 
@@ -113,17 +123,18 @@ export const LevelUpModal = ({
                   transition={{ delay: 0.8, duration: 0.5 }}
                   className="flex flex-col gap-3"
                 >
-                  {onViewTechTree && (
+                  {/* TODO: 테크트리 페이지 이동 기능 추가 */}
+                  {/* {onViewTechTree && (
                     <Button
                       onClick={onViewTechTree}
                       className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-3 font-medium shadow-lg"
                     >
                       🔧 {t('level.viewTechTree')}
                     </Button>
-                  )}
+                  )} */}
                   <Button
                     onClick={onClose}
-                    className="w-full bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 py-3 font-medium"
+                    className="w-full bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 py-5 text-lg font-medium"
                   >
                     {t('common.continue')}
                   </Button>

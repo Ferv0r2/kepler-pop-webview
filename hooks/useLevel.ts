@@ -16,16 +16,16 @@ export const useUpdateExperience = () => {
 
   return useMutation<LevelUpdateResponse, Error, UpdateExpRequest>({
     mutationFn: updateExperience,
-    onSuccess: (data) => {
+    onSuccess: () => {
       // 레벨 정보 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['level'] });
       // 사용자 정보 캐시도 무효화 (UserInfo에 레벨 정보 포함)
       queryClient.invalidateQueries({ queryKey: ['user'] });
 
-      // 레벨업한 경우 추가 처리 가능
-      if (data.leveledUp) {
-        console.log(`🎉 레벨업! 새 레벨: ${data.newLevel}, 스킬포인트 획득: ${data.skillPointsGained}`);
-      }
+      // 레벨업한 경우 추가 처리
+      // if (data.leveledUp) {
+      //   console.log(`🎉 레벨업! 새 레벨: ${data.newLevel}, 스킬포인트 획득: ${data.skillPointsGained}`);
+      // }
     },
     onError: (error) => {
       console.error('경험치 업데이트 실패:', error);
