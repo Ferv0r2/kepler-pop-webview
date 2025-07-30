@@ -1,3 +1,4 @@
+import type { LevelInfo, LevelUpdateResponse, UpdateExpRequest } from '@/types/level-types';
 import { UserInfo } from '@/types/user-types';
 
 import { api } from './FetchAPI';
@@ -165,6 +166,19 @@ export const getCurrentUserRank = async (
 export const updateGem = async (amount: number): Promise<void> => {
   const response = await api.post('/users/me/gem/update', { amount });
   if (!response.ok) throw new Error('Failed to update gem');
+};
+
+// 레벨 시스템 API 함수들
+export const getLevelInfo = async (): Promise<LevelInfo> => {
+  const response = await api.get('/level/info');
+  if (!response.ok) throw new Error('Failed to get level info');
+  return response.json();
+};
+
+export const updateExperience = async (request: UpdateExpRequest): Promise<LevelUpdateResponse> => {
+  const response = await api.post('/level/update-exp', request);
+  if (!response.ok) throw new Error('Failed to update experience');
+  return response.json();
 };
 
 export const updateUserInfo = async (userInfo: Partial<UserInfo>): Promise<void> => {
