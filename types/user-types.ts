@@ -37,6 +37,14 @@ export type UserInfo = {
   gem: number;
   level: number;
   exp: number;
+  // 레벨 시스템 확장 필드
+  currentExp?: number;
+  expForCurrentLevel?: number;
+  expForNextLevel?: number;
+  progressToNext?: number;
+  totalSkillPoints?: number;
+  usedSkillPoints?: number;
+  availableSkillPoints?: number;
   isSubscribed: boolean;
   locale: string;
   gameItems: Partial<Record<GameItemType, number>>;
