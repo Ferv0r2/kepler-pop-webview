@@ -9,7 +9,7 @@ export interface TopNavigationProps {
   profileImage: string;
 }
 
-export const TopNavigation = ({ name, gem, profileImage }: TopNavigationProps) => {
+export const TopNavigation = ({ name, level, gem, profileImage }: TopNavigationProps) => {
   return (
     <div className="flex justify-between items-center gap-4 px-4 pt-4 pb-2">
       <div className="flex items-center gap-2">
@@ -26,10 +26,11 @@ export const TopNavigation = ({ name, gem, profileImage }: TopNavigationProps) =
             height={48}
             className="rounded-full border-2 border-purple-400 shadow-lg"
           />
-          {/* TODO: Level system */}
-          {/* <div className="absolute -bottom-1 -right-1 bg-purple-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
-            {level}
-          </div> */}
+          {level && (
+            <div className="absolute -bottom-1 -right-1 bg-purple-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
+              {level}
+            </div>
+          )}
         </motion.div>
         <motion.div
           initial={{ x: -20, opacity: 0 }}
