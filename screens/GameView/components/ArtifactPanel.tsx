@@ -86,8 +86,12 @@ export const ArtifactPanel = ({ artifacts }: ArtifactPanelProps) => {
                     </motion.div>
 
                     <div className="flex-1 min-w-0">
-                      <div className={`font-bold text-sm ${artifact.color} truncate`}>{artifact.name}</div>
-                      <div className="text-white/70 text-xs mt-1 leading-tight">{artifact.description}</div>
+                      <div className={`font-bold text-sm ${artifact.color} truncate`}>
+                        {t(`artifact.${artifact.id}`)}
+                      </div>
+                      <div className="text-white/70 text-xs mt-1 leading-tight">
+                        {t(`artifact.${artifact.id}_description`)}
+                      </div>
                     </div>
                   </div>
 

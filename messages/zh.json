@@ -128,12 +128,12 @@
     },
     "droplet_unit": "能量水滴 {count}",
     "gem_unit": "宝石 {count}",
-    "droplet_small": "小能量水滴",
-    "droplet_medium": "中能量水滴",
-    "droplet_large": "大能量水滴",
-    "gems_small": "小宝石",
-    "gems_medium": "中宝石",
-    "gems_large": "大宝石"
+    "droplet_small": "水滴小包",
+    "droplet_medium": "水滴中包",
+    "droplet_large": "水滴大包",
+    "gems_small": "宝石小包",
+    "gems_medium": "宝石中包",
+    "gems_large": "宝石大包"
   },
   "settings": {
     "title": "设置",

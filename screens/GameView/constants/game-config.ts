@@ -6,7 +6,7 @@ export const ENERGY_MAX = 50;
 
 // 부활 시스템 상수들
 export const REVIVE_GEM_COST = 5;
-export const REVIVE_BONUS_MOVES = 5;
+export const REVIVE_BONUS_MOVES = 10;
 
 export const GRID_SIZE = 8;
 export const MIN_MATCH_COUNT = 3;

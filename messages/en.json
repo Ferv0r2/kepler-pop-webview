@@ -129,12 +129,12 @@
     },
     "droplet_unit": "Droplet {count}",
     "gem_unit": "Gem {count}",
-    "droplet_small": "Droplet Small",
-    "droplet_medium": "Droplet Medium",
-    "droplet_large": "Droplet Large",
-    "gems_small": "Gem Small",
-    "gems_medium": "Gem Medium",
-    "gems_large": "Gem Large"
+    "droplet_small": "Dew Package",
+    "droplet_medium": "Water Sprayer Package",
+    "droplet_large": "Water Tank Package",
+    "gems_small": "Gem Package",
+    "gems_medium": "Treasure Chest Package",
+    "gems_large": "Treasure Heap Package"
   },
   "settings": {
     "title": "Settings",

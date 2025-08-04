@@ -128,12 +128,12 @@
     },
     "droplet_unit": "ドロップレット {count}",
     "gem_unit": "ジェム {count}",
-    "droplet_small": "ドロップレット小",
-    "droplet_medium": "ドロップレット中",
-    "droplet_large": "ドロップレット大",
-    "gems_small": "ジェム小",
-    "gems_medium": "ジェム中",
-    "gems_large": "ジェム大"
+    "droplet_small": "水滴パッケージ",
+    "droplet_medium": "水スプレーパッケージ",
+    "droplet_large": "水タンクパッケージ",
+    "gems_small": "ジェムパッケージ",
+    "gems_medium": "宝箱パッケージ",
+    "gems_large": "宝山パッケージ"
   },
   "settings": {
     "title": "設定",

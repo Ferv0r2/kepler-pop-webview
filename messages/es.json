@@ -128,12 +128,12 @@
     },
     "droplet_unit": "Gota de Energía {count}",
     "gem_unit": "Gema {count}",
-    "droplet_small": "Gota de Energía Pequeña",
-    "droplet_medium": "Gota de Energía Media",
-    "droplet_large": "Gota de Energía Grande",
-    "gems_small": "Gema Pequeña",
-    "gems_medium": "Gema Media",
-    "gems_large": "Gema Grande"
+    "droplet_small": "Paquete de Gotas de Energía",
+    "droplet_medium": "Paquete de Gotas de Agua",
+    "droplet_large": "Paquete de Gotas de Agua",
+    "gems_small": "Paquete de Gems",
+    "gems_medium": "Paquete de Gems",
+    "gems_large": "Paquete de Gems"
   },
   "settings": {
     "title": "Configuración",
