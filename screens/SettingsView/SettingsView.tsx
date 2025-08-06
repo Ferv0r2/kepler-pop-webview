@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, User, Globe, ImageIcon, Save, Check, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -22,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { useUser } from '@/hooks/useUser';
 import { SUPPORTED_LOCALES } from '@/i18n/constants';
+import { useRouter } from '@/i18n/routing';
 import { updateUserInfo } from '@/networks/KeplerBackend';
 import { useAuthStore } from '@/store/authStore';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
@@ -46,7 +46,6 @@ export const SettingsView = () => {
   const { sendMessage, addMessageHandler } = useWebViewBridgeContext();
   const updateUserInfoMutation = useUpdateUserInfo();
   const router = useRouter();
-  const pathname = usePathname();
   const clearTokens = useAuthStore((state) => state.clearTokens);
   const queryClient = useQueryClient();
 
@@ -119,16 +118,15 @@ export const SettingsView = () => {
           locale: selectedLocale,
         });
 
-        // locale이 변경된 경우에만 URL 이동
+        // locale이 변경된 경우 새 언어로 리다이렉트
         if (selectedLocale !== (userInfo?.locale || 'en')) {
-          const pathParts = pathname.split('/');
-          if (pathParts[1] && pathParts[1].length === 2) {
-            pathParts[1] = selectedLocale;
-          } else {
-            pathParts.splice(1, 0, selectedLocale);
-          }
-          const newPath = pathParts.join('/') || `/${selectedLocale}/settings`;
-          router.push(newPath);
+          // 쿠키에 새 로케일 설정
+          document.cookie = `NEXT_LOCALE=${selectedLocale}; path=/; max-age=31536000`;
+          // next-intl의 redirect를 사용하여 새 언어로 리다이렉트
+          setTimeout(() => {
+            window.location.href = `/${selectedLocale}/settings`;
+          }, 100);
+          return;
         }
       }
 
@@ -150,8 +148,7 @@ export const SettingsView = () => {
 
     clearTokens();
     queueMicrotask(() => {
-      const currentLocale = userInfo?.locale || 'en';
-      router.push(`/${currentLocale}/auth`);
+      router.push('/auth');
     });
   };
 

@@ -2,7 +2,6 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, RefreshCw, AlertCircle, Users, Clock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useState, useCallback, useEffect } from 'react';
 
@@ -16,6 +15,7 @@ import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { Button } from '@/components/ui/button';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { useUser } from '@/hooks/useUser';
+import { useRouter } from '@/i18n/routing';
 import { calculateNextResetTime, formatTimeRemaining } from '@/utils/time-helper';
 
 export const LeaderboardView = () => {
@@ -45,10 +45,8 @@ export const LeaderboardView = () => {
   }, [refreshData]);
 
   const handlePlayNow = useCallback(() => {
-    if (userInfo?.locale) {
-      router.push(`/${userInfo.locale}`);
-    }
-  }, [router, userInfo?.locale]);
+    router.push('/');
+  }, [router]);
 
   // 리더보드 기간에 따른 타이머 업데이트
   useEffect(() => {

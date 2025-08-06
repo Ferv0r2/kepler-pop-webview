@@ -4,7 +4,6 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 
@@ -12,6 +11,7 @@ import { Logo } from '@/components/logo/Logo';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
 import { StarsAndSparkles } from '@/components/ui/StarsAndSparkles';
 import { CHARACTERS } from '@/constants/characters';
+import { useRouter } from '@/i18n/routing';
 import { signInWithGoogle } from '@/networks/KeplerBackend';
 import { useAuthStore } from '@/store/authStore';
 import { GoogleIdTokenMessage, NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
@@ -24,15 +24,9 @@ export default function AuthPage() {
   const { setTokens } = useAuthStore();
   const t = useTranslations('auth');
 
-  const getCurrentLocale = () => {
-    if (typeof window !== 'undefined') {
-      return window.location.pathname.split('/')[1];
-    }
-    return 'en'; // fallback
-  };
-
   const googleLoginWithLocale = async (token: string) => {
-    const locale = getCurrentLocale();
+    // 현재 URL에서 locale 추출
+    const locale = window.location.pathname.split('/')[1] || 'en';
     return signInWithGoogle(token, locale);
   };
 
@@ -41,8 +35,7 @@ export default function AuthPage() {
     onSuccess: async (data) => {
       const { accessToken, refreshToken } = data;
       setTokens(accessToken, refreshToken);
-      const currentLocale = getCurrentLocale();
-      router.replace(`/${currentLocale}`);
+      router.replace('/');
     },
     onError: (error: unknown) => {
       console.error('Login failed:', error);

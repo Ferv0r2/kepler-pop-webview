@@ -3,11 +3,11 @@
 import { motion } from 'framer-motion';
 import { Trophy, Clock, ChevronRight, Crown, Medal, Award } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 
 import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { useRouter } from '@/i18n/routing';
 import type { LeaderboardEntry } from '@/networks/types/leaderboard';
 import { formatNumber } from '@/utils/format-helper';
 import { formatTimeRemaining, calculateTimeToNextWeek } from '@/utils/time-helper';
@@ -42,7 +42,7 @@ export const WeeklyLeaderboardWidget = ({ locale }: WeeklyLeaderboardWidgetProps
   }, [locale]);
 
   const handleViewAll = () => {
-    router.push(`/${locale}/leaderboard`);
+    router.push('/leaderboard');
   };
 
   const getRankIcon = (rank: number) => {

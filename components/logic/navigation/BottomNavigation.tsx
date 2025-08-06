@@ -2,24 +2,23 @@
 
 import { motion } from 'framer-motion';
 import { Store, Settings, Play } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { createElement, ElementType, useMemo } from 'react';
+
+import { usePathname, useRouter } from '@/i18n/routing';
 
 export const BottomNavigation = () => {
   const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
 
-  const locale = pathname.split('/')[1] || 'en';
-
   const navigationButtons = useMemo(
     () => [
-      { icon: Store, label: t('common.store'), path: `/${locale}/store`, testId: 'nav-store' },
-      { icon: Play, label: t('common.play'), path: `/${locale}`, testId: 'nav-play' },
-      { icon: Settings, label: t('common.settings'), path: `/${locale}/settings`, testId: 'nav-settings' },
+      { icon: Store, label: t('common.store'), path: '/store', testId: 'nav-store' },
+      { icon: Play, label: t('common.play'), path: '/', testId: 'nav-play' },
+      { icon: Settings, label: t('common.settings'), path: '/settings', testId: 'nav-settings' },
     ],
-    [t, locale],
+    [t],
   );
 
   const handleNavigation = (path: string) => {

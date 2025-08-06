@@ -4,7 +4,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Settings, Home, RefreshCw, Shuffle, AlertTriangle, Zap, X } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect, type TouchEvent, useCallback, useRef, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,6 +24,7 @@ import { useUpdateExperience } from '@/hooks/useLevel';
 import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import { useWebViewBridge } from '@/hooks/useWebViewBridge';
+import { useRouter } from '@/i18n/routing';
 import { updateDroplet, updateGem, updateScore } from '@/networks/KeplerBackend';
 import {
   ANIMATION_DURATION,
@@ -1594,7 +1595,7 @@ export const GameView = () => {
                                 }`}
                               >
                                 <Image src="/icons/gem.png" alt="gem" width={40} height={40} />
-                                <span className="text-md font-medium">
+                                <span className="text-md font-medium whitespace-pre-wrap">
                                   {t('game.revive.useGem', { count: REVIVE_GEM_COST })}
                                 </span>
                               </Button>
@@ -1612,7 +1613,7 @@ export const GameView = () => {
                             <Button
                               onClick={handleReviveGiveUp}
                               disabled={updateGemMutation.isPending || isReviveAdLoading}
-                              className="py-6 text-md bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 hover:text-white border border-gray-500/50 hover:border-gray-400/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="py-6 text-md bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 hover:text-white border border-gray-500/50 hover:border-gray-400/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-pre-wrap"
                             >
                               {t('game.revive.giveUp')}
                             </Button>
