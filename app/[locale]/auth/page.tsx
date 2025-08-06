@@ -11,6 +11,7 @@ import { Logo } from '@/components/logo/Logo';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
 import { StarsAndSparkles } from '@/components/ui/StarsAndSparkles';
 import { CHARACTERS } from '@/constants/characters';
+import { useGTM } from '@/hooks/useGTM';
 import { useRouter } from '@/i18n/routing';
 import { signInWithGoogle } from '@/networks/KeplerBackend';
 import { useAuthStore } from '@/store/authStore';
@@ -22,6 +23,7 @@ export default function AuthPage() {
 
   const { addMessageHandler, sendMessage } = useWebViewBridgeContext();
   const { setTokens } = useAuthStore();
+  const { trackLogin } = useGTM();
   const t = useTranslations('auth');
 
   const googleLoginWithLocale = async (token: string) => {
@@ -35,6 +37,10 @@ export default function AuthPage() {
     onSuccess: async (data) => {
       const { accessToken, refreshToken } = data;
       setTokens(accessToken, refreshToken);
+
+      // GTM 로그인 이벤트 전송
+      trackLogin('google');
+
       router.replace('/');
     },
     onError: (error: unknown) => {

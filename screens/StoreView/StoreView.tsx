@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
+import { useGTM } from '@/hooks/useGTM';
 import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import { updateDroplet, updateGem } from '@/networks/KeplerBackend';
@@ -47,6 +48,7 @@ export const StoreView = () => {
   const queryClient = useQueryClient();
   const { data: userInfo, isLoading } = useUser();
   const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
+  const { trackPurchase } = useGTM();
   const t = useTranslations();
 
   const updateDropletMutation = useUpdateDroplet();
@@ -80,7 +82,16 @@ export const StoreView = () => {
         return { success: true, type: 'gems', amount: item.amount };
       }
     },
-    onSuccess: () => {
+    onSuccess: (data, item) => {
+      // GTM 구매 이벤트 전송
+      trackPurchase({
+        item_name: item.name || `${item.type}_${item.amount}`,
+        item_category: item.type,
+        value: item.type === 'droplet' ? item.gemCost! : item.price!,
+        currency: item.type === 'droplet' ? 'gem' : 'USD',
+        payment_type: item.type === 'droplet' ? 'gem' : 'iap',
+      });
+
       queryClient.invalidateQueries({ queryKey: ['user'] });
       setShowConfirmModal(false);
       setSelectedItem(null);

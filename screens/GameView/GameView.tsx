@@ -20,6 +20,7 @@ import { ConfettiManager } from '@/components/ui/LottieConfetti';
 import { PerformanceMonitor } from '@/components/ui/PerformanceMonitor';
 import { Toast } from '@/components/ui/toast';
 import { useBackButton } from '@/hooks/useBackButton';
+import { useGTM } from '@/hooks/useGTM';
 import { useUpdateExperience } from '@/hooks/useLevel';
 import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
@@ -178,6 +179,9 @@ export const GameView = () => {
   const { settings: soundSettings } = useSound();
   const { sendMessage, addMessageHandler, isInWebView } = useWebViewBridge();
 
+  // GTM 추적 훅
+  const { trackGameStart, trackGameEnd, trackLevelUp } = useGTM();
+
   // 레벨 시스템 훅
   const updateExperienceMutation = useUpdateExperience();
 
@@ -195,6 +199,7 @@ export const GameView = () => {
   } = useRewardSystem(gameItems);
 
   const [lastMatchTime, setLastMatchTime] = useState<number>(Date.now());
+  const [gameStartTime] = useState<number>(Date.now()); // 게임 시작 시간 추적
 
   const [selectedTile, setSelectedTile] = useState<{
     row: number;
@@ -335,6 +340,18 @@ export const GameView = () => {
       if (updateScoreMutation.isPending || updateExperienceMutation.isPending) return;
 
       try {
+        // GTM 게임 종료 이벤트 전송
+        const gameDuration = Math.floor((Date.now() - gameStartTime) / 1000); // 초 단위
+        const movesUsed =
+          (gameMode === 'casual' ? CASUAL_MODE_MOVE_COUNT : CHALLENGE_MODE_MOVE_COUNT) - gameState.moves;
+
+        trackGameEnd({
+          mode: gameMode,
+          score: finalScore,
+          moves_used: movesUsed,
+          duration: gameDuration,
+        });
+
         // 모든 점수를 백엔드로 전송 (기간별 점수 업데이트를 위해)
         // 백엔드에서 최고점수 vs 기간별 점수를 각각 처리함
         await updateScoreMutation.mutateAsync({ score: finalScore, mode: gameMode });
@@ -352,8 +369,10 @@ export const GameView = () => {
             (levelUpdateResult.expForNextLevel - levelUpdateResult.expForCurrentLevel),
         });
 
-        // 레벨업이 발생한 경우 축하 모달 표시
+        // 레벨업이 발생한 경우 축하 모달 표시 및 GTM 이벤트 전송
         if (levelUpdateResult.leveledUp && levelUpdateResult.newLevel) {
+          trackLevelUp(levelUpdateResult.newLevel);
+
           setLevelUpData({
             newLevel: levelUpdateResult.newLevel,
             skillPointsGained: levelUpdateResult.skillPointsGained,
@@ -365,7 +384,16 @@ export const GameView = () => {
         console.error('Failed to update score or experience:', error);
       }
     },
-    [userInfo, updateScoreMutation, updateExperienceMutation, gameMode],
+    [
+      userInfo,
+      updateScoreMutation,
+      updateExperienceMutation,
+      gameMode,
+      gameStartTime,
+      gameState.moves,
+      trackGameEnd,
+      trackLevelUp,
+    ],
   );
 
   const handleTileClick = (row: number, col: number) => {
@@ -1163,6 +1191,10 @@ export const GameView = () => {
 
   useEffect(() => {
     setGrid(createInitialGrid());
+
+    // GTM 게임 시작 이벤트 전송
+    trackGameStart(gameMode);
+
     // 초기화 완료 후 isInitializing을 false로 설정
     const timer = setTimeout(() => {
       setIsInitializing(false);
