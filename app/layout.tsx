@@ -269,6 +269,21 @@ export default function RootLayout({
         </noscript>
         {/* End Google Tag Manager (noscript) */}
 
+        {/* Google Analytics (GA4) */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-N76622NKPH" strategy="afterInteractive" />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-N76622NKPH');
+            `,
+          }}
+        />
+
         <div id="initial-loader" aria-busy="true" role="status" tabIndex={-1}>
           <StarsAndSparkles />
           <Logo className="mt-24" />
