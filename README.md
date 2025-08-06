@@ -4,24 +4,33 @@ Kepler Pop is a space-themed puzzle game where players evolve plants, harness th
 
 Built using React Native and TypeScript, Kepler Pop is designed for Android devices.
 
-## 📸 Preview
+## 📱 Download
 
-<img src="./public/preview/preview.gif" alt="Kepler Pop Preview" width="300" />
+<a href="https://play.google.com/store/apps/details?id=com.keplerpop">
+  <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" width="200"/>
+</a>
+
+### 🎥 Video Demo
+
+[![Kepler Pop Demo](https://img.youtube.com/vi/I1Btb0g6gEM/maxresdefault.jpg)](https://www.youtube.com/shorts/I1Btb0g6gEM)
 
 ## 🚀 Features
 
 - **Dynamic Puzzle Gameplay**: Match plant cells to evolve them into higher stages.
 - **Cosmic Weather Effects**: Weather changes every N turns, affecting your strategy.
 - **Infinite Mode**: Test your endurance and aim for the highest score.
-- **Customizable Avatars**: Decorate your plants with unique backgrounds and pots.
-- **Daily Rewards**: Water your plant to claim bonuses.
+- **Roguelike Reward System**: Choose from random rewards after each level to enhance your gameplay strategy.
+- **Strategic Upgrades**: Unlock power-ups and bonuses that change your approach to each puzzle.
 - **Leaderboards**: Compete with others and showcase your skills.
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React Native & Webview with TypeScript
-- **State Management**: Context API
-- **Backend**: Firebase (planned for leaderboard and user data)
+- **Frontend**: React Native & Next.js WebView with TypeScript
+- **Backend**: NestJS with TypeORM
+- **Database**: PostgreSQL
+- **State Management**: Zustand & React Query
+- **UI Framework**: Tailwind CSS + shadcn/ui
+- **Authentication**: Google OAuth 2.0
 - **Design**: Minimalistic UI with vibrant cosmic themes
 
 ## 🤝 Contributions
