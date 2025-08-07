@@ -13,7 +13,7 @@ import { StarsAndSparkles } from '@/components/ui/StarsAndSparkles';
 import { CHARACTERS } from '@/constants/characters';
 import { useGTM } from '@/hooks/useGTM';
 import { useRouter } from '@/i18n/routing';
-import { signInWithGoogle } from '@/networks/KeplerBackend';
+import { signInWithGoogle, guestLogin } from '@/networks/KeplerBackend';
 import { useAuthStore } from '@/store/authStore';
 import { GoogleIdTokenMessage, NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 
@@ -22,7 +22,7 @@ export default function AuthPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const { addMessageHandler, sendMessage } = useWebViewBridgeContext();
-  const { setTokens } = useAuthStore();
+  const { setTokens, setGuestTokens, generateDeviceId, accessToken, deviceId } = useAuthStore();
   const { trackLogin } = useGTM();
   const t = useTranslations('auth');
 
@@ -62,11 +62,42 @@ export default function AuthPage() {
     },
   });
 
+  const { mutate: handleGuestLogin } = useMutation({
+    mutationFn: async () => {
+      const deviceId = generateDeviceId();
+      console.log('🎮 Guest login with deviceId:', deviceId);
+      const locale = window.location.pathname.split('/')[1] || 'en';
+      return { deviceId, result: await guestLogin(deviceId, locale) };
+    },
+    onSuccess: async ({ deviceId, result }) => {
+      const { accessToken, refreshToken } = result;
+      setGuestTokens(accessToken, refreshToken, deviceId);
+
+      // GTM 게스트 로그인 이벤트 전송
+      // trackLogin('guest'); // TODO: GTM에서 guest 로그인 타입 지원 시 활성화
+
+      router.replace('/');
+    },
+    onError: (error: unknown) => {
+      console.error('Guest login failed:', error);
+      setErrorMsg(t('guestLoginFailed'));
+      setTimeout(() => {
+        setErrorMsg(null);
+      }, 3000);
+    },
+  });
+
+  // 기존 토큰이 있으면 자동으로 메인 페이지로 이동
   useEffect(() => {
+    if (accessToken) {
+      router.replace('/');
+      return;
+    }
+
     sendMessage({
       type: WebToNativeMessageType.NEED_TO_LOGIN,
     });
-  }, [sendMessage]);
+  }, [sendMessage, accessToken, router]);
 
   useEffect(() => {
     const unsubscribeGoogleIdToken = addMessageHandler<GoogleIdTokenMessage>(
@@ -106,31 +137,52 @@ export default function AuthPage() {
           ))}
         </div>
 
-        {/* 개발 환경에서만 보이는 구글 로그인 버튼 */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-8">
-            <GoogleLogin
-              onSuccess={(credentialResponse) => {
-                console.log('Google login successful:', credentialResponse);
-                // ID token을 사용하여 로그인
-                if (credentialResponse.credential) {
-                  handleGoogleLogin(credentialResponse.credential);
-                }
-              }}
-              onError={() => {
-                console.error('Google login failed');
-                setErrorMsg(t('loginFailed'));
-                setTimeout(() => {
-                  setErrorMsg(null);
-                }, 3000);
-              }}
-              theme="filled_blue"
-              size="large"
-              text="signin_with"
-            />
-            <p className="text-white/40 text-xs mt-2 text-center">개발 환경에서만 표시됩니다</p>
-          </div>
-        )}
+        {/* 로그인 버튼들 */}
+        <div className="mt-8 flex flex-col gap-4 w-full max-w-sm px-4">
+          {/* 게스트 로그인 버튼 */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handleGuestLogin()}
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 
+                     text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-200
+                     flex items-center justify-center gap-3 text-lg"
+          >
+            <span>🎮</span>
+            {deviceId ? t('continueAsGuest') || '게스트로 계속하기' : t('playAsGuest')}
+          </motion.button>
+
+          {/* 개발 환경에서만 보이는 구글 로그인 버튼 */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="flex flex-col items-center">
+              <GoogleLogin
+                onSuccess={(credentialResponse) => {
+                  console.log('Google login successful:', credentialResponse);
+                  // ID token을 사용하여 로그인
+                  if (credentialResponse.credential) {
+                    handleGoogleLogin(credentialResponse.credential);
+                  }
+                }}
+                onError={() => {
+                  console.error('Google login failed');
+                  setErrorMsg(t('loginFailed'));
+                  setTimeout(() => {
+                    setErrorMsg(null);
+                  }, 3000);
+                }}
+                theme="filled_blue"
+                size="large"
+                text="signin_with"
+              />
+              <p className="text-white/40 text-xs mt-2 text-center">개발 환경에서만 표시됩니다</p>
+            </div>
+          )}
+        </div>
+
+        {/* 게스트 모드 설명 */}
+        <div className="mt-6 px-4 max-w-sm">
+          <p className="text-white/60 text-sm text-center leading-relaxed">{t('guestDescription')}</p>
+        </div>
       </div>
 
       {/* 에러 메시지 */}

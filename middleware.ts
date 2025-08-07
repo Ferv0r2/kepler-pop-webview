@@ -52,19 +52,28 @@ export function middleware(request: NextRequest) {
       // access token이 있고, refresh token이 유효하면 인증된 것으로 간주
       if (accessToken && refreshToken) {
         const refreshPayload = parseJwt(refreshToken);
-        if (
-          refreshPayload &&
-          typeof refreshPayload === 'object' &&
-          refreshPayload !== null &&
-          'exp' in refreshPayload &&
-          typeof (refreshPayload as { exp?: number }).exp === 'number' &&
-          (refreshPayload as { exp: number }).exp * 1000 > Date.now()
-        ) {
-          hasValidAuth = true;
-          console.log('[Middleware] Valid auth found, refresh token valid');
+        if (refreshPayload && typeof refreshPayload === 'object' && refreshPayload !== null) {
+          // 게스트 토큰인지 확인
+          const isGuestToken = 'type' in refreshPayload && refreshPayload.type === 'guest';
+
+          if (isGuestToken) {
+            // 게스트 토큰은 100년 만료이므로 만료 체크 없이 유효로 처리
+            hasValidAuth = true;
+            console.log('[Middleware] Valid guest auth found');
+          } else if (
+            'exp' in refreshPayload &&
+            typeof (refreshPayload as { exp?: number }).exp === 'number' &&
+            (refreshPayload as { exp: number }).exp * 1000 > Date.now()
+          ) {
+            hasValidAuth = true;
+            console.log('[Middleware] Valid user auth found, refresh token valid');
+          } else {
+            refreshTokenExpired = true;
+            console.log('[Middleware] User refresh token expired');
+          }
         } else {
           refreshTokenExpired = true;
-          console.log('[Middleware] Refresh token expired');
+          console.log('[Middleware] Invalid token payload');
         }
       } else {
         refreshTokenExpired = true;

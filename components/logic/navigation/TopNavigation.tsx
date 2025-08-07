@@ -48,19 +48,22 @@ export const TopNavigation = ({ name, gem, profileImage }: TopNavigationProps) =
           <div className="bg-gray-700/50 h-1.5 rounded-full w-20 mt-1">
             <motion.div
               className="bg-gradient-to-r from-purple-400 to-pink-500 h-full rounded-full transition-all duration-500"
-              style={{ width: `${progressPercent}%` }}
+              style={{ width: `${Math.min(progressPercent, 100)}%` }}
               initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
+              animate={{ width: `${Math.min(progressPercent, 100)}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
             />
           </div>
         </motion.div>
       </div>
-      <div className="relative flex items-center gap-2 bg-gray-800/80 backdrop-blur-sm border border-purple-400/50 rounded-lg shadow-lg">
-        <Image src="/icons/gem.png" alt="Gem" width={48} height={48} className="absolute -left-5 drop-shadow" />
-        <span className="min-w-16 ml-3 px-3 py-1 text-center text-white text-lg font-semibold drop-shadow">
-          {gem.toLocaleString()}
-        </span>
+
+      <div className="flex items-center gap-2">
+        <div className="relative flex items-center gap-2 bg-gray-800/80 backdrop-blur-sm border border-purple-400/50 rounded-lg shadow-lg">
+          <Image src="/icons/gem.png" alt="Gem" width={48} height={48} className="absolute -left-5 drop-shadow" />
+          <span className="min-w-16 ml-3 px-3 py-1 text-center text-white text-lg font-semibold drop-shadow">
+            {gem.toLocaleString()}
+          </span>
+        </div>
       </div>
     </div>
   );

@@ -19,6 +19,22 @@ export const signInWithGoogle = async (token: string, locale?: string): Promise<
   return response.json();
 };
 
+export const guestLogin = async (deviceId: string, locale?: string): Promise<SignInWithGoogleResponse> => {
+  const response = await api.post('/auth/guest', { deviceId, locale });
+  if (!response.ok) throw new Error('Failed to guest login');
+  return response.json();
+};
+
+export const migrateGuestToUser = async (
+  guestToken: string,
+  googleToken: string,
+  locale?: string,
+): Promise<SignInWithGoogleResponse> => {
+  const response = await api.post('/auth/guest/migrate', { guestToken, googleToken, locale });
+  if (!response.ok) throw new Error('Failed to migrate guest to user');
+  return response.json();
+};
+
 export const getUserInfo = async (): Promise<UserInfo> => {
   const response = await api.get('/users/me');
   if (!response.ok) throw new Error('Failed to get user info');

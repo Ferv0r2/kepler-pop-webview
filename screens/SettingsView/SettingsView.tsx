@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { ConfirmationModal } from '@/components/logic/dialogs/ConfirmationModal';
+import { GuestUpgradeModal } from '@/components/logic/dialogs/GuestUpgradeModal';
 import { BottomNavigation } from '@/components/logic/navigation/BottomNavigation';
 import { TopNavigation } from '@/components/logic/navigation/TopNavigation';
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
@@ -58,6 +59,8 @@ export const SettingsView = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'language'>('profile');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { isGuest } = useAuthStore();
 
   useEffect(() => {
     const unsubscribeBackState = addMessageHandler(NativeToWebMessageType.CAN_BACK_STATE, () => {
@@ -253,81 +256,107 @@ export const SettingsView = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <Card className="bg-gray-800/60 border-gray-700/50 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <User className="w-5 h-5 text-blue-400" />
-                    {t('settings.settingsProfile')}
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    {t('settings.settingsProfileDescription')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* 닉네임 */}
-                  <div className="space-y-2">
-                    <Label htmlFor="nickname" className="text-gray-300 font-medium">
-                      {t('settings.nickname')}
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="nickname"
-                        className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-400 focus:ring-blue-400/20"
-                        value={nickname}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
-                        maxLength={16}
-                        placeholder={t('settings.nicknamePlaceholder')}
-                      />
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <Badge variant={isNicknameValid ? 'default' : 'destructive'} className="text-xs bg-blue-400">
-                          {nickname.length}/16
-                        </Badge>
+              {isGuest ? (
+                /* 게스트 사용자 계정 업그레이드 */
+                <Card className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/50 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-yellow-400 flex items-center gap-2">
+                      <span>⭐</span>
+                      {t('auth.upgradeAccount')}
+                    </CardTitle>
+                    <CardDescription className="text-gray-300">{t('auth.upgradeToSave')}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button
+                      onClick={() => setShowUpgradeModal(true)}
+                      className="w-full h-12 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 
+                               text-white font-bold text-lg shadow-lg transition-all duration-200"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>⭐</span>
+                        {t('auth.upgradeAccount')}
+                      </span>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                /* 일반 사용자 프로필 설정 */
+                <Card className="bg-gray-800/60 border-gray-700/50 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <User className="w-5 h-5 text-blue-400" />
+                      {t('settings.settingsProfile')}
+                    </CardTitle>
+                    <CardDescription className="text-gray-400">
+                      {t('settings.settingsProfileDescription')}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* 닉네임 */}
+                    <div className="space-y-2">
+                      <Label htmlFor="nickname" className="text-gray-300 font-medium">
+                        {t('settings.nickname')}
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="nickname"
+                          className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-400 focus:ring-blue-400/20"
+                          value={nickname}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
+                          maxLength={16}
+                          placeholder={t('settings.nicknamePlaceholder')}
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Badge variant={isNicknameValid ? 'default' : 'destructive'} className="text-xs bg-blue-400">
+                            {nickname.length}/16
+                          </Badge>
+                        </div>
+                      </div>
+                      {!isNicknameValid && nickname.length > 0 && (
+                        <p className="text-red-400 text-sm">{t('settings.nicknameInvalid')}</p>
+                      )}
+                    </div>
+
+                    <Separator className="bg-gray-700/50" />
+
+                    {/* 프로필 이미지 */}
+                    <div className="space-y-3">
+                      <Label className="text-gray-300 font-medium flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4" />
+                        {t('settings.profileImage')}
+                      </Label>
+                      <div className="grid grid-cols-5 gap-3">
+                        {PLANT_IMAGES.map((img, index) => (
+                          <motion.div
+                            key={img}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className={`relative cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-200 ${
+                              selectedProfileImage === img
+                                ? 'border-blue-400 shadow-lg shadow-blue-400/25'
+                                : 'border-gray-600 hover:border-gray-500'
+                            }`}
+                            onClick={() => setSelectedProfileImage(img)}
+                          >
+                            <Image
+                              src={img || '/placeholder.svg'}
+                              alt={`${t('settings.profileImage')} ${index + 1}`}
+                              width={64}
+                              height={64}
+                              className="w-full h-full object-cover"
+                            />
+                            {selectedProfileImage === img && (
+                              <div className="absolute inset-0 bg-blue-400/20 flex items-center justify-center">
+                                <Check className="w-6 h-6 text-blue-400" />
+                              </div>
+                            )}
+                          </motion.div>
+                        ))}
                       </div>
                     </div>
-                    {!isNicknameValid && nickname.length > 0 && (
-                      <p className="text-red-400 text-sm">{t('settings.nicknameInvalid')}</p>
-                    )}
-                  </div>
-
-                  <Separator className="bg-gray-700/50" />
-
-                  {/* 프로필 이미지 */}
-                  <div className="space-y-3">
-                    <Label className="text-gray-300 font-medium flex items-center gap-2">
-                      <ImageIcon className="w-4 h-4" />
-                      {t('settings.profileImage')}
-                    </Label>
-                    <div className="grid grid-cols-5 gap-3">
-                      {PLANT_IMAGES.map((img, index) => (
-                        <motion.div
-                          key={img}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className={`relative cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-200 ${
-                            selectedProfileImage === img
-                              ? 'border-blue-400 shadow-lg shadow-blue-400/25'
-                              : 'border-gray-600 hover:border-gray-500'
-                          }`}
-                          onClick={() => setSelectedProfileImage(img)}
-                        >
-                          <Image
-                            src={img || '/placeholder.svg'}
-                            alt={`${t('settings.profileImage')} ${index + 1}`}
-                            width={64}
-                            height={64}
-                            className="w-full h-full object-cover"
-                          />
-                          {selectedProfileImage === img && (
-                            <div className="absolute inset-0 bg-blue-400/20 flex items-center justify-center">
-                              <Check className="w-6 h-6 text-blue-400" />
-                            </div>
-                          )}
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </motion.div>
           )}
           {/* 언어 설정 탭 */}
@@ -373,57 +402,75 @@ export const SettingsView = () => {
               </Card>
             </motion.div>
           )}
-          {/* 저장 버튼 */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="sticky bottom-4 z-10"
-          >
-            <Button
-              onClick={handleSave}
-              disabled={isSaving || !hasChanges || !isNicknameValid}
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-lg shadow-lg"
-            >
-              {isSaving ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  {t('settings.saving')}
-                </div>
-              ) : hasChanges ? (
-                <div className="flex items-center gap-2">
-                  <Save className="w-5 h-5" />
-                  {t('settings.saveChanges')}
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5" />
-                  {t('settings.saved')}
-                </div>
-              )}
-            </Button>
-          </motion.div>
-          {/* 로그아웃 버튼 */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.35 }}
-            className="mt-4"
-          >
-            <Button
-              variant="secondary"
-              onClick={() => setShowLogoutModal(true)}
-              className="w-full h-12 text-lg font-semibold"
-            >
-              {t('settings.logout')}
-            </Button>
-          </motion.div>
+          {/* 액션 버튼들 */}
+          <div className="space-y-4">
+            {/* 저장 버튼 - 게스트가 아니고 프로필 탭이거나 언어 탭일 때 표시 */}
+            {!(activeTab === 'profile' && isGuest) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="sticky bottom-4 z-10"
+              >
+                <Button
+                  onClick={handleSave}
+                  disabled={isSaving || !hasChanges || !isNicknameValid}
+                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-lg shadow-lg"
+                >
+                  {isSaving ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      {t('settings.saving')}
+                    </div>
+                  ) : hasChanges ? (
+                    <div className="flex items-center gap-2">
+                      <Save className="w-5 h-5" />
+                      {t('settings.saveChanges')}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Check className="w-5 h-5" />
+                      {t('settings.saved')}
+                    </div>
+                  )}
+                </Button>
+              </motion.div>
+            )}
+
+            {/* 로그아웃 버튼 - 게스트가 아닐 때만 표시 */}
+            {!isGuest && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.35 }}
+              >
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowLogoutModal(true)}
+                  className="w-full h-12 text-lg font-semibold"
+                >
+                  {t('settings.logout')}
+                </Button>
+              </motion.div>
+            )}
+          </div>
         </div>
       </main>
 
       <footer className="sticky left-0 bottom-0 z-10">
         <BottomNavigation />
       </footer>
+
+      {/* 게스트 업그레이드 모달 */}
+      <GuestUpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onUpgradeSuccess={() => {
+          setShowUpgradeModal(false);
+          // 업그레이드 성공 후 페이지 새로고침
+          window.location.reload();
+        }}
+      />
 
       {/* 로그아웃 확인 모달 */}
       <ConfirmationModal
