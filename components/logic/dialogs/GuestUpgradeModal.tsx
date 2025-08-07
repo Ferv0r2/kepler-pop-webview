@@ -216,9 +216,9 @@ export function GuestUpgradeModal({
                 </motion.button>
               )}
 
-              <button onClick={onClose} className="w-full text-slate-400 hover:text-white py-2 transition-colors">
+              {/* <button onClick={onClose} className="w-full text-slate-400 hover:text-white py-2 transition-colors">
                 {t('modal.cancel')}
-              </button>
+              </button> */}
             </div>
 
             {/* 에러 메시지 */}
