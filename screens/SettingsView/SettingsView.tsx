@@ -60,6 +60,7 @@ export const SettingsView = () => {
   const [activeTab, setActiveTab] = useState<'profile' | 'language'>('profile');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showDifferentAccountModal, setShowDifferentAccountModal] = useState(false);
   const { isGuest } = useAuthStore();
 
   useEffect(() => {
@@ -257,26 +258,63 @@ export const SettingsView = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
             >
               {isGuest ? (
-                /* 게스트 사용자 계정 업그레이드 */
-                <Card className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/50 backdrop-blur-sm">
+                /* 게스트 사용자 로그인 옵션 */
+                <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm">
                   <CardHeader>
-                    <CardTitle className="text-yellow-400 flex items-center gap-2">
-                      <span>⭐</span>
-                      {t('auth.upgradeAccount')}
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <span>🔐</span>
+                      {t('auth.loginOptions')}
                     </CardTitle>
-                    <CardDescription className="text-gray-300">{t('auth.upgradeToSave')}</CardDescription>
+                    <CardDescription className="text-slate-300">{t('auth.chooseLoginMethod')}</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <Button
-                      onClick={() => setShowUpgradeModal(true)}
-                      className="w-full h-12 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 
-                               text-white font-bold text-lg shadow-lg transition-all duration-200"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span>⭐</span>
-                        {t('auth.upgradeAccount')}
-                      </span>
-                    </Button>
+                  <CardContent className="space-y-4">
+                    {/* 계정 업그레이드 옵션 */}
+                    <div className="space-y-3">
+                      <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-10 h-10 p-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg">
+                            <span className="text-white text-lg">🔗</span>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-white font-semibold mb-1">{t('auth.upgradeAccount')}</h3>
+                            <p className="text-slate-300 text-sm leading-relaxed">
+                              {t('auth.upgradeAccountDescription')}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => setShowUpgradeModal(true)}
+                          className="w-full h-10 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 
+                                   text-white font-medium shadow-lg transition-all duration-200"
+                        >
+                          {t('auth.upgradeAccount')}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* 다른 계정으로 로그인 옵션 */}
+                    <div className="space-y-3">
+                      <div className="p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-lg border border-blue-500/20">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-10 h-10 p-2 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg">
+                            <span className="text-white text-lg">🔄</span>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-white font-semibold mb-1">{t('auth.loginWithDifferentAccount')}</h3>
+                            <p className="text-slate-300 text-sm leading-relaxed">
+                              {t('auth.differentAccountDescription')}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => setShowDifferentAccountModal(true)}
+                          className="w-full h-10 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 
+                                   text-white font-medium shadow-lg transition-all duration-200"
+                        >
+                          {t('auth.loginWithDifferentAccount')}
+                        </Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ) : (
@@ -470,6 +508,18 @@ export const SettingsView = () => {
           // 업그레이드 성공 후 페이지 새로고침
           window.location.reload();
         }}
+      />
+
+      {/* 다른 계정 로그인 모달 */}
+      <GuestUpgradeModal
+        isOpen={showDifferentAccountModal}
+        onClose={() => setShowDifferentAccountModal(false)}
+        onUpgradeSuccess={() => {
+          setShowDifferentAccountModal(false);
+          // 로그인 성공 후 페이지 새로고침
+          window.location.reload();
+        }}
+        isDifferentAccountMode={true}
       />
 
       {/* 로그아웃 확인 모달 */}

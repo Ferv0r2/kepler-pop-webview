@@ -15,9 +15,15 @@ interface GuestUpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpgradeSuccess: () => void;
+  isDifferentAccountMode?: boolean;
 }
 
-export function GuestUpgradeModal({ isOpen, onClose, onUpgradeSuccess }: GuestUpgradeModalProps) {
+export function GuestUpgradeModal({
+  isOpen,
+  onClose,
+  onUpgradeSuccess,
+  isDifferentAccountMode = false,
+}: GuestUpgradeModalProps) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isUpgrading, setIsUpgrading] = useState(false);
@@ -28,17 +34,29 @@ export function GuestUpgradeModal({ isOpen, onClose, onUpgradeSuccess }: GuestUp
 
   const { mutate: handleGoogleUpgrade } = useMutation({
     mutationFn: async (googleToken: string) => {
-      if (!accessToken) throw new Error('No guest token available');
+      if (!isDifferentAccountMode && !accessToken) throw new Error('No guest token available');
       const locale = window.location.pathname.split('/')[1] || 'en';
-      return migrateGuestToUser(accessToken, googleToken, locale);
+
+      if (isDifferentAccountMode) {
+        return {
+          accessToken: googleToken,
+          refreshToken: '',
+        };
+      }
+      return migrateGuestToUser(accessToken!, googleToken, locale);
     },
     onSuccess: async (data) => {
       const { accessToken: newAccessToken, refreshToken } = data;
-      setTokens(newAccessToken, refreshToken, false); // isGuest = false
+      setTokens(newAccessToken, refreshToken || '', false); // isGuest = false
 
       // 성공 메시지 표시
-      console.log('✅ Guest account successfully upgraded to new user account');
-      setSuccessMsg(t('auth.migrationSuccess'));
+      if (isDifferentAccountMode) {
+        console.log('✅ Successfully logged in with different account');
+        setSuccessMsg(t('auth.loginSuccess'));
+      } else {
+        console.log('✅ Guest account successfully upgraded to new user account');
+        setSuccessMsg(t('auth.migrationSuccess'));
+      }
       setIsUpgrading(false);
 
       // 2초 후 모달 닫기 및 콜백 실행
@@ -53,6 +71,7 @@ export function GuestUpgradeModal({ isOpen, onClose, onUpgradeSuccess }: GuestUp
 
       // 기존 계정 마이그레이션 시도 에러 체크
       if (
+        !isDifferentAccountMode &&
         typeof error === 'object' &&
         error !== null &&
         'message' in error &&
@@ -61,7 +80,7 @@ export function GuestUpgradeModal({ isOpen, onClose, onUpgradeSuccess }: GuestUp
       ) {
         setErrorMsg(t('auth.existingAccountMigrationBlocked'));
       } else {
-        setErrorMsg(t('auth.migrationFailed'));
+        setErrorMsg(isDifferentAccountMode ? t('auth.loginFailed') : t('auth.migrationFailed'));
       }
 
       setTimeout(() => setErrorMsg(null), 5000); // 기존 계정 에러는 더 오래 표시
@@ -69,7 +88,7 @@ export function GuestUpgradeModal({ isOpen, onClose, onUpgradeSuccess }: GuestUp
     },
   });
 
-  const handleUpgradeRequest = () => {
+  const handleLoginRequest = () => {
     setIsUpgrading(true);
 
     // 개발 환경이 아닌 경우에만 네이티브 브릿지 사용
@@ -119,9 +138,13 @@ export function GuestUpgradeModal({ isOpen, onClose, onUpgradeSuccess }: GuestUp
           onClick={(e) => e.stopPropagation()}
         >
           <div className="text-center">
-            <div className="text-4xl mb-4">🎮→👤</div>
-            <h2 className="text-xl font-bold text-white mb-2">{t('auth.upgradeAccount')}</h2>
-            <p className="text-slate-300 text-sm mb-6 leading-relaxed">{t('auth.upgradeToSave')}</p>
+            <div className="text-4xl mb-4">{isDifferentAccountMode ? '🔄' : '🎮→👤'}</div>
+            <h2 className="text-xl font-bold text-white mb-2">
+              {isDifferentAccountMode ? t('auth.loginWithDifferentAccount') : t('auth.upgradeAccount')}
+            </h2>
+            <p className="text-slate-300 text-sm mb-6 leading-relaxed">
+              {isDifferentAccountMode ? t('auth.waitingForInteraction') : t('auth.upgradeToSave')}
+            </p>
 
             <div className="space-y-3">
               {/* 개발 환경에서는 GoogleLogin 컴포넌트 사용 */}
@@ -151,7 +174,7 @@ export function GuestUpgradeModal({ isOpen, onClose, onUpgradeSuccess }: GuestUp
                       onSuccess={handleDirectGoogleLogin}
                       onError={() => {
                         console.error('Google login failed');
-                        setErrorMsg(t('auth.migrationFailed'));
+                        setErrorMsg(isDifferentAccountMode ? t('auth.loginFailed') : t('auth.migrationFailed'));
                         setTimeout(() => setErrorMsg(null), 3000);
                         setIsUpgrading(false);
                       }}
@@ -167,7 +190,7 @@ export function GuestUpgradeModal({ isOpen, onClose, onUpgradeSuccess }: GuestUp
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={handleUpgradeRequest}
+                  onClick={handleLoginRequest}
                   disabled={isUpgrading || !!successMsg}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
                            disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed
@@ -177,7 +200,7 @@ export function GuestUpgradeModal({ isOpen, onClose, onUpgradeSuccess }: GuestUp
                   {successMsg ? (
                     <>
                       <span>✅</span>
-                      {t('auth.migrationSuccess')}
+                      {successMsg}
                     </>
                   ) : isUpgrading ? (
                     <>
@@ -186,8 +209,8 @@ export function GuestUpgradeModal({ isOpen, onClose, onUpgradeSuccess }: GuestUp
                     </>
                   ) : (
                     <>
-                      <span>🔗</span>
-                      {t('auth.loginWithGoogle')}
+                      <span>{isDifferentAccountMode ? '🔄' : '🔗'}</span>
+                      {isDifferentAccountMode ? t('auth.loginWithGoogle') : t('auth.loginWithGoogle')}
                     </>
                   )}
                 </motion.button>
@@ -205,7 +228,7 @@ export function GuestUpgradeModal({ isOpen, onClose, onUpgradeSuccess }: GuestUp
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-4 bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-2 rounded-lg text-sm"
               >
-                {errorMsg}
+                <div className="whitespace-pre-line text-center">{errorMsg}</div>
               </motion.div>
             )}
 

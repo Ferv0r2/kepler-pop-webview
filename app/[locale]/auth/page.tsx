@@ -15,7 +15,7 @@ import { useGTM } from '@/hooks/useGTM';
 import { useRouter } from '@/i18n/routing';
 import { signInWithGoogle, guestLogin } from '@/networks/KeplerBackend';
 import { useAuthStore } from '@/store/authStore';
-import { GoogleIdTokenMessage, NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
+import { GoogleIdTokenMessage, NativeToWebMessageType } from '@/types/native-call';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -94,9 +94,9 @@ export default function AuthPage() {
       return;
     }
 
-    sendMessage({
-      type: WebToNativeMessageType.NEED_TO_LOGIN,
-    });
+    // sendMessage({
+    //   type: WebToNativeMessageType.NEED_TO_LOGIN,
+    // });
   }, [sendMessage, accessToken, router]);
 
   useEffect(() => {
