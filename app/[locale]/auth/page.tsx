@@ -87,9 +87,10 @@ export default function AuthPage() {
     },
   });
 
-  // 기존 토큰이 있으면 자동으로 메인 페이지로 이동
+  // 기존 토큰(완전한 쌍) 이 있으면 자동으로 메인 페이지로 이동
   useEffect(() => {
-    if (accessToken) {
+    const authState = useAuthStore.getState();
+    if (authState.accessToken && authState.refreshToken) {
       router.replace('/');
       return;
     }

@@ -31,7 +31,16 @@ export const migrateGuestToUser = async (
   locale?: string,
 ): Promise<SignInWithGoogleResponse> => {
   const response = await api.post('/auth/guest/migrate', { guestToken, googleToken, locale });
-  if (!response.ok) throw new Error('Failed to migrate guest to user');
+  if (!response.ok) {
+    let serverMessage = 'Failed to migrate guest to user';
+    try {
+      const data = await response.clone().json();
+      if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
+        serverMessage = data.message;
+      }
+    } catch {}
+    throw new Error(serverMessage);
+  }
   return response.json();
 };
 
