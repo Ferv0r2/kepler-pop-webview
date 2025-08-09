@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { useWebViewBridgeContext } from '@/components/providers/WebViewBridgeProvider';
-import { migrateGuestToUser, signInWithGoogle } from '@/networks/KeplerBackend';
+import { migrateGuestToUser } from '@/networks/KeplerBackend';
 import { useAuthStore } from '@/store/authStore';
 import { GoogleIdTokenMessage, NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 
@@ -32,33 +32,17 @@ export function GuestUpgradeModal({
   const { accessToken, setTokens } = useAuthStore();
   const t = useTranslations();
 
-  // 간단한 JWT 파서 (payload.type 확인용)
-  const parseJwt = (token: string): Record<string, unknown> | null => {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = atob(base64);
-      return JSON.parse(jsonPayload) as Record<string, unknown>;
-    } catch {
-      return null;
-    }
-  };
-
   const { mutate: handleGoogleUpgrade } = useMutation({
     mutationFn: async (googleToken: string) => {
       if (!isDifferentAccountMode && !accessToken) throw new Error('No guest token available');
       const locale = window.location.pathname.split('/')[1] || 'en';
 
-      // 다른 계정 로그인 모드: 현재 토큰이 게스트라면 마이그레이션 우선, 아니면 계정 전환 로그인
       if (isDifferentAccountMode) {
-        return signInWithGoogle(googleToken, locale);
+        return {
+          accessToken: googleToken,
+          refreshToken: '',
+        };
       }
-      const payload = accessToken ? parseJwt(accessToken) : null;
-      const isGuestToken = !!(payload && typeof payload === 'object' && payload['type'] === 'guest');
-      if (accessToken && isGuestToken) {
-        return migrateGuestToUser(accessToken, googleToken, locale);
-      }
-      // 일반 업그레이드 플로우
       return migrateGuestToUser(accessToken!, googleToken, locale);
     },
     onSuccess: async (data) => {
@@ -87,6 +71,7 @@ export function GuestUpgradeModal({
 
       // 기존 계정 마이그레이션 시도 에러 체크
       if (
+        !isDifferentAccountMode &&
         typeof error === 'object' &&
         error !== null &&
         'message' in error &&
