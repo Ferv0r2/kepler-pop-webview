@@ -145,21 +145,35 @@ export const SettingsView = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     console.log('🚪 로그아웃 시작');
 
-    // 1. 먼저 토큰 정리
-    clearTokens();
+    try {
+      // 1. 먼저 토큰 정리 (Promise 기반으로 완료 대기)
+      await clearTokens();
 
-    // 2. 쿼리 캐시 정리
-    queryClient.clear();
+      // 2. 쿼리 캐시 정리
+      queryClient.clear();
 
-    // 3. 현재 로케일 확인
-    const currentLocale = window.location.pathname.split('/')[1] || 'en';
+      // 3. 상태 정리 완료 후 약간의 대기 (브라우저 상태 동기화)
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // 4. 강제 페이지 리로드로 완전한 상태 초기화
-    console.log('🔄 강제 리다이렉트로 상태 초기화');
-    window.location.href = `/${currentLocale}/auth`;
+      // 4. 현재 로케일 확인 (클라이언트 환경에서만)
+      if (typeof window !== 'undefined') {
+        const currentLocale = window.location.pathname.split('/')[1] || 'en';
+
+        // 5. 강제 페이지 리로드로 완전한 상태 초기화
+        console.log('🔄 강제 리다이렉트로 상태 초기화');
+        window.location.href = `/${currentLocale}/auth`;
+      }
+    } catch (error) {
+      console.error('⚠️ 로그아웃 처리 중 오류:', error);
+      // 오류가 발생해도 강제 리다이렉트
+      if (typeof window !== 'undefined') {
+        const currentLocale = window.location.pathname.split('/')[1] || 'en';
+        window.location.href = `/${currentLocale}/auth`;
+      }
+    }
   };
 
   const isNicknameValid = nickname.trim().length >= 2 && nickname.trim().length <= 16;

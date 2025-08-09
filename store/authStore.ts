@@ -6,43 +6,75 @@ interface AuthState {
   refreshToken: string | null;
   isGuest: boolean;
   deviceId: string | null;
-  setTokens: (accessToken: string, refreshToken: string, isGuest?: boolean) => void;
+  userType: 'guest' | 'user' | null;
+  setTokens: (accessToken: string, refreshToken: string, isGuest?: boolean, deviceId?: string) => void;
   setGuestTokens: (accessToken: string, refreshToken: string, deviceId: string) => void;
-  clearTokens: () => void;
+  clearTokens: () => Promise<void>;
   generateDeviceId: () => string;
+  validateTokens: () => boolean;
 }
 
 const storage = {
   getItem: (name: string): string | null => {
     if (typeof window === 'undefined') return null;
+
     try {
-      const result = localStorage.getItem(name);
-      console.log('🏪 localStorage getItem:', name, '→', result);
-      return result;
-    } catch {
+      // 1. 먼저 Cookie에서 읽기 시도 (미들웨어와 일관성 보장)
+      const cookieValue = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith(`${name}=`))
+        ?.split('=')[1];
+
+      if (cookieValue) {
+        const decodedValue = decodeURIComponent(cookieValue);
+        console.log('🍪 Cookie getItem (primary):', name, '→', decodedValue ? 'found' : 'null');
+        return decodedValue;
+      }
+
+      // 2. Cookie에 없으면 localStorage에서 fallback
+      const localStorageValue = localStorage.getItem(name);
+      if (localStorageValue) {
+        console.log('🏪 localStorage getItem (fallback):', name, '→', 'found');
+        // localStorage에서 찾았으면 Cookie에도 동기화
+        document.cookie = `${name}=${encodeURIComponent(localStorageValue)}; path=/; max-age=31536000`;
+        return localStorageValue;
+      }
+
+      console.log('❌ Storage getItem: not found in Cookie or localStorage:', name);
+      return null;
+    } catch (error) {
+      console.warn('⚠️ Storage getItem error:', error);
       return null;
     }
   },
+
   setItem: (name: string, value: string): void => {
     if (typeof window === 'undefined') return;
     try {
+      // 1. 먼저 Cookie에 저장 (primary)
+      document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=31536000; SameSite=Lax; Secure`;
+
+      // 2. localStorage에도 백업 저장
       localStorage.setItem(name, value);
-      // 미들웨어를 위해 Cookie에도 동시에 저장
-      document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=31536000`;
-      console.log('🏪 localStorage + Cookie setItem:', name);
-    } catch {
-      // localStorage 사용 불가 시 무시
+
+      console.log('✅ Storage setItem (Cookie primary + localStorage backup):', name);
+    } catch (error) {
+      console.warn('⚠️ Storage setItem error:', error);
     }
   },
+
   removeItem: (name: string): void => {
     if (typeof window === 'undefined') return;
     try {
-      localStorage.removeItem(name);
-      // Cookie도 함께 제거
+      // 1. Cookie 먼저 제거 (primary)
       document.cookie = `${name}=; path=/; max-age=0`;
-      console.log('🏪 localStorage + Cookie removeItem:', name);
-    } catch {
-      // localStorage 사용 불가 시 무시
+
+      // 2. localStorage에서도 제거
+      localStorage.removeItem(name);
+
+      console.log('🗑️ Storage removeItem (Cookie + localStorage):', name);
+    } catch (error) {
+      console.warn('⚠️ Storage removeItem error:', error);
     }
   },
 };
@@ -54,9 +86,30 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       isGuest: false,
       deviceId: null,
-      setTokens: (accessToken, refreshToken, isGuest = false) => set({ accessToken, refreshToken, isGuest }),
-      setGuestTokens: (accessToken, refreshToken, deviceId) =>
-        set({ accessToken, refreshToken, isGuest: true, deviceId }),
+      userType: null,
+
+      setTokens: (accessToken, refreshToken, isGuest = false, deviceId) => {
+        const userType = isGuest ? 'guest' : 'user';
+        console.log(`🔐 setTokens - type: ${userType}, deviceId: ${deviceId || 'none'}`);
+        set({
+          accessToken,
+          refreshToken,
+          isGuest,
+          userType,
+          deviceId: isGuest ? deviceId || get().deviceId : null,
+        });
+      },
+
+      setGuestTokens: (accessToken, refreshToken, deviceId) => {
+        console.log(`🎮 setGuestTokens - deviceId: ${deviceId}`);
+        set({
+          accessToken,
+          refreshToken,
+          isGuest: true,
+          userType: 'guest',
+          deviceId,
+        });
+      },
       generateDeviceId: () => {
         const existingDeviceId = get().deviceId;
         if (existingDeviceId) {
@@ -69,29 +122,58 @@ export const useAuthStore = create<AuthState>()(
         set({ deviceId: newDeviceId });
         return newDeviceId;
       },
+
+      validateTokens: () => {
+        const state = get();
+        const hasValidPair = !!(state.accessToken && state.refreshToken);
+        const hasValidType = ['guest', 'user'].includes(state.userType || '');
+        const isValid = hasValidPair && hasValidType;
+
+        console.log(
+          `🔍 validateTokens: ${isValid ? '✅ valid' : '❌ invalid'} (type: ${state.userType}, tokens: ${hasValidPair})`,
+        );
+        return isValid;
+      },
+
       clearTokens: () => {
-        // 로그아웃 시 deviceId도 함께 초기화하여 새로운 게스트 세션 시작
-        const currentState = get();
-        console.log('🗑️ Clearing tokens and deviceId for fresh start:', currentState.deviceId);
+        return new Promise<void>((resolve) => {
+          // 로그아웃 시 모든 상태 초기화
+          const currentState = get();
+          console.log(`🗑️ Clearing tokens for ${currentState.userType} (deviceId: ${currentState.deviceId})`);
 
-        // 상태 초기화
-        set({
-          accessToken: null,
-          refreshToken: null,
-          isGuest: false,
-          deviceId: null, // deviceId도 함께 초기화
-        });
+          // 상태 완전 초기화
+          set({
+            accessToken: null,
+            refreshToken: null,
+            isGuest: false,
+            deviceId: null,
+            userType: null,
+          });
 
-        // localStorage와 Cookie 강제 정리 (추가 안전장치)
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.removeItem('auth-storage');
-            document.cookie = 'auth-storage=; path=/; max-age=0';
-            console.log('🧹 추가 스토리지 정리 완료');
-          } catch (error) {
-            console.warn('⚠️ 스토리지 정리 중 오류:', error);
+          // Cookie 우선 정리 후 localStorage 정리 (추가 안전장치)
+          if (typeof window !== 'undefined') {
+            try {
+              // 1. Cookie 먼저 제거 (미들웨어가 즉시 인식하도록)
+              document.cookie = 'auth-storage=; path=/; max-age=0';
+
+              // 2. localStorage 제거
+              localStorage.removeItem('auth-storage');
+
+              console.log('🧹 추가 스토리지 정리 완료 (Cookie 우선)');
+
+              // 상태 변경 완료를 보장하기 위해 다음 틱에서 resolve
+              setTimeout(() => {
+                console.log('✅ 토큰 정리 완료');
+                resolve();
+              }, 100);
+            } catch (error) {
+              console.warn('⚠️ 스토리지 정리 중 오류:', error);
+              resolve();
+            }
+          } else {
+            resolve();
           }
-        }
+        });
       },
     }),
     {

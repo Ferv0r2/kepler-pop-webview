@@ -21,8 +21,8 @@ export default function AuthPage() {
   const router = useRouter();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const { addMessageHandler, sendMessage } = useWebViewBridgeContext();
-  const { setTokens, setGuestTokens, generateDeviceId, accessToken, deviceId } = useAuthStore();
+  const { addMessageHandler } = useWebViewBridgeContext();
+  const { setTokens, setGuestTokens, generateDeviceId, validateTokens, deviceId } = useAuthStore();
   const { trackLogin } = useGTM();
   const t = useTranslations('auth');
 
@@ -87,9 +87,11 @@ export default function AuthPage() {
     },
   });
 
-  // 기존 토큰이 있으면 자동으로 메인 페이지로 이동
+  // 유효한 토큰이 있으면 자동으로 메인 페이지로 이동
   useEffect(() => {
-    if (accessToken) {
+    const isValidAuth = validateTokens();
+    if (isValidAuth) {
+      console.log('[AuthPage] Valid auth found, redirecting to home');
       router.replace('/');
       return;
     }
@@ -97,7 +99,7 @@ export default function AuthPage() {
     // sendMessage({
     //   type: WebToNativeMessageType.NEED_TO_LOGIN,
     // });
-  }, [sendMessage, accessToken, router]);
+  }, [validateTokens, router]);
 
   useEffect(() => {
     const unsubscribeGoogleIdToken = addMessageHandler<GoogleIdTokenMessage>(
