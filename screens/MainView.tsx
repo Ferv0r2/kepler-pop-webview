@@ -18,6 +18,7 @@ import { useSound } from '@/hooks/useSound';
 import { useUser } from '@/hooks/useUser';
 import { useRouter } from '@/i18n/routing';
 import { getDropletStatus, updateDroplet, updateGem } from '@/networks/KeplerBackend';
+import { useAuthStore } from '@/store/authStore';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
 import type { NativeToWebMessage, EnergyUpdatePayload, PurchaseResultPayload } from '@/types/native-call';
 import { itemVariants } from '@/utils/animation-helper';
@@ -50,6 +51,7 @@ const useUpdateGem = () => {
 export const MainView = () => {
   const router = useRouter();
   const { data: userInfo, isLoading } = useUser();
+  const { accessToken } = useAuthStore();
   const { isInWebView, sendMessage, addMessageHandler } = useWebViewBridgeContext();
   const t = useTranslations();
 
@@ -140,6 +142,15 @@ export const MainView = () => {
     };
   }, [isInWebView, sendMessage, addMessageHandler, showExitModal, updateDropletMutation, updateGemMutation]);
 
+  // 인증 토큰이 없으면 로그인 페이지로 리다이렉트 (미들웨어가 처리하지만 명시적으로 처리)
+  if (!accessToken) {
+    console.log('[MainView] No access token, redirecting to auth');
+    const currentLocale = window.location.pathname.split('/')[1] || 'en';
+    window.location.href = `/${currentLocale}/auth`;
+    return <LoadingView />;
+  }
+
+  // 인증은 있지만 사용자 정보가 로드 중이거나 아직 로드되지 않은 경우
   if (!userInfo || !hasLoadedOnce) {
     return <LoadingView />;
   }

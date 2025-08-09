@@ -73,12 +73,25 @@ export const useAuthStore = create<AuthState>()(
         // 로그아웃 시 deviceId도 함께 초기화하여 새로운 게스트 세션 시작
         const currentState = get();
         console.log('🗑️ Clearing tokens and deviceId for fresh start:', currentState.deviceId);
+
+        // 상태 초기화
         set({
           accessToken: null,
           refreshToken: null,
           isGuest: false,
           deviceId: null, // deviceId도 함께 초기화
         });
+
+        // localStorage와 Cookie 강제 정리 (추가 안전장치)
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.removeItem('auth-storage');
+            document.cookie = 'auth-storage=; path=/; max-age=0';
+            console.log('🧹 추가 스토리지 정리 완료');
+          } catch (error) {
+            console.warn('⚠️ 스토리지 정리 중 오류:', error);
+          }
+        }
       },
     }),
     {

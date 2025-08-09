@@ -22,7 +22,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { useUser } from '@/hooks/useUser';
 import { SUPPORTED_LOCALES } from '@/i18n/constants';
-import { useRouter } from '@/i18n/routing';
 import { updateUserInfo } from '@/networks/KeplerBackend';
 import { useAuthStore } from '@/store/authStore';
 import { NativeToWebMessageType, WebToNativeMessageType } from '@/types/native-call';
@@ -46,7 +45,6 @@ export const SettingsView = () => {
   const { data: userInfo, isLoading } = useUser();
   const { sendMessage, addMessageHandler } = useWebViewBridgeContext();
   const updateUserInfoMutation = useUpdateUserInfo();
-  const router = useRouter();
   const clearTokens = useAuthStore((state) => state.clearTokens);
   const queryClient = useQueryClient();
 
@@ -148,12 +146,20 @@ export const SettingsView = () => {
   };
 
   const handleLogout = () => {
+    console.log('🚪 로그아웃 시작');
+
+    // 1. 먼저 토큰 정리
+    clearTokens();
+
+    // 2. 쿼리 캐시 정리
     queryClient.clear();
 
-    clearTokens();
-    queueMicrotask(() => {
-      router.push('/auth');
-    });
+    // 3. 현재 로케일 확인
+    const currentLocale = window.location.pathname.split('/')[1] || 'en';
+
+    // 4. 강제 페이지 리로드로 완전한 상태 초기화
+    console.log('🔄 강제 리다이렉트로 상태 초기화');
+    window.location.href = `/${currentLocale}/auth`;
   };
 
   const isNicknameValid = nickname.trim().length >= 2 && nickname.trim().length <= 16;
