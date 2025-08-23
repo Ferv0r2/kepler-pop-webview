@@ -9,17 +9,17 @@ import type { GameItem, GameItemType, GridItem, ItemAnimation } from '@/types/ga
 const INITIAL_GAME_ITEMS: GameItem[] = [
   {
     id: 'shovel',
-    count: 0,
+    count: 4,
     icon: '/icons/shovel.png',
   },
   {
     id: 'mole',
-    count: 0,
+    count: 4,
     icon: '/icons/mole.png',
   },
   {
     id: 'bomb',
-    count: 0,
+    count: 4,
     icon: '/icons/bomb.png',
   },
 ];
@@ -40,6 +40,13 @@ export interface UseGameItemReturn {
   setItemAnimation: (itemAnimation: ItemAnimation | null) => void;
   setIsItemAnimating: (isAnimating: boolean) => void;
   executeItem: (grid: GridItem[][]) => GridItem[][] | void;
+  executeItemDirect: (
+    grid: GridItem[][],
+    itemType: GameItemType,
+    row: number,
+    col: number,
+    direction?: 'row' | 'col',
+  ) => GridItem[][] | void;
   addItem: (itemId: GameItemType, amount?: number) => void;
   clearItemAnimation: () => void;
   resetItems: () => void;
@@ -75,14 +82,24 @@ export const useGameItem = (): UseGameItemReturn => {
       return;
     }
     const { type, row, col, direction } = itemAnimation;
-    const itemIndex = gameItems.findIndex((item) => item.id === type);
+    return executeItemDirect(grid, type, row, col, direction);
+  };
+
+  const executeItemDirect = (
+    grid: GridItem[][],
+    itemType: GameItemType,
+    row: number,
+    col: number,
+    direction?: 'row' | 'col',
+  ) => {
+    const itemIndex = gameItems.findIndex((item) => item.id === itemType);
     if (itemIndex === -1 || gameItems[itemIndex].count <= 0) {
       return;
     }
 
     let updatedGrid: GridItem[][] = grid;
 
-    switch (type) {
+    switch (itemType) {
       case 'shovel':
         updatedGrid = itemEffects['shovel'](updatedGrid, row, col);
         break;
@@ -102,7 +119,12 @@ export const useGameItem = (): UseGameItemReturn => {
       };
       return newItems;
     });
-    clearItemAnimation();
+
+    // Clear selection after item use
+    setSelectedGameItem(null);
+    setItemAnimation(null);
+    setIsItemAnimating(false);
+
     return updatedGrid;
   };
 
@@ -177,6 +199,7 @@ export const useGameItem = (): UseGameItemReturn => {
     setSelectedGameItem,
     setIsItemAnimating,
     executeItem,
+    executeItemDirect,
     addItem,
     clearItemAnimation,
     resetItems,

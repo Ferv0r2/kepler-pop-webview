@@ -135,7 +135,7 @@ export const findPossibleMoves = (
 export const createNewTile = (): GridItem => {
   return {
     id: `${Date.now()}-${Math.random()}`,
-    type: (Math.floor(Math.random() * 6) + 1) as TileType,
+    type: (Math.floor(Math.random() * 5) + 1) as TileType,
     tier: 1,
     isMatched: false,
     createdIndex: 0,

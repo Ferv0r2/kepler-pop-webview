@@ -1,4 +1,4 @@
-export type TileType = 1 | 2 | 3 | 4 | 5 | 6;
+export type TileType = 1 | 2 | 3 | 4 | 5;
 export type TierType = 1 | 2 | 3;
 export type GameMode = 'casual' | 'challenge';
 export type TileSwapMode = 'drag' | 'select';

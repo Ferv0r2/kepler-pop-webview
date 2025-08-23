@@ -19,7 +19,7 @@ export const useMatchGame = (): UseMatchGameReturn => {
 
   // 랜덤 아이템 생성 함수
   const getRandomItemType = (): TileType => {
-    return (Math.floor(Math.random() * 6) + 1) as TileType;
+    return (Math.floor(Math.random() * 5) + 1) as TileType;
   };
 
   // 초기 그리드 생성 함수 (매치가 없는 상태로 시작)

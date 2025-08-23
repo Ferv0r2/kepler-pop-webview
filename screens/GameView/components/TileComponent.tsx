@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Star, Flame, Shield } from 'lucide-react';
-import React, { memo, createElement, useMemo, useRef, useCallback } from 'react';
+import Image from 'next/image';
+import React, { memo, useMemo, useRef, useCallback } from 'react';
 
 import { tileConfig } from '@/screens/GameView/constants/tile-config';
 import type { GridItem } from '@/types/game-types';
@@ -86,14 +87,16 @@ const ANIMATION_VARIANTS = Object.freeze({
   }),
 });
 
-// 스타일 캐시
+// 스타일 캐시 - 식물 이미지에 맞게 조정
 const BASE_CLASSES = Object.freeze([
   'w-10 h-10 sm:w-12 sm:h-12 rounded-xl',
   'cursor-pointer',
   'flex items-center justify-center',
-  'transition-shadow duration-200',
+  'transition-all duration-200',
   'relative overflow-hidden',
   'touch-none',
+  'border border-slate-200',
+  'bg-gradient-to-br from-white to-slate-50',
 ]);
 
 const GRADIENT_STYLE = Object.freeze({
@@ -129,25 +132,32 @@ export const TileComponent = memo<TileComponentProps>(
     const prevItemRef = useRef(item);
 
     // 타일 설정 캐시 (타입과 티어가 변경될 때만 재계산)
-    const { tileIcon, tileBgColor } = useMemo(() => {
+    const { tileImage, tileBgColor } = useMemo(() => {
       if (prevItemRef.current.type === item.type && prevItemRef.current.tier === item.tier) {
         return {
-          tileIcon: tileConfig[prevItemRef.current.type].icon[prevItemRef.current.tier],
-          tileBgColor: tileConfig[prevItemRef.current.type].bgColor[prevItemRef.current.tier],
+          tileImage: tileConfig[prevItemRef.current.type].image,
+          tileBgColor: 'bg-slate-50', // 식물 이미지에 맞는 밝은 배경
         };
       }
 
       prevItemRef.current = item;
       return {
-        tileIcon: tileConfig[item.type].icon[item.tier],
-        tileBgColor: tileConfig[item.type].bgColor[item.tier],
+        tileImage: tileConfig[item.type].image,
+        tileBgColor: 'bg-slate-50', // 식물 이미지에 맞는 밝은 배경
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [item.type, item.tier]);
 
     // CSS 클래스 최적화
     const cssClasses = useMemo(() => {
-      const classes = [...BASE_CLASSES, tileBgColor];
+      const classes = [...BASE_CLASSES];
+
+      // Tier에 따른 추가 스타일
+      if (item.tier === 2) {
+        classes.push('ring-2 ring-amber-400');
+      } else if (item.tier === 3) {
+        classes.push('ring-2 ring-pink-400');
+      }
 
       if (isSelected) {
         classes.push('ring-4 ring-white shadow-[0_0_15px_rgba(255,255,255,0.7)]');
@@ -162,7 +172,7 @@ export const TileComponent = memo<TileComponentProps>(
       }
 
       return classes.join(' ');
-    }, [tileBgColor, isSelected, isDragged, showHint]);
+    }, [isSelected, isDragged, showHint, item.tier]);
 
     // 애니메이션 속성 최적화
     const animateProps = useMemo(() => {
@@ -226,8 +236,8 @@ export const TileComponent = memo<TileComponentProps>(
         {/* Tier 3 효과 - 조건부 렌더링 최적화 */}
         {item.tier === 3 && <TierThreeEffects />}
 
-        {/* 아이콘 렌더링 최적화 */}
-        <IconRenderer icon={tileIcon} isSelected={isSelected} />
+        {/* 식물 이미지 렌더링 */}
+        <PlantImageRenderer image={tileImage} isSelected={isSelected} alt={`Plant type ${item.type}`} />
       </motion.div>
     );
   },
@@ -257,25 +267,34 @@ const TierThreeEffects = memo(() => (
   </>
 ));
 
-interface IconRendererProps {
-  icon: React.ElementType;
+interface PlantImageRendererProps {
+  image: string;
   isSelected: boolean;
+  alt: string;
 }
 
-const IconRenderer = memo<IconRendererProps>(({ icon, isSelected }) => (
+const PlantImageRenderer = memo<PlantImageRendererProps>(({ image, isSelected, alt }) => (
   <motion.div
-    animate={{ rotate: isSelected ? 360 : 0 }}
-    transition={{
-      duration: 1,
-      type: 'tween',
-      repeat: isSelected ? Number.POSITIVE_INFINITY : 0,
+    animate={{
+      scale: isSelected ? [1, 1.1, 1] : 1,
+      rotate: isSelected ? [0, -5, 5, 0] : 0,
     }}
-    className="relative z-10"
+    transition={{
+      duration: 0.6,
+      type: 'spring',
+      repeat: isSelected ? Number.POSITIVE_INFINITY : 0,
+      repeatDelay: 0.5,
+    }}
+    className="relative z-10 flex items-center justify-center w-full h-full"
   >
-    {createElement(icon, {
-      className: 'w-6 h-6 sm:w-7 sm:h-7 text-white drop-shadow-md',
-      strokeWidth: 2.5,
-    } as Record<string, unknown>)}
+    <Image
+      src={image}
+      alt={alt}
+      width={48}
+      height={48}
+      className="w-10 h-10 sm:w-12 sm:h-12 drop-shadow-lg object-contain"
+      priority
+    />
   </motion.div>
 ));
 
@@ -283,4 +302,4 @@ const IconRenderer = memo<IconRendererProps>(({ icon, isSelected }) => (
 TileComponent.displayName = 'TileComponent';
 TierTwoEffects.displayName = 'TierTwoEffects';
 TierThreeEffects.displayName = 'TierThreeEffects';
-IconRenderer.displayName = 'IconRenderer';
+PlantImageRenderer.displayName = 'PlantImageRenderer';

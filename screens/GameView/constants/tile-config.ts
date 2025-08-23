@@ -1,6 +1,3 @@
-import { Heart, Zap, Sparkles, Star, Diamond, Gem } from 'lucide-react';
-import { ElementType } from 'react';
-
 import type { TileType, TierType } from '@/types/game-types';
 
 export const tileConfig: Record<
@@ -8,7 +5,7 @@ export const tileConfig: Record<
   {
     color: Record<TierType, string>;
     bgColor: Record<TierType, string>;
-    icon: Record<TierType, ElementType>;
+    image: string;
   }
 > = {
   1: {
@@ -22,11 +19,7 @@ export const tileConfig: Record<
       2: 'bg-gradient-to-br from-red-600 to-red-800',
       3: 'bg-gradient-to-br from-red-800 to-red-900',
     },
-    icon: {
-      1: Heart,
-      2: Heart,
-      3: Heart,
-    },
+    image: '/plants/tulip-tile.png',
   },
   2: {
     color: {
@@ -39,11 +32,7 @@ export const tileConfig: Record<
       2: 'bg-gradient-to-br from-cyan-600 to-cyan-800',
       3: 'bg-gradient-to-br from-cyan-800 to-cyan-900',
     },
-    icon: {
-      1: Zap,
-      2: Zap,
-      3: Zap,
-    },
+    image: '/plants/crystal-cactus-tile.png',
   },
   3: {
     color: {
@@ -56,11 +45,7 @@ export const tileConfig: Record<
       2: 'bg-gradient-to-br from-emerald-600 to-emerald-800',
       3: 'bg-gradient-to-br from-emerald-800 to-emerald-900',
     },
-    icon: {
-      1: Sparkles,
-      2: Sparkles,
-      3: Sparkles,
-    },
+    image: '/plants/sprout-tile.png',
   },
   4: {
     color: {
@@ -73,11 +58,7 @@ export const tileConfig: Record<
       2: 'bg-gradient-to-br from-amber-600 to-amber-800',
       3: 'bg-gradient-to-br from-amber-800 to-amber-900',
     },
-    icon: {
-      1: Star,
-      2: Star,
-      3: Star,
-    },
+    image: '/plants/sunflower-tile.png',
   },
   5: {
     color: {
@@ -90,11 +71,7 @@ export const tileConfig: Record<
       2: 'bg-gradient-to-br from-violet-600 to-violet-800',
       3: 'bg-gradient-to-br from-violet-800 to-violet-900',
     },
-    icon: {
-      1: Diamond,
-      2: Diamond,
-      3: Diamond,
-    },
+    image: '/plants/mushroom-tile.png',
   },
   6: {
     color: {
@@ -107,10 +84,6 @@ export const tileConfig: Record<
       2: 'bg-gradient-to-br from-fuchsia-600 to-fuchsia-800',
       3: 'bg-gradient-to-br from-fuchsia-800 to-fuchsia-900',
     },
-    icon: {
-      1: Gem,
-      2: Gem,
-      3: Gem,
-    },
+    image: '/plants/tulip-tile.png', // 6번은 사용되지 않지만 기본값
   },
 };

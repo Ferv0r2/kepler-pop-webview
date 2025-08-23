@@ -8,7 +8,7 @@ export const ENERGY_MAX = 50;
 export const REVIVE_GEM_COST = 5;
 export const REVIVE_BONUS_MOVES = 10;
 
-export const GRID_SIZE = 8;
+export const GRID_SIZE = 7;
 export const MIN_MATCH_COUNT = 3;
 export const ANIMATION_DURATION = 150;
 export const CONFETTI_ANIMATION_DURATION = 500;
@@ -24,7 +24,7 @@ export const TILE_MAX_TIER = 3;
 export const TUTORIAL_TOTAL_STEP = 5;
 
 export const CASUAL_MODE_MOVE_COUNT = 30;
-export const CHALLENGE_MODE_MOVE_COUNT = 20;
+export const CHALLENGE_MODE_MOVE_COUNT = 3;
 
 export const DIRECTIONS = [
   [-1, 0], // up
@@ -37,7 +37,7 @@ export const DIRECTIONS = [
   [1, 1], // down-right
 ];
 
-export const SCORE = 10;
+export const SCORE = 1000;
 
 export const COMBO_BONUS = {
   MIN_COMBO: 3,

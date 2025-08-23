@@ -63,7 +63,7 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
         if (localeCookie) {
           const cookieLocale = localeCookie.split('=')[1];
           if (['ko', 'en', 'ja', 'zh'].includes(cookieLocale)) {
-            detectedLocale = cookieLocale as string;
+            detectedLocale = cookieLocale;
           }
         } else {
           // Check browser language
@@ -71,7 +71,7 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
           const lang = browserLang.split('-')[0];
 
           if (['ko', 'en', 'ja', 'zh'].includes(lang)) {
-            detectedLocale = lang as string;
+            detectedLocale = lang;
             // Save to cookie
             document.cookie = `locale=${detectedLocale}; path=/; max-age=31536000`;
           }
