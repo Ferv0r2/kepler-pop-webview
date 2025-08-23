@@ -16,6 +16,8 @@
     "play": "Jogar",
     "error": "Ocorreu um erro",
     "success": "Operação concluída com sucesso",
+    "on": "Ligar",
+    "off": "Desligar",
     "today": "Pronto para explorar hoje?",
     "casualMode": "Modo Casual",
     "casualDescription": "Aproveite uma divertida jornada de quebra-cabeças! 🚀",
@@ -177,7 +179,13 @@
     "saved": "Salvo",
     "saveFailed": "Erro ao salvar. Por favor, tente novamente.",
     "logout": "Sair",
-    "logoutDescription": "Sair e voltar para a tela de autenticação."
+    "logoutDescription": "Sair e voltar para a tela de autenticação.",
+    "soundVolume": "Efeitos Sonoros",
+    "musicVolume": "Música de Fundo",
+    "tileSwapMode": "Modo de Troca de Peças",
+    "selectMode": "Modo de Seleção",
+    "dragMode": "Modo de Arrastar",
+    "tutorial": "Tutorial"
   },
   "game": {
     "modes": {

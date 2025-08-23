@@ -16,6 +16,8 @@
     "play": "플레이",
     "error": "오류가 발생했습니다",
     "success": "성공적으로 완료되었습니다",
+    "on": "켜기",
+    "off": "끄기",
     "today": "오늘도 탐험하러 가볼까요?",
     "casualMode": "캐주얼 모드",
     "casualDescription": "즐거운 퍼즐 여행을 떠나보세요! 🚀",
@@ -177,7 +179,13 @@
     "saved": "저장됨",
     "saveFailed": "저장에 실패했습니다. 다시 시도해주세요.",
     "logout": "로그아웃",
-    "logoutDescription": "로그아웃하고 인증 화면으로 이동합니다."
+    "logoutDescription": "로그아웃하고 인증 화면으로 이동합니다.",
+    "soundVolume": "효과음",
+    "musicVolume": "배경음악",
+    "tileSwapMode": "타일 교체 모드",
+    "selectMode": "선택 모드",
+    "dragMode": "드래그 모드",
+    "tutorial": "튜토리얼"
   },
   "game": {
     "modes": {

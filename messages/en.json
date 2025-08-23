@@ -16,6 +16,8 @@
     "play": "Play",
     "error": "An error has occurred",
     "success": "Successfully completed",
+    "on": "On",
+    "off": "Off",
     "today": "Ready to explore today?",
     "casualMode": "Casual Mode",
     "casualDescription": "Enjoy a fun puzzle journey! 🚀",
@@ -177,7 +179,13 @@
     "saved": "Saved",
     "saveFailed": "Save failed. Please try again.",
     "logout": "Logout",
-    "logoutDescription": "Logout and go to the authentication screen."
+    "logoutDescription": "Logout and go to the authentication screen.",
+    "soundVolume": "Sound Effects",
+    "musicVolume": "Background Music",
+    "tileSwapMode": "Tile Swap Mode",
+    "selectMode": "Select Mode",
+    "dragMode": "Drag Mode",
+    "tutorial": "Tutorial"
   },
   "game": {
     "modes": {

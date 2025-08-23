@@ -16,6 +16,8 @@
     "play": "Jugar",
     "error": "Ha ocurrido un error",
     "success": "Operación completada con éxito",
+    "on": "Encender",
+    "off": "Apagar",
     "today": "¿Listo para explorar hoy?",
     "casualMode": "Modo Casual",
     "casualDescription": "¡Disfruta de un divertido viaje de puzles! 🚀",
@@ -176,7 +178,13 @@
     "saved": "Guardado",
     "saveFailed": "Error al guardar. Por favor, inténtalo de nuevo.",
     "logout": "Cerrar sesión",
-    "logoutDescription": "Cerrar sesión y volver a la pantalla de autenticación."
+    "logoutDescription": "Cerrar sesión y volver a la pantalla de autenticación.",
+    "soundVolume": "Efectos Sonoros",
+    "musicVolume": "Música de Fondo",
+    "tileSwapMode": "Modo de Intercambio de Fichas",
+    "selectMode": "Modo de Selección",
+    "dragMode": "Modo de Arrastrar",
+    "tutorial": "Tutorial"
   },
   "game": {
     "modes": {
