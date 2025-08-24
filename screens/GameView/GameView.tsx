@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl';
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-import { useGlobalPreloader } from '@/components/providers/GlobalPreloadProvider';
 import { useLocale } from '@/components/providers/LocaleProvider';
 import { Button } from '@/components/ui/button';
 import { ItemAreaTooltip } from '@/components/ui/ItemAreaTooltip';
@@ -251,11 +250,11 @@ const SettingsModal = memo(
 
 SettingsModal.displayName = 'SettingsModal';
 
-export const GameView = () => {
+export const GameView = memo(() => {
   const { grid, setGrid, getRandomItemType, createInitialGrid, findMatches, findPossibleMove } = useMatchGame();
   const { hasSeenTutorial, setHasSeenTutorial } = useGameSettings();
   const { gameItems, selectedGameItem, setSelectedGameItem, executeItemDirect, resetItems, addItem } = useGameItem();
-  const { allLoaded: globalAssetsLoaded, loadProgress: globalLoadProgress } = useGlobalPreloader();
+  // GlobalPreloadProvider는 백그라운드에서 동작하지만 현재는 직접 사용하지 않음
 
   // 리워드 시스템
   const {
@@ -363,6 +362,13 @@ export const GameView = () => {
 
             rendererRef.current.startRenderLoop();
             setIsInitializing(false);
+
+            // 게임 초기화 완료 후 튜토리얼 체크
+            setTimeout(() => {
+              if (!hasSeenTutorial) {
+                setShowTutorial(true);
+              }
+            }, 100);
           }
         }, 200);
       }
@@ -371,12 +377,19 @@ export const GameView = () => {
     return () => {
       clearInterval(progressInterval);
     };
-  }, [createInitialGrid, setGrid]);
+  }, [createInitialGrid, setGrid, hasSeenTutorial, setShowTutorial]);
 
-  // Update renderer when grid changes
+  // Update renderer when grid changes (debounced for performance)
   useEffect(() => {
     if (rendererRef.current && grid.length > 0) {
-      rendererRef.current.updateGrid(grid);
+      // 타이머를 사용해서 빠른 연속 업데이트를 방지
+      const updateTimer = setTimeout(() => {
+        if (rendererRef.current) {
+          rendererRef.current.updateGrid(grid);
+        }
+      }, 10); // 10ms debounce
+
+      return () => clearTimeout(updateTimer);
     }
   }, [grid]);
 
@@ -1057,13 +1070,6 @@ export const GameView = () => {
       setBackgroundMusicVolume(soundSettings.musicVolume);
     }
   }, [soundSettings.musicVolume]);
-
-  // Show tutorial
-  useEffect(() => {
-    if (!hasSeenTutorial) {
-      setShowTutorial(true);
-    }
-  }, [hasSeenTutorial]);
 
   // Check for possible moves
   useEffect(() => {
@@ -2001,4 +2007,6 @@ export const GameView = () => {
       </div>
     </ConfettiManager>
   );
-};
+});
+
+GameView.displayName = 'GameView';

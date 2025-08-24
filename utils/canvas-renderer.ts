@@ -93,8 +93,8 @@ export class CanvasGameRenderer {
   }
 
   private setupCanvas() {
-    // 고해상도 디스플레이 대응
-    const dpr = window.devicePixelRatio || 1;
+    // 고해상도 디스플레이 대응 (성능을 위해 DPR 제한)
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); // 최대 2배로 제한
     const rect = this.canvas.getBoundingClientRect();
 
     // 캔버스 크기 설정 전에 컨텍스트 리셋
@@ -104,9 +104,9 @@ export class CanvasGameRenderer {
     // 컨텍스트가 리셋되므로 다시 스케일 적용
     this.ctx.scale(dpr, dpr);
 
-    // 안티앨리어싱 설정 (width 설정 후 다시 적용 필요)
+    // 안티앨리어싱 설정 (성능을 위해 medium으로 변경)
     this.ctx.imageSmoothingEnabled = true;
-    this.ctx.imageSmoothingQuality = 'high';
+    this.ctx.imageSmoothingQuality = 'medium';
 
     // 캔버스 스타일 설정
     this.canvas.style.width = rect.width + 'px';
@@ -129,12 +129,12 @@ export class CanvasGameRenderer {
     this.gridStartX = padding + CanvasGameRenderer.MAX_BORDER_WIDTH / 2;
     this.gridStartY = padding + CanvasGameRenderer.MAX_BORDER_WIDTH / 2;
 
-    // 안티앨리어싱 설정
+    // 안티앨리어싱 설정 (성능을 위해 medium으로 변경)
     this.ctx.imageSmoothingEnabled = true;
-    this.ctx.imageSmoothingQuality = 'high';
+    this.ctx.imageSmoothingQuality = 'medium';
   }
 
-  private async preloadAssets() {
+  private preloadAssets() {
     this.isLoading = true;
     this.loadingProgress = 0;
 
@@ -164,6 +164,7 @@ export class CanvasGameRenderer {
             this.iconCache.set(key, fallbackImg);
           };
         } catch (error) {
+          console.error('Failed to load tile image:', error);
           const fallbackImg = this.createFallbackImage(tileType);
           this.iconCache.set(key, fallbackImg);
         }
@@ -495,7 +496,8 @@ export class CanvasGameRenderer {
         drawWidth = Math.min(drawWidth, iconSize);
         drawHeight = Math.min(drawHeight, iconSize);
 
-        ctx.drawImage(icon, drawX, drawY, drawWidth, drawHeight);
+        // 정수로 반올림하여 서브픽셀 렌더링 방지 (성능 향상)
+        ctx.drawImage(icon, Math.round(drawX), Math.round(drawY), Math.round(drawWidth), Math.round(drawHeight));
       } catch (error) {
         console.warn('Failed to draw plant image:', error);
         // 대체 텍스트 그리기
@@ -684,11 +686,21 @@ export class CanvasGameRenderer {
   }
 
   public startRenderLoop() {
-    const loop = () => {
-      this.render();
+    const targetFPS = 30; // 30fps로 제한 (60fps → 30fps)
+    const frameTime = 1000 / targetFPS;
+    let lastTime = 0;
+
+    const loop = (currentTime: number) => {
+      const deltaTime = currentTime - lastTime;
+
+      if (deltaTime >= frameTime) {
+        this.render();
+        lastTime = currentTime;
+      }
+
       this.animationFrameId = requestAnimationFrame(loop);
     };
-    loop();
+    this.animationFrameId = requestAnimationFrame(loop);
   }
 
   public stopRenderLoop() {
