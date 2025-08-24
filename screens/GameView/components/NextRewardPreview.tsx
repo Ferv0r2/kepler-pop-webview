@@ -39,7 +39,7 @@ export const NextRewardPreview = ({ currentScore, onRewardPreview: _onRewardPrev
         <div className="text-md text-white/60 whitespace-nowrap">{Math.round(progressPercent)}%</div>
 
         <div className="text-md text-yellow-400 font-medium whitespace-nowrap">
-          {remainingScore > 0 ? `${(remainingScore / 1000).toFixed(0)}k` : '✓'}
+          {remainingScore > 0 ? `🎁 ${remainingScore.toLocaleString()}` : '✓'}
         </div>
       </div>
     </div>

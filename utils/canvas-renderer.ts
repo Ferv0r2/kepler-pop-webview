@@ -340,38 +340,37 @@ export class CanvasGameRenderer {
   }
 
   private updateAnimations(deltaTime: number) {
-    if (this.animations.size === 0) return; // 애니메이션이 없으면 스킵
-
-    const now = performance.now();
-    const completedAnimations: TileAnimation[] = [];
-
     // 애니메이션 업데이트
-    for (const [id, animation] of this.animations) {
-      const elapsed = now - animation.startTime;
-      if (elapsed >= animation.duration) {
-        completedAnimations.push(animation);
-        this.animations.delete(id);
+    if (this.animations.size > 0) {
+      const now = performance.now();
+      const completedAnimations: TileAnimation[] = [];
+
+      for (const [id, animation] of this.animations) {
+        const elapsed = now - animation.startTime;
+        if (elapsed >= animation.duration) {
+          completedAnimations.push(animation);
+          this.animations.delete(id);
+        }
       }
+
+      // 완료된 애니메이션의 콜백 실행
+      completedAnimations.forEach((animation) => {
+        if (animation.onComplete) {
+          animation.onComplete();
+        }
+      });
     }
 
-    // 완료된 애니메이션의 콜백 실행
-    completedAnimations.forEach((animation) => {
-      if (animation.onComplete) {
-        animation.onComplete();
-      }
-    });
-
     // 파티클 업데이트
-    // 파티클 업데이트 최적화
-    if (this.particles.length === 0) return; // 파티클이 없으면 스킵
-
-    this.particles = this.particles.filter((particle) => {
-      particle.x += particle.vx;
-      particle.y += particle.vy;
-      particle.vy += 0.2; // 중력
-      particle.life -= deltaTime / 1000;
-      return particle.life > 0;
-    });
+    if (this.particles.length > 0) {
+      this.particles = this.particles.filter((particle) => {
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.vy += 0.2; // 중력
+        particle.life -= deltaTime / 1000;
+        return particle.life > 0;
+      });
+    }
   }
 
   private drawTile(tile: GridItem, x: number, y: number, scale: number = 1, opacity: number = 1, rotation: number = 0) {
