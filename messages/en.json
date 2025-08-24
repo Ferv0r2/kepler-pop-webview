@@ -255,6 +255,39 @@
       "title": "Active Artifacts",
       "subtitle": "{count} active",
       "description": "Only applies to the current game session"
+    },
+    "nextReward": "Next Reward",
+    "availableRewards": "Available Rewards",
+    "selectOneReward": "Select one reward",
+    "reachScoreForRewards": "Reach the score to receive rewards",
+    "shop": {
+      "title": "Shop",
+      "subtitle": "Purchase powerful items with gems",
+      "open": "Open Shop",
+      "purchase": "Purchase",
+      "gems": "gems",
+      "notEnoughGems": "Not enough gems",
+      "selectItemToPurchase": "Select an item to purchase"
+    },
+    "pathChoice": {
+      "title": "Path Choice",
+      "subtitle": "Choose your next path",
+      "open": "Choose Path",
+      "selectPath": "Select Path",
+      "selectPathToContinue": "Select a path to continue"
+    },
+    "pathProgress": {
+      "title": "Adventure Path",
+      "step": "Step",
+      "battle": "Battle",
+      "shop": "Shop",
+      "reward": "Reward",
+      "rest": "Rest",
+      "boss": "Boss",
+      "nextStep": "Next Step",
+      "scoreRequired": "{score} points required",
+      "completed": "Completed!",
+      "final": "Final"
     }
   },
   "loading": {

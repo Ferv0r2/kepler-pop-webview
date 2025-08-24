@@ -90,6 +90,11 @@ export const useMatchGame = (): UseMatchGameReturn => {
   };
 
   const findPossibleMove = useCallback((): { row1: number; col1: number; row2: number; col2: number } | null => {
+    // 그리드가 초기화되지 않았으면 null 반환
+    if (!grid || grid.length === 0 || !grid[0] || grid[0].length === 0) {
+      return null;
+    }
+
     // cloneDeep 없이, swap 후 검사, 원상복구
     for (let row = 0; row < GRID_SIZE; row++) {
       for (let col = 0; col < GRID_SIZE; col++) {

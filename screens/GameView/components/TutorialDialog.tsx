@@ -2,15 +2,13 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { RouteOff, Shuffle, Sparkles, X } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { createElement, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { tileConfig } from '@/screens/GameView/constants/tile-config';
-import { TierType } from '@/types/game-types';
+import type { TileType, TierType } from '@/types/game-types';
 
 import { TUTORIAL_TOTAL_STEP } from '../constants/game-config';
-
-import { TileComponent } from './TileComponent';
 
 interface TutorialDialogProps {
   isOpen: boolean;
@@ -186,13 +184,16 @@ export const TutorialDialog = ({
                   {[1, 2, 3].map((i) => (
                     <div
                       key={`tutorial-tile-${i}`}
-                      className={`w-10 h-10 rounded-lg ${
-                        tileConfig[i as keyof typeof tileConfig].bgColor[1]
-                      } flex items-center justify-center`}
+                      className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden border"
                     >
-                      {createElement(tileConfig[i as keyof typeof tileConfig].icon[1], {
-                        className: 'w-6 h-6 text-white',
-                      })}
+                      <Image
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                        src={tileConfig[i as TileType]?.images?.[1] || '/plants/tulip-tile-3.png'}
+                        alt={`Tile ${i}`}
+                        fill
+                        className="object-cover"
+                        priority
+                      />
                     </div>
                   ))}
                 </div>
@@ -211,22 +212,35 @@ export const TutorialDialog = ({
                   <div className="flex items-center gap-4">
                     {[1, 2, 3].map((tier) => (
                       <div key={`tutorial-tier-${tier}`} className="flex flex-col items-center gap-2">
-                        <TileComponent
-                          item={{
-                            id: '1',
-                            type: 1,
-                            tier: tier as TierType,
-                            isMatched: false,
-                            createdIndex: 0,
-                            turn: 0,
-                          }}
-                          rowIndex={0}
-                          colIndex={0}
-                          isShuffling={false}
-                          isSelected={false}
-                          isDragged={false}
-                          showHint={false}
-                        />
+                        <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden">
+                          <Image
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                            src={tileConfig[3]?.images?.[tier as TierType] || `/plants/tulip-tile-${tier}.png`}
+                            alt={`Tier ${tier}`}
+                            fill
+                            className="object-cover"
+                            priority
+                          />
+                          {/* Tier 테두리 효과 */}
+                          {tier === 1 && <div className="absolute inset-0 rounded-lg border border-gray-300" />}
+                          {tier === 2 && (
+                            <div className="absolute inset-0 rounded-lg border-2 border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                          )}
+                          {tier === 3 && (
+                            <div className="absolute inset-0 rounded-lg border-transparent bg-gradient-to-br from-pink-500 via-violet-500 to-amber-500 p-[2px]">
+                              <div className="w-full h-full rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden relative">
+                                <Image
+                                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                                  src={tileConfig[3]?.images?.[tier as TierType] || `/plants/sprout-tile-${tier}.png`}
+                                  alt={`Tier ${tier}`}
+                                  fill
+                                  className="object-cover scale-105"
+                                  priority
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
                         <p className="text-white/70 text-xs">{t(`tutorial.step2.tier_${tier}`)}</p>
                       </div>
                     ))}

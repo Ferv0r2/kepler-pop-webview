@@ -1,12 +1,12 @@
-import { tileConfig } from '@/screens/GameView/constants/tile-config';
-import type { GridItem, TileType } from '@/types/game-types';
 import { GRID_SIZE } from '@/screens/GameView/constants/game-config';
+import { tileConfig } from '@/screens/GameView/constants/tile-config';
+import type { GridItem, TileType, TierType } from '@/types/game-types';
 
 interface TileAnimation {
   tileId: string;
   startTime: number;
   duration: number;
-  type: 'swap' | 'match' | 'drop' | 'appear' | 'hint' | 'select';
+  type: 'swap' | 'match' | 'drop' | 'appear' | 'hint' | 'select' | 'upgrade';
   fromX?: number;
   fromY?: number;
   toX?: number;
@@ -16,6 +16,7 @@ interface TileAnimation {
   fromOpacity?: number;
   toOpacity?: number;
   rotation?: number;
+  onComplete?: () => void;
 }
 
 interface ParticleEffect {
@@ -30,6 +31,16 @@ interface ParticleEffect {
 }
 
 export class CanvasGameRenderer {
+  // 상수 정의
+  private static readonly MAX_BORDER_WIDTH = 4; // tier 3의 최대 border 두께
+  private static readonly BORDER_BUFFER = CanvasGameRenderer.MAX_BORDER_WIDTH * 2; // 양쪽 border 고려
+  private static readonly TILE_GAP = 4; // 타일 간격
+
+  // 애니메이션 타이밍 상수
+  private static readonly ANIMATION_DURATION_FAST = 200; // 빠른 애니메이션 (swap 시작)
+  private static readonly ANIMATION_DURATION_NORMAL = 300; // 일반 애니메이션 (swap 완료)
+  private static readonly ANIMATION_DURATION_SLOW = 400; // 느린 애니메이션 (match, drop, appear, upgrade)
+
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private tileSize: number = 0;
@@ -47,6 +58,8 @@ export class CanvasGameRenderer {
   private grid: GridItem[][] = [];
   private selectedItemType: string | null = null;
   private hoveredTile: { row: number; col: number } | null = null;
+  private isLoading: boolean = true;
+  private loadingProgress: number = 0;
 
   // Item effect overlays
   setSelectedItem(itemType: string | null): void {
@@ -57,16 +70,26 @@ export class CanvasGameRenderer {
     this.hoveredTile = row !== null && col !== null ? { row, col } : null;
   }
 
+  // 로딩 상태 확인
+  public isAssetsLoaded(): boolean {
+    return !this.isLoading;
+  }
+
+  // 로딩 진행률 가져오기
+  public getLoadingProgress(): number {
+    return this.loadingProgress;
+  }
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d', {
-      alpha: false,
+      alpha: true,
       desynchronized: true,
       willReadFrequently: false,
     })!;
 
     this.setupCanvas();
-    this.preloadAssets();
+    void this.preloadAssets();
   }
 
   private setupCanvas() {
@@ -74,34 +97,37 @@ export class CanvasGameRenderer {
     const dpr = window.devicePixelRatio || 1;
     const rect = this.canvas.getBoundingClientRect();
 
+    // 캔버스 크기 설정 전에 컨텍스트 리셋
     this.canvas.width = rect.width * dpr;
     this.canvas.height = rect.height * dpr;
 
+    // 컨텍스트가 리셋되므로 다시 스케일 적용
     this.ctx.scale(dpr, dpr);
+
+    // 안티앨리어싱 설정 (width 설정 후 다시 적용 필요)
+    this.ctx.imageSmoothingEnabled = true;
+    this.ctx.imageSmoothingQuality = 'high';
 
     // 캔버스 스타일 설정
     this.canvas.style.width = rect.width + 'px';
     this.canvas.style.height = rect.height + 'px';
 
-    // 그리드 크기 계산 - 타일을 여백 없이 꽉 채움
-    const padding = 8;
-    const gap = 0; // 간격 제거
-    const availableWidth = rect.width - padding * 2;
-    const availableHeight = rect.height - padding * 2;
+    // 그리드 크기 계산 - border 두께 고려
+    const padding = 8; // 여백 제거
+    const availableWidth = rect.width - padding * 2 - CanvasGameRenderer.BORDER_BUFFER;
+    const availableHeight = rect.height - padding * 2 - CanvasGameRenderer.BORDER_BUFFER;
 
-    const totalGapWidth = (GRID_SIZE - 1) * gap;
-    const totalGapHeight = (GRID_SIZE - 1) * gap;
+    const totalGapWidth = (GRID_SIZE - 1) * CanvasGameRenderer.TILE_GAP;
+    const totalGapHeight = (GRID_SIZE - 1) * CanvasGameRenderer.TILE_GAP;
 
     this.tileSize = Math.min(
       (availableWidth - totalGapWidth) / GRID_SIZE,
       (availableHeight - totalGapHeight) / GRID_SIZE,
     );
 
-    const gridWidth = this.tileSize * GRID_SIZE + totalGapWidth;
-    const gridHeight = this.tileSize * GRID_SIZE + totalGapHeight;
-
-    this.gridStartX = (rect.width - gridWidth) / 2;
-    this.gridStartY = (rect.height - gridHeight) / 2;
+    // 그리드를 캔버스 전체에 맞춤 - border buffer 고려
+    this.gridStartX = padding + CanvasGameRenderer.MAX_BORDER_WIDTH / 2;
+    this.gridStartY = padding + CanvasGameRenderer.MAX_BORDER_WIDTH / 2;
 
     // 안티앨리어싱 설정
     this.ctx.imageSmoothingEnabled = true;
@@ -109,46 +135,44 @@ export class CanvasGameRenderer {
   }
 
   private async preloadAssets() {
-    // 식물 이미지 로드
+    this.isLoading = true;
+    this.loadingProgress = 0;
+
+    // GlobalPreloadProvider가 이미 기본 에셋을 로드했으므로
+    // 여기서는 게임에 필요한 타일 이미지만 fallback으로 생성
     const tileTypes = [1, 2, 3, 4, 5] as TileType[];
-    console.log('🌱 Loading plant images...');
 
-    const loadPromises = tileTypes.map(async (tileType) => {
-      const imagePath = tileConfig[tileType].image;
-      const img = new Image();
+    tileTypes.forEach((tileType) => {
+      for (let tier = 1; tier <= 3; tier++) {
+        const tierType = tier as TierType;
+        const key = `${tileType}-${tierType}`;
 
-      try {
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => {
-            console.log(`✓ Loaded: ${imagePath}`);
-            resolve();
-          };
-          img.onerror = (error) => {
-            console.error(`✗ Failed to load: ${imagePath}`, error);
-            reject(error);
-          };
+        // 먼저 실제 이미지 로드 시도
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          const imagePath = tileConfig[tileType].images[tierType] as string;
+          const img = new Image();
           img.src = imagePath;
-        });
 
-        // 성공적으로 로드된 경우만 캐시에 저장
-        for (let tier = 1; tier <= 3; tier++) {
-          const key = `${tileType}-${tier}`;
-          this.iconCache.set(key, img);
-        }
-      } catch (error) {
-        // 에러 발생 시 기본 이미지나 대체 이미지 사용
-        console.warn(`Using fallback for tile type ${tileType}`);
-        // 기본 색상 사각형으로 대체
-        const fallbackImg = this.createFallbackImage(tileType);
-        for (let tier = 1; tier <= 3; tier++) {
-          const key = `${tileType}-${tier}`;
+          // 이미지 로드 성공시 캐시에 저장, 실패시 fallback 사용
+          img.onload = () => {
+            this.iconCache.set(key, img);
+          };
+
+          img.onerror = () => {
+            const fallbackImg = this.createFallbackImage(tileType);
+            this.iconCache.set(key, fallbackImg);
+          };
+        } catch (error) {
+          const fallbackImg = this.createFallbackImage(tileType);
           this.iconCache.set(key, fallbackImg);
         }
       }
     });
 
-    await Promise.allSettled(loadPromises);
-    console.log('🌱 Plant image loading complete!');
+    // 로딩 완료 처리 - 즉시 완료로 설정
+    this.isLoading = false;
+    this.loadingProgress = 100;
   }
 
   private createFallbackImage(tileType: TileType): HTMLImageElement {
@@ -190,6 +214,46 @@ export class CanvasGameRenderer {
     ctx.fillText(`P${tileType}`, x + size / 2, y + size / 2);
   }
 
+  private drawLoadingScreen(ctx: CanvasRenderingContext2D) {
+    const centerX = this.canvas.width / 2;
+    const centerY = this.canvas.height / 2;
+
+    // 로딩 스피너 그리기
+    const spinnerRadius = 30;
+    const spinnerThickness = 4;
+    const time = performance.now() * 0.003;
+
+    ctx.save();
+    ctx.translate(centerX, centerY);
+
+    // 로딩 텍스트
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Loading...', 0, -spinnerRadius - 20);
+
+    // 진행률 표시
+    const progressText = `${Math.round(this.loadingProgress)}%`;
+    ctx.fillText(progressText, 0, spinnerRadius + 20);
+
+    // 스피너 원호 그리기
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.lineWidth = spinnerThickness;
+    ctx.beginPath();
+    ctx.arc(0, 0, spinnerRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 회전하는 스피너
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.lineWidth = spinnerThickness;
+    ctx.beginPath();
+    ctx.arc(0, 0, spinnerRadius, time, time + Math.PI * 1.5);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
   public updateGrid(grid: GridItem[][]) {
     this.grid = grid;
   }
@@ -210,10 +274,9 @@ export class CanvasGameRenderer {
   }
 
   public setShuffling(shuffling: boolean) {
-    this.isShuffling = shuffling;
     if (shuffling) {
-      this.grid.forEach((row, rowIndex) => {
-        row.forEach((tile, colIndex) => {
+      this.grid.forEach((row) => {
+        row.forEach((tile) => {
           this.addAnimation(tile.id, 'appear', {
             duration: 1000,
             rotation: 360,
@@ -228,7 +291,7 @@ export class CanvasGameRenderer {
       tileId,
       type,
       startTime: performance.now(),
-      duration: options.duration || 300,
+      duration: options.duration || CanvasGameRenderer.ANIMATION_DURATION_NORMAL,
       ...options,
     };
 
@@ -236,8 +299,7 @@ export class CanvasGameRenderer {
   }
 
   public addParticle(x: number, y: number, color: string) {
-    const gap = 5;
-    const tileWithGap = this.tileSize + gap;
+    const tileWithGap = this.tileSize + CanvasGameRenderer.TILE_GAP;
 
     for (let i = 0; i < 10; i++) {
       const angle = (Math.PI * 2 * i) / 10;
@@ -258,14 +320,23 @@ export class CanvasGameRenderer {
 
   private updateAnimations(deltaTime: number) {
     const now = performance.now();
+    const completedAnimations: TileAnimation[] = [];
 
     // 애니메이션 업데이트
     for (const [id, animation] of this.animations) {
       const elapsed = now - animation.startTime;
       if (elapsed >= animation.duration) {
+        completedAnimations.push(animation);
         this.animations.delete(id);
       }
     }
+
+    // 완료된 애니메이션의 콜백 실행
+    completedAnimations.forEach((animation) => {
+      if (animation.onComplete) {
+        animation.onComplete();
+      }
+    });
 
     // 파티클 업데이트
     this.particles = this.particles.filter((particle) => {
@@ -290,7 +361,7 @@ export class CanvasGameRenderer {
     ctx.translate(-this.tileSize / 2, -this.tileSize / 2);
 
     // 식물 이미지에 맞는 배경 - 밝고 깔끔한 스타일
-    const borderRadius = Math.min(this.tileSize * 0.2, 16);
+    const borderRadius = Math.min(this.tileSize * 0.1, 8);
 
     // 기본 배경 (밝은 색상)
     ctx.fillStyle = '#f8fafc'; // slate-50
@@ -307,20 +378,27 @@ export class CanvasGameRenderer {
     ctx.roundRect(0, 0, this.tileSize, this.tileSize, borderRadius);
     ctx.fill();
 
-    // 민간한 테두리
-    ctx.strokeStyle = '#e2e8f0'; // slate-200
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(0, 0, this.tileSize, this.tileSize, borderRadius);
-    ctx.stroke();
+    // 테두리 제거 (하얀 선이 보이지 않도록)
+    // ctx.strokeStyle = '#e2e8f0'; // slate-200
+    // ctx.lineWidth = 1;
+    // ctx.beginPath();
+    // ctx.roundRect(0, 0, this.tileSize, this.tileSize, borderRadius);
+    // ctx.stroke();
 
-    // 그림자
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetY = 2;
+    // 그림자 효과 제거 (이미지와 충돌하지 않도록)
+    // ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    // ctx.shadowBlur = 8;
+    // ctx.shadowOffsetY = 2;
 
     // Tier 효과 - 식물 타일에 맞게 단순화
-    if (tile.tier === 2) {
+    if (tile.tier === 1) {
+      // 1등급: 기본 회색 테두리
+      ctx.strokeStyle = '#d1d5db'; // gray-300
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, this.tileSize, this.tileSize, borderRadius);
+      ctx.stroke();
+    } else if (tile.tier === 2) {
       // 2등급: 황금색 테두리와 반짝거림
       ctx.strokeStyle = '#f59e0b'; // amber-500
       ctx.lineWidth = 3;
@@ -370,12 +448,18 @@ export class CanvasGameRenderer {
     const icon = this.iconCache.get(iconKey);
     if (icon && icon.complete && icon.naturalWidth > 0) {
       ctx.save();
+
+      // 타일 영역을 클리핑하여 이미지가 바깥으로 빠져나오지 않도록 함
+      ctx.beginPath();
+      ctx.roundRect(0, 0, this.tileSize, this.tileSize, borderRadius);
+      ctx.clip();
+
       // 식물 이미지는 그림자를 선늤게 적용
       ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
       ctx.shadowBlur = 3;
       ctx.shadowOffsetY = 1;
 
-      // 식물 이미지를 타일 전체를 채우도록 (100%)
+      // 식물 이미지를 타일 전체에 맞게 그리기 (여백 없음)
       const iconSize = this.tileSize;
       const iconX = 0;
       const iconY = 0;
@@ -385,7 +469,33 @@ export class CanvasGameRenderer {
       ctx.imageSmoothingQuality = 'high';
 
       try {
-        ctx.drawImage(icon, iconX, iconY, iconSize, iconSize);
+        // 이미지 비율을 유지하면서 타일 안에 맞추기 (contain 방식)
+        const imageAspectRatio = icon.naturalWidth / icon.naturalHeight;
+        const tileAspectRatio = 1; // 정사각형 타일
+
+        let drawWidth, drawHeight, drawX, drawY;
+
+        if (imageAspectRatio > tileAspectRatio) {
+          // 이미지가 가로로 긴 경우 - 가로를 타일 크기에 맞추고 세로를 비례 조정
+          drawWidth = iconSize;
+          drawHeight = iconSize / imageAspectRatio;
+          drawX = iconX;
+          drawY = iconY + (iconSize - drawHeight) / 2;
+        } else {
+          // 이미지가 세로로 길거나 정사각형인 경우 - 세로를 타일 크기에 맞추고 가로를 비례 조정
+          drawHeight = iconSize;
+          drawWidth = iconSize * imageAspectRatio;
+          drawX = iconX + (iconSize - drawWidth) / 2;
+          drawY = iconY;
+        }
+
+        // 이미지가 타일 경계를 절대 벗어나지 않도록 클램핑
+        drawX = Math.max(iconX, Math.min(drawX, iconX + iconSize - drawWidth));
+        drawY = Math.max(iconY, Math.min(drawY, iconY + iconSize - drawHeight));
+        drawWidth = Math.min(drawWidth, iconSize);
+        drawHeight = Math.min(drawHeight, iconSize);
+
+        ctx.drawImage(icon, drawX, drawY, drawWidth, drawHeight);
       } catch (error) {
         console.warn('Failed to draw plant image:', error);
         // 대체 텍스트 그리기
@@ -395,6 +505,12 @@ export class CanvasGameRenderer {
     } else {
       // 이미지가 없거나 로드되지 않은 경우 대체 표시
       ctx.save();
+
+      // 타일 영역을 클리핑
+      ctx.beginPath();
+      ctx.roundRect(0, 0, this.tileSize, this.tileSize, borderRadius);
+      ctx.clip();
+
       const iconSize = this.tileSize;
       const iconX = 0;
       const iconY = 0;
@@ -409,8 +525,16 @@ export class CanvasGameRenderer {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
   }
 
+  private easeInOutCubic(t: number): number {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
   public render() {
-    if (!this.ctx || !this.grid.length) return;
+    if (!this.ctx) return;
+
+    if (this.grid.length === 0) {
+      return;
+    }
 
     const ctx = this.ctx;
     const now = performance.now();
@@ -419,6 +543,15 @@ export class CanvasGameRenderer {
 
     // 배경 클리어 (투명하게)
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // 로딩 중일 때는 로딩 화면만 표시
+    if (this.isLoading) {
+      this.drawLoadingScreen(ctx);
+      return;
+    }
+
+    // 그리드가 없으면 렌더링하지 않음
+    if (!this.grid.length) return;
 
     // 애니메이션 업데이트
     this.updateAnimations(deltaTime);
@@ -429,9 +562,8 @@ export class CanvasGameRenderer {
         const tile = this.grid[row]?.[col];
         if (!tile) continue;
 
-        const gap = 0;
-        let x = this.gridStartX + col * (this.tileSize + gap);
-        let y = this.gridStartY + row * (this.tileSize + gap);
+        let x = this.gridStartX + col * (this.tileSize + CanvasGameRenderer.TILE_GAP);
+        let y = this.gridStartY + row * (this.tileSize + CanvasGameRenderer.TILE_GAP);
         let scale = 1;
         let opacity = 1;
         let rotation = 0;
@@ -440,7 +572,8 @@ export class CanvasGameRenderer {
         const animation = this.animations.get(tile.id);
         if (animation) {
           const progress = Math.min((now - animation.startTime) / animation.duration, 1);
-          const eased = this.easeInOut(progress);
+
+          const eased = animation.type === 'upgrade' ? this.easeInOutCubic(progress) : this.easeInOut(progress);
 
           switch (animation.type) {
             case 'swap':
@@ -477,6 +610,20 @@ export class CanvasGameRenderer {
             case 'select':
               scale = 1.1;
               break;
+            case 'upgrade':
+              // 티어 업그레이드 애니메이션: 부드러운 펄스 효과
+              if (progress < 0.5) {
+                // 처음 절반: 커지면서 페이드 아웃
+                scale = 1 + progress * 2 * 0.3; // 1.0 → 1.3
+                opacity = 1 - progress * 2 * 0.3; // 1.0 → 0.7
+              } else {
+                // 나머지 절반: 다시 작아지면서 페이드 인
+                scale = 1.3 - (progress - 0.5) * 2 * 0.3; // 1.3 → 1.0
+                opacity = 0.7 + (progress - 0.5) * 2 * 0.3; // 0.7 → 1.0
+              }
+              // 부드러운 회전
+              rotation = Math.sin(progress * Math.PI * 2) * 5;
+              break;
           }
         }
 
@@ -511,21 +658,13 @@ export class CanvasGameRenderer {
           ctx.restore();
         }
 
-        if (this.hintTiles.has(tileKey)) {
-          // 힌트 효과
-          const pulse = Math.sin(now * 0.003) * 0.5 + 0.5;
-          ctx.save();
-          ctx.strokeStyle = '#fde047';
-          ctx.lineWidth = 2;
-          ctx.globalAlpha = pulse;
-          ctx.beginPath();
-          ctx.roundRect(x - 1, y - 1, this.tileSize - 2, this.tileSize - 2, 12);
-          ctx.stroke();
-          ctx.restore();
-        }
-
         // 타일 그리기
         this.drawTile(tile, x, y, scale, opacity, rotation);
+
+        // 힌트 효과 - 타일 위에 그리기
+        if (this.hintTiles.has(tileKey)) {
+          this.drawHintEffect(ctx, x, y, now);
+        }
       }
     }
 
@@ -564,8 +703,7 @@ export class CanvasGameRenderer {
     const x = clientX - rect.left;
     const y = clientY - rect.top;
 
-    const gap = 5;
-    const tileWithGap = this.tileSize + gap;
+    const tileWithGap = this.tileSize + CanvasGameRenderer.TILE_GAP;
 
     const col = Math.floor((x - this.gridStartX) / tileWithGap);
     const row = Math.floor((y - this.gridStartY) / tileWithGap);
@@ -585,8 +723,7 @@ export class CanvasGameRenderer {
   }
 
   public handleSwapAnimation(row1: number, col1: number, row2: number, col2: number, tile1Id: string, tile2Id: string) {
-    const gap = 5;
-    const tileWithGap = this.tileSize + gap;
+    const tileWithGap = this.tileSize + CanvasGameRenderer.TILE_GAP;
 
     const x1 = this.gridStartX + col1 * tileWithGap;
     const y1 = this.gridStartY + row1 * tileWithGap;
@@ -598,7 +735,7 @@ export class CanvasGameRenderer {
       fromY: y1,
       toX: x2,
       toY: y2,
-      duration: 200,
+      duration: CanvasGameRenderer.ANIMATION_DURATION_NORMAL,
     });
 
     this.addAnimation(tile2Id, 'swap', {
@@ -606,14 +743,67 @@ export class CanvasGameRenderer {
       fromY: y2,
       toX: x1,
       toY: y1,
-      duration: 200,
+      duration: CanvasGameRenderer.ANIMATION_DURATION_NORMAL,
+    });
+  }
+
+  public handleFailedSwapAnimation(
+    row1: number,
+    col1: number,
+    row2: number,
+    col2: number,
+    tile1Id: string,
+    tile2Id: string,
+    onComplete: () => void,
+  ) {
+    const tileWithGap = this.tileSize + CanvasGameRenderer.TILE_GAP;
+
+    const x1 = this.gridStartX + col1 * tileWithGap;
+    const y1 = this.gridStartY + row1 * tileWithGap;
+    const x2 = this.gridStartX + col2 * tileWithGap;
+    const y2 = this.gridStartY + row2 * tileWithGap;
+
+    // 1단계: A→B 스왑
+    this.addAnimation(tile1Id, 'swap', {
+      fromX: x1,
+      fromY: y1,
+      toX: x2,
+      toY: y2,
+      duration: CanvasGameRenderer.ANIMATION_DURATION_NORMAL,
+      onComplete: () => {
+        // 2단계: B→A 복귀 애니메이션
+        this.addAnimation(tile1Id, 'swap', {
+          fromX: x2,
+          fromY: y2,
+          toX: x1,
+          toY: y1,
+          duration: CanvasGameRenderer.ANIMATION_DURATION_NORMAL,
+          onComplete,
+        });
+
+        this.addAnimation(tile2Id, 'swap', {
+          fromX: x1,
+          fromY: y1,
+          toX: x2,
+          toY: y2,
+          duration: CanvasGameRenderer.ANIMATION_DURATION_NORMAL,
+        });
+      },
+    });
+
+    this.addAnimation(tile2Id, 'swap', {
+      fromX: x2,
+      fromY: y2,
+      toX: x1,
+      toY: y1,
+      duration: CanvasGameRenderer.ANIMATION_DURATION_NORMAL,
     });
   }
 
   public handleMatchAnimation(tiles: { row: number; col: number; id: string }[]) {
     tiles.forEach((tile) => {
       this.addAnimation(tile.id, 'match', {
-        duration: 300,
+        duration: CanvasGameRenderer.ANIMATION_DURATION_SLOW,
       });
 
       // 파티클 효과 추가
@@ -622,8 +812,7 @@ export class CanvasGameRenderer {
   }
 
   public handleDropAnimation(tiles: { id: string; fromRow: number; toRow: number; col: number }[]) {
-    const gap = 5;
-    const tileWithGap = this.tileSize + gap;
+    const tileWithGap = this.tileSize + CanvasGameRenderer.TILE_GAP;
 
     tiles.forEach((tile) => {
       const fromY = this.gridStartY + tile.fromRow * tileWithGap;
@@ -632,7 +821,7 @@ export class CanvasGameRenderer {
       this.addAnimation(tile.id, 'drop', {
         fromY,
         toY,
-        duration: 400,
+        duration: CanvasGameRenderer.ANIMATION_DURATION_SLOW,
       });
     });
   }
@@ -640,13 +829,86 @@ export class CanvasGameRenderer {
   public handleNewTileAnimation(tiles: { id: string; row: number; col: number }[]) {
     tiles.forEach((tile) => {
       this.addAnimation(tile.id, 'appear', {
-        duration: 300,
+        duration: CanvasGameRenderer.ANIMATION_DURATION_SLOW,
       });
     });
   }
 
+  public handleTierUpgradeAnimation(tiles: { id: string; row: number; col: number }[]) {
+    tiles.forEach((tile) => {
+      this.addAnimation(tile.id, 'upgrade', {
+        duration: CanvasGameRenderer.ANIMATION_DURATION_SLOW, // 400ms로 부드러운 전환
+      });
+
+      // 파티클 효과 추가 (황금색 반짝임)
+      this.addParticle(tile.col, tile.row, '#ffd700');
+    });
+  }
+
   public resize() {
+    // 현재 애니메이션과 상태 백업
+    const currentAnimations = new Map(this.animations);
+    const currentParticles = [...this.particles];
+    const currentHintTiles = new Set(this.hintTiles);
+    const currentSelectedTile = this.selectedTile;
+    const currentDraggedTile = this.draggedTile;
+    const currentSelectedItemType = this.selectedItemType;
+    const currentHoveredTile = this.hoveredTile;
+
+    // 캔버스 재설정
     this.setupCanvas();
+
+    // 상태 복원
+    this.animations = currentAnimations;
+    this.particles = currentParticles;
+    this.hintTiles = currentHintTiles;
+    this.selectedTile = currentSelectedTile;
+    this.draggedTile = currentDraggedTile;
+    this.selectedItemType = currentSelectedItemType;
+    this.hoveredTile = currentHoveredTile;
+  }
+
+  private drawHintEffect(ctx: CanvasRenderingContext2D, x: number, y: number, now: number) {
+    const pulse = Math.sin(now * 0.005) * 0.5 + 0.5; // 좀 더 느린 효과
+
+    ctx.save();
+
+    // 바깥 글로우 효과
+    ctx.shadowColor = '#fde047';
+    ctx.shadowBlur = 15 + pulse * 10;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+
+    // 두꺼운 테두리
+    ctx.strokeStyle = '#fde047';
+    ctx.lineWidth = 3 + pulse * 2;
+    ctx.globalAlpha = 0.7 + pulse * 0.3;
+    ctx.beginPath();
+    ctx.roundRect(x - 3, y - 3, this.tileSize + 6, this.tileSize + 6, 15);
+    ctx.stroke();
+
+    // 내부 반짝거리는 테두리
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = pulse * 0.8;
+    ctx.beginPath();
+    ctx.roundRect(x + 2, y + 2, this.tileSize - 4, this.tileSize - 4, 10);
+    ctx.stroke();
+
+    // 추가 반짝 효과 - 모서리에 작은 빛
+    for (let i = 0; i < 4; i++) {
+      const angle = (now * 0.001 + i * Math.PI * 0.5) % (Math.PI * 2);
+      const sparkleX = x + this.tileSize / 2 + Math.cos(angle) * (this.tileSize / 2 + 5);
+      const sparkleY = y + this.tileSize / 2 + Math.sin(angle) * (this.tileSize / 2 + 5);
+
+      ctx.fillStyle = '#fde047';
+      ctx.globalAlpha = pulse * 0.6;
+      ctx.beginPath();
+      ctx.arc(sparkleX, sparkleY, 2 + pulse * 1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
   }
 
   private drawItemEffectOverlay() {
@@ -654,9 +916,8 @@ export class CanvasGameRenderer {
 
     const ctx = this.ctx;
     const { row, col } = this.hoveredTile;
-    const gap = 0;
-    const x = this.gridStartX + col * (this.tileSize + gap);
-    const y = this.gridStartY + row * (this.tileSize + gap);
+    const x = this.gridStartX + col * (this.tileSize + CanvasGameRenderer.TILE_GAP);
+    const y = this.gridStartY + row * (this.tileSize + CanvasGameRenderer.TILE_GAP);
 
     ctx.save();
 
@@ -680,13 +941,25 @@ export class CanvasGameRenderer {
 
         // 행 하이라이트
         ctx.beginPath();
-        ctx.roundRect(this.gridStartX, y, GRID_SIZE * (this.tileSize + gap) - gap, this.tileSize, 12);
+        ctx.roundRect(
+          this.gridStartX,
+          y,
+          GRID_SIZE * (this.tileSize + CanvasGameRenderer.TILE_GAP) - CanvasGameRenderer.TILE_GAP,
+          this.tileSize,
+          12,
+        );
         ctx.fill();
         ctx.stroke();
 
         // 열 하이라이트
         ctx.beginPath();
-        ctx.roundRect(x, this.gridStartY, this.tileSize, GRID_SIZE * (this.tileSize + gap) - gap, 12);
+        ctx.roundRect(
+          x,
+          this.gridStartY,
+          this.tileSize,
+          GRID_SIZE * (this.tileSize + CanvasGameRenderer.TILE_GAP) - CanvasGameRenderer.TILE_GAP,
+          12,
+        );
         ctx.fill();
         ctx.stroke();
         break;
@@ -703,8 +976,8 @@ export class CanvasGameRenderer {
             const targetCol = col + dc;
 
             if (targetRow >= 0 && targetRow < GRID_SIZE && targetCol >= 0 && targetCol < GRID_SIZE) {
-              const targetX = this.gridStartX + targetCol * (this.tileSize + gap);
-              const targetY = this.gridStartY + targetRow * (this.tileSize + gap);
+              const targetX = this.gridStartX + targetCol * (this.tileSize + CanvasGameRenderer.TILE_GAP);
+              const targetY = this.gridStartY + targetRow * (this.tileSize + CanvasGameRenderer.TILE_GAP);
 
               ctx.beginPath();
               ctx.roundRect(targetX, targetY, this.tileSize, this.tileSize, 12);

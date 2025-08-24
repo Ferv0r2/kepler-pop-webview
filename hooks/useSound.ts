@@ -23,6 +23,26 @@ export const useSound = () => {
     setSettings((prev: SoundSettings) => ({ ...prev, volume: Math.max(0, Math.min(1, volume)) }));
   }, []);
 
+  // 배경음악 볼륨 변경
+  const setMusicVolume = useCallback((volume: number) => {
+    setSettings((prev: SoundSettings) => ({ ...prev, musicVolume: Math.max(0, Math.min(1, volume)) }));
+  }, []);
+
+  // 배경음악 활성화/비활성화 토글
+  const toggleMusic = useCallback(() => {
+    setSettings((prev: SoundSettings) => ({ ...prev, musicEnabled: !prev.musicEnabled }));
+  }, []);
+
+  // 배경음악 활성화
+  const enableMusic = useCallback(() => {
+    setSettings((prev: SoundSettings) => ({ ...prev, musicEnabled: true }));
+  }, []);
+
+  // 배경음악 비활성화
+  const disableMusic = useCallback(() => {
+    setSettings((prev: SoundSettings) => ({ ...prev, musicEnabled: false }));
+  }, []);
+
   // 효과음 활성화
   const enableSound = useCallback(() => {
     setSettings((prev: SoundSettings) => ({ ...prev, enabled: true }));
@@ -39,5 +59,9 @@ export const useSound = () => {
     setVolume,
     enableSound,
     disableSound,
+    setMusicVolume,
+    toggleMusic,
+    enableMusic,
+    disableMusic,
   };
 };

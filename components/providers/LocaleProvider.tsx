@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 interface LocaleContextType {
   locale: string;
-  setLocale: (locale: string) => void;
+  setLocale: (locale: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -13,23 +13,28 @@ interface LocaleProviderProps {
   children: React.ReactNode;
 }
 
+interface Messages {
+  [key: string]: string | Messages;
+}
+
 const LocaleContext = createContext<LocaleContextType | null>(null);
 
-async function loadMessages(locale: string) {
+async function loadMessages(locale: string): Promise<Messages> {
   try {
-    const messages = (await import(`../../messages/${locale}.json`)).default;
+    const localeModule = (await import(`../../messages/${locale}.json`)) as { default: Messages };
+    const messages = localeModule.default;
     return messages;
   } catch {
     // Fallback to English if locale file doesn't exist
-    const messages = (await import('../../messages/en.json')).default;
+    const enModule = (await import('../../messages/en.json')) as { default: Messages };
+    const messages = enModule.default;
     return messages;
   }
 }
 
 export function LocaleProvider({ children }: LocaleProviderProps) {
   const [locale, setLocaleState] = useState<string>('en');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [messages, setMessages] = useState<Record<string, any>>({});
+  const [messages, setMessages] = useState<Messages>({});
   const [isLoading, setIsLoading] = useState(true);
 
   const setLocale = async (newLocale: string) => {
@@ -51,7 +56,7 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
   };
 
   useEffect(() => {
-    async function initializeLocale() {
+    const initializeLocale = async () => {
       setIsLoading(true);
 
       let detectedLocale: string = 'en';
@@ -82,9 +87,9 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
       setLocaleState(detectedLocale);
       setMessages(loadedMessages);
       setIsLoading(false);
-    }
+    };
 
-    initializeLocale();
+    void initializeLocale();
   }, []);
 
   if (isLoading) {

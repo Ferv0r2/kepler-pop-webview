@@ -18,7 +18,7 @@ export const LeaderboardStats = ({ stats, isLoading = false }: LeaderboardStatsP
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 gap-4">
-        {[...Array(4)].map((_, i) => (
+        {Array.from({ length: 4 }, (_, i) => (
           <div key={i} className="bg-gray-800/50 rounded-lg p-4 animate-pulse">
             <div className="h-4 bg-gray-700 rounded mb-2" />
             <div className="h-6 bg-gray-700 rounded" />

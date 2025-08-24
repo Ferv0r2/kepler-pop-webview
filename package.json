@@ -1,9 +1,9 @@
 {
   "name": "kepler-pop-webview",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack --port 3001",
+    "dev": "next dev --turbopack --port 3001 --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -84,6 +84,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^15.5.1",
     "playwright": "^1.54.1",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

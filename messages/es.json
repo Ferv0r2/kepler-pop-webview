@@ -273,6 +273,39 @@
       "title": "Artefactos activos",
       "subtitle": "{count} activos",
       "description": "Solo se aplica a la sesión de juego actual"
+    },
+    "nextReward": "Siguiente recompensa",
+    "availableRewards": "Recompensas disponibles",
+    "selectOneReward": "Selecciona una recompensa",
+    "reachScoreForRewards": "Alcanza la puntuación para recibir recompensas",
+    "shop": {
+      "title": "Tienda",
+      "subtitle": "Compra artículos poderosos con gemas",
+      "open": "Abrir Tienda",
+      "purchase": "Comprar",
+      "gems": "gemas",
+      "notEnoughGems": "No hay suficientes gemas",
+      "selectItemToPurchase": "Selecciona un artículo para comprar"
+    },
+    "pathChoice": {
+      "title": "Selección de ruta",
+      "subtitle": "Elige tu siguiente ruta",
+      "open": "Elegir ruta",
+      "selectPath": "Elegir ruta",
+      "selectPathToContinue": "Elegir una ruta para continuar"
+    },
+    "pathProgress": {
+      "title": "Ruta de aventura",
+      "step": "Paso",
+      "battle": "Batalla",
+      "shop": "Tienda",
+      "reward": "Recompensa",
+      "rest": "Descanso",
+      "boss": "Jefe",
+      "nextStep": "Siguiente paso",
+      "scoreRequired": "Puntuación requerida: {score}",
+      "completed": "Completado!",
+      "final": "Final"
     }
   },
   "loading": {

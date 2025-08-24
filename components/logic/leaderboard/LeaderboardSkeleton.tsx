@@ -10,7 +10,7 @@ interface LeaderboardSkeletonProps {
 export const LeaderboardSkeleton = ({ count = 10, showRankChange = false }: LeaderboardSkeletonProps) => {
   return (
     <motion.div className="space-y-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-      {[...Array(count)].map((_, index) => (
+      {Array.from({ length: count }, (_, index) => (
         <motion.div
           key={index}
           className="flex items-center p-4 rounded-lg bg-gray-800/50 border border-gray-700 animate-pulse"

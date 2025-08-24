@@ -1,14 +1,9 @@
-import { FlatCompat } from '@eslint/eslintrc';
 import nextPlugin from '@next/eslint-plugin-next';
 import js from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 import importPlugin from 'eslint-plugin-import';
 import prettierPlugin from 'eslint-plugin-prettier';
-
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-});
 
 const eslintConfig = [
   // 기본 JavaScript 규칙
@@ -59,6 +54,7 @@ const eslintConfig = [
 
       // 일반 규칙
       'no-unused-vars': 'off',
+      'no-undef': 'off',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',

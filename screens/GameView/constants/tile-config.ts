@@ -5,7 +5,7 @@ export const tileConfig: Record<
   {
     color: Record<TierType, string>;
     bgColor: Record<TierType, string>;
-    image: string;
+    images: Record<TierType, string>; // 등급별 이미지로 변경
   }
 > = {
   1: {
@@ -19,7 +19,11 @@ export const tileConfig: Record<
       2: 'bg-gradient-to-br from-red-600 to-red-800',
       3: 'bg-gradient-to-br from-red-800 to-red-900',
     },
-    image: '/plants/tulip-tile.png',
+    images: {
+      1: '/plants/tulip-tile-1.png',
+      2: '/plants/tulip-tile-2.png',
+      3: '/plants/tulip-tile-3.png',
+    },
   },
   2: {
     color: {
@@ -32,7 +36,11 @@ export const tileConfig: Record<
       2: 'bg-gradient-to-br from-cyan-600 to-cyan-800',
       3: 'bg-gradient-to-br from-cyan-800 to-cyan-900',
     },
-    image: '/plants/crystal-cactus-tile.png',
+    images: {
+      1: '/plants/crystal-cactus-tile-1.png',
+      2: '/plants/crystal-cactus-tile-2.png',
+      3: '/plants/crystal-cactus-tile-3.png',
+    },
   },
   3: {
     color: {
@@ -45,7 +53,11 @@ export const tileConfig: Record<
       2: 'bg-gradient-to-br from-emerald-600 to-emerald-800',
       3: 'bg-gradient-to-br from-emerald-800 to-emerald-900',
     },
-    image: '/plants/sprout-tile.png',
+    images: {
+      1: '/plants/sprout-tile-1.png',
+      2: '/plants/sprout-tile-2.png',
+      3: '/plants/sprout-tile-3.png',
+    },
   },
   4: {
     color: {
@@ -58,7 +70,11 @@ export const tileConfig: Record<
       2: 'bg-gradient-to-br from-amber-600 to-amber-800',
       3: 'bg-gradient-to-br from-amber-800 to-amber-900',
     },
-    image: '/plants/sunflower-tile.png',
+    images: {
+      1: '/plants/sunflower-tile-1.png',
+      2: '/plants/sunflower-tile-2.png',
+      3: '/plants/sunflower-tile-3.png',
+    },
   },
   5: {
     color: {
@@ -71,19 +87,10 @@ export const tileConfig: Record<
       2: 'bg-gradient-to-br from-violet-600 to-violet-800',
       3: 'bg-gradient-to-br from-violet-800 to-violet-900',
     },
-    image: '/plants/mushroom-tile.png',
-  },
-  6: {
-    color: {
-      1: 'text-fuchsia-500',
-      2: 'text-fuchsia-600',
-      3: 'text-fuchsia-700',
+    images: {
+      1: '/plants/mushroom-tile-1.png',
+      2: '/plants/mushroom-tile-2.png',
+      3: '/plants/mushroom-tile-3.png',
     },
-    bgColor: {
-      1: 'bg-gradient-to-br from-fuchsia-400 to-fuchsia-600',
-      2: 'bg-gradient-to-br from-fuchsia-600 to-fuchsia-800',
-      3: 'bg-gradient-to-br from-fuchsia-800 to-fuchsia-900',
-    },
-    image: '/plants/tulip-tile.png', // 6번은 사용되지 않지만 기본값
   },
 };

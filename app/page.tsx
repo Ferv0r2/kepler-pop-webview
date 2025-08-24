@@ -1,7 +1,7 @@
 'use client';
 
-import { GameViewSimple } from '@/screens/GameView/GameViewSimple';
+import { GameView } from '@/screens/GameView/GameView';
 
 export default function Main() {
-  return <GameViewSimple />;
+  return <GameView />;
 }

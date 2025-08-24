@@ -17,12 +17,9 @@ interface LeaderboardFiltersProps {
 
 export const LeaderboardFilters = ({
   period,
-  mode,
-  // scope,
   onPeriodChange,
-  onModeChange,
-  // onScopeChange,
-}: LeaderboardFiltersProps) => {
+}: // onModeChange,
+LeaderboardFiltersProps) => {
   const t = useTranslations();
 
   const periodOptions: { value: LeaderboardPeriod; label: string }[] = [
@@ -30,10 +27,6 @@ export const LeaderboardFilters = ({
     { value: 'weekly', label: t('leaderboard.filters.weekly') },
     { value: 'monthly', label: t('leaderboard.filters.monthly') },
     { value: 'all', label: t('leaderboard.filters.all') },
-  ];
-
-  const modeOptions: { value: LeaderboardMode; label: string }[] = [
-    { value: 'challenge', label: t('leaderboard.filters.challenge') },
   ];
 
   // const scopeOptions: { value: LeaderboardScope; label: string }[] = [
@@ -69,30 +62,6 @@ export const LeaderboardFilters = ({
           ))}
         </div>
       </div>
-
-      {/* 모드 필터 - challenge만 있으므로 숨김 */}
-      {false && (
-        <div>
-          <h3 className="text-sm font-medium text-gray-300 mb-2">{t('leaderboard.filters.mode')}</h3>
-          <div className="flex flex-wrap gap-2">
-            {modeOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant={mode === option.value ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => onModeChange(option.value)}
-                className={`text-xs ${
-                  mode === option.value
-                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                    : 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* 범위 필터 */}
       {/* <div>

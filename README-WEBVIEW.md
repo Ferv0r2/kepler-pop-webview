@@ -171,13 +171,11 @@ You can test WebView communication at the `/webview-bridge-example` page:
 Common issues:
 
 1. **Message Reception Failure**
-
    - Verify message format (must be serializable)
    - Check WebView detection
    - Ensure JavaScript is enabled
 
 2. **WebView Detection Failure**
-
    - Some browsers may not correctly identify as WebViews
    - Consider adding custom parameters when loading the web app
 

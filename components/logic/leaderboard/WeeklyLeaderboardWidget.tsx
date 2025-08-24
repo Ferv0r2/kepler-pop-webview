@@ -97,7 +97,7 @@ export const WeeklyLeaderboardWidget = ({ locale }: WeeklyLeaderboardWidgetProps
       <div className="space-y-3">
         {isLoading ? (
           // 로딩 스켈레톤
-          [...Array(3)].map((_, i) => (
+          Array.from({ length: 3 }, (_, i) => (
             <div key={i} className="flex items-center gap-3 p-2 animate-pulse">
               <div className="w-8 h-8 bg-gray-700 rounded-full" />
               <div className="w-8 h-8 bg-gray-700 rounded-full" />

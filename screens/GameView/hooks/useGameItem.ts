@@ -9,17 +9,17 @@ import type { GameItem, GameItemType, GridItem, ItemAnimation } from '@/types/ga
 const INITIAL_GAME_ITEMS: GameItem[] = [
   {
     id: 'shovel',
-    count: 4,
+    count: 0,
     icon: '/icons/shovel.png',
   },
   {
     id: 'mole',
-    count: 4,
+    count: 0,
     icon: '/icons/mole.png',
   },
   {
     id: 'bomb',
-    count: 4,
+    count: 0,
     icon: '/icons/bomb.png',
   },
 ];

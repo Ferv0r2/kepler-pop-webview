@@ -20,7 +20,7 @@ export default function Page() {
       const result = await Sentry.diagnoseSdkConnectivity();
       setIsConnected(result !== 'sentry-unreachable');
     }
-    checkConnectivity();
+    void checkConnectivity();
   }, []);
 
   return (
@@ -54,20 +54,22 @@ export default function Page() {
 
         <button
           type="button"
-          onClick={async () => {
-            await Sentry.startSpan(
-              {
-                name: 'Example Frontend/Backend Span',
-                op: 'test',
-              },
-              async () => {
-                const res = await fetch('/api/sentry-example-api');
-                if (!res.ok) {
-                  setHasSentError(true);
-                }
-              },
-            );
-            throw new SentryExampleFrontendError('This error is raised on the frontend of the example page.');
+          onClick={() => {
+            void (async () => {
+              await Sentry.startSpan(
+                {
+                  name: 'Example Frontend/Backend Span',
+                  op: 'test',
+                },
+                async () => {
+                  const res = await fetch('/api/sentry-example-api');
+                  if (!res.ok) {
+                    setHasSentError(true);
+                  }
+                },
+              );
+              throw new SentryExampleFrontendError('This error is raised on the frontend of the example page.');
+            })();
           }}
           disabled={!isConnected}
         >

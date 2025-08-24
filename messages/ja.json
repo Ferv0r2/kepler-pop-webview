@@ -254,6 +254,39 @@
       "title": "アクティブなアーティファクト",
       "subtitle": "{count}個アクティブ",
       "description": "現在のゲームセッションにのみ適用されます"
+    },
+    "nextReward": "次の報酬",
+    "availableRewards": "利用可能な報酬",
+    "selectOneReward": "1つの報酬を選択してください",
+    "reachScoreForRewards": "スコアに達すると報酬を受け取ることができます",
+    "shop": {
+      "title": "ストア",
+      "subtitle": "gemで強力なアイテムを購入しよう",
+      "open": "ストアを開く",
+      "purchase": "購入",
+      "gems": "gem",
+      "notEnoughGems": "gemが不足しています",
+      "selectItemToPurchase": "購入するアイテムを選択してください"
+    },
+    "pathChoice": {
+      "title": "経路選択",
+      "subtitle": "次の経路を選択しよう",
+      "open": "経路選択",
+      "selectPath": "経路選択",
+      "selectPathToContinue": "経路を選択して続けよう"
+    },
+    "pathProgress": {
+      "title": "冒険経路",
+      "step": "ステップ",
+      "battle": "バトル",
+      "shop": "ストア",
+      "reward": "報酬",
+      "rest": "休憩",
+      "boss": "ボス",
+      "nextStep": "次のステップ",
+      "scoreRequired": "{score}点以上必要",
+      "completed": "完了！",
+      "final": "最終"
     }
   },
   "loading": {

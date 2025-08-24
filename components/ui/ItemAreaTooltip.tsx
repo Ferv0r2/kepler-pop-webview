@@ -49,9 +49,9 @@ export const ItemAreaTooltip = ({ itemType, isVisible, children }: ItemAreaToolt
           gradient: 'from-blue-500/20 via-cyan-500/20 to-teal-500/20',
           accent: 'border-cyan-400/50',
           pattern: [
-            [1, 0, 1],
+            [0, 1, 0],
             [1, 2, 1], // 행과 열 전체 (2는 중심)
-            [1, 0, 1],
+            [0, 1, 0],
           ],
         };
       case 'bomb':
@@ -96,10 +96,16 @@ export const ItemAreaTooltip = ({ itemType, isVisible, children }: ItemAreaToolt
               cellClass += ' bg-gray-800/40 border-gray-600/30 opacity-50';
             } else if (cell === 1) {
               // 활성 타일 - 밝고 선명하게
-              cellClass += ` bg-gradient-to-br ${gradient.replace('/20', '')} border-white/80 shadow-lg ring-1 ring-white/30`;
+              cellClass += ` bg-gradient-to-br ${gradient.replace(
+                '/20',
+                '',
+              )} border-white/80 shadow-lg ring-1 ring-white/30`;
             } else if (cell === 2) {
               // 중심 타일 - 최대 강조
-              cellClass += ` bg-gradient-to-br ${gradient.replace('/20', '')} border-yellow-300/90 ring-2 ring-yellow-300/60 shadow-xl animate-pulse`;
+              cellClass += ` bg-gradient-to-br ${gradient.replace(
+                '/20',
+                '',
+              )} border-yellow-300/90 ring-2 ring-yellow-300/60 shadow-xl animate-pulse`;
             }
 
             return (

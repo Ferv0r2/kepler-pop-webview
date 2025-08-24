@@ -11,7 +11,7 @@ function parseJwt(token: string): { exp?: number } | null {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = atob(base64);
-    return JSON.parse(jsonPayload);
+    return JSON.parse(jsonPayload) as { exp?: number };
   } catch {
     return null;
   }
@@ -29,13 +29,13 @@ function migrateTokenState() {
   // 1. 토큰 형식 검증
   if (accessToken && !parseJwt(accessToken)) {
     console.log('[TokenMigration] Invalid access token format detected, clearing...');
-    clearTokens();
+    void clearTokens();
     return false;
   }
 
   if (refreshToken && !parseJwt(refreshToken)) {
     console.log('[TokenMigration] Invalid refresh token format detected, clearing...');
-    clearTokens();
+    void clearTokens();
     return false;
   }
 
@@ -48,14 +48,14 @@ function migrateTokenState() {
     // 두 토큰 모두 만료된 경우
     if (accessPayload?.exp && refreshPayload?.exp && accessPayload.exp < now && refreshPayload.exp < now) {
       console.log('[TokenMigration] Both tokens expired, clearing...');
-      clearTokens();
+      void clearTokens();
       return false;
     }
 
     // refresh token만 만료된 경우
     if (refreshPayload?.exp && refreshPayload.exp < now) {
       console.log('[TokenMigration] Refresh token expired, clearing...');
-      clearTokens();
+      void clearTokens();
       return false;
     }
   }
@@ -63,7 +63,7 @@ function migrateTokenState() {
   // 3. 불완전한 토큰 상태 검증
   if ((accessToken && !refreshToken) || (!accessToken && refreshToken)) {
     console.log('[TokenMigration] Incomplete token state detected, clearing...');
-    clearTokens();
+    void clearTokens();
     return false;
   }
 
@@ -189,9 +189,9 @@ export function GlobalPreloadProvider({ children }: GlobalPreloadProviderProps) 
 
   // 초기 로딩 시작
   useEffect(() => {
-    loadFonts();
-    loadAssets();
-    loadLottieAnimations();
+    void loadFonts();
+    void loadAssets();
+    void loadLottieAnimations();
   }, [loadFonts, loadAssets, loadLottieAnimations]);
 
   const allLoaded = tokenMigrated && fontsLoaded && assetsLoaded && lottieLoaded;

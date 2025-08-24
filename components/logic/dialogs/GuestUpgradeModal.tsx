@@ -45,7 +45,7 @@ export function GuestUpgradeModal({
       }
       return migrateGuestToUser(accessToken!, googleToken, locale);
     },
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
       const { accessToken: newAccessToken, refreshToken } = data;
       setTokens(newAccessToken, refreshToken || '', false); // isGuest = false
 
