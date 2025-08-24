@@ -187,7 +187,6 @@ export const TutorialDialog = ({
                       className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden border"
                     >
                       <Image
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                         src={tileConfig[i as TileType]?.images?.[1] || '/plants/tulip-tile-3.png'}
                         alt={`Tile ${i}`}
                         fill
@@ -214,7 +213,6 @@ export const TutorialDialog = ({
                       <div key={`tutorial-tier-${tier}`} className="flex flex-col items-center gap-2">
                         <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden">
                           <Image
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                             src={tileConfig[3]?.images?.[tier as TierType] || `/plants/tulip-tile-${tier}.png`}
                             alt={`Tier ${tier}`}
                             fill
@@ -230,7 +228,6 @@ export const TutorialDialog = ({
                             <div className="absolute inset-0 rounded-lg border-transparent bg-gradient-to-br from-pink-500 via-violet-500 to-amber-500 p-[2px]">
                               <div className="w-full h-full rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden relative">
                                 <Image
-                                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                                   src={tileConfig[3]?.images?.[tier as TierType] || `/plants/sprout-tile-${tier}.png`}
                                   alt={`Tier ${tier}`}
                                   fill

@@ -36,8 +36,10 @@ import {
   preloadAllSounds,
   playButtonSound,
   playGameOverSound,
+  playRewardSound,
   playBackgroundMusic,
   pauseBackgroundMusic,
+  resumeBackgroundMusic,
   setBackgroundMusicVolume,
   preloadBackgroundMusic,
   type SoundSettings,
@@ -343,39 +345,41 @@ export const GameView = memo(() => {
     // 캔버스 초기화
     rendererRef.current = new CanvasGameRenderer(canvasRef.current);
 
-    // 부드러운 로딩 진행률 애니메이션
-    let currentProgress = 0;
-    const progressInterval = setInterval(() => {
-      currentProgress += 10;
-      setLoadingProgress(currentProgress);
+    // 실제 로딩 진행률 체크
+    const checkLoadingProgress = setInterval(() => {
+      if (rendererRef.current) {
+        const progress = rendererRef.current.getLoadingProgress();
+        setLoadingProgress(progress);
 
-      if (currentProgress >= 100) {
-        clearInterval(progressInterval);
+        // 실제 로딩이 완료되면
+        if (rendererRef.current.isAssetsLoaded()) {
+          clearInterval(checkLoadingProgress);
 
-        // 로딩 완료 후 게임 시작
-        setTimeout(() => {
-          if (rendererRef.current) {
-            // 그리드 생성 및 렌더러 업데이트
-            const initialGrid = createInitialGrid();
-            setGrid(initialGrid);
-            rendererRef.current.updateGrid(initialGrid);
+          // 로딩 완료 후 게임 시작
+          setTimeout(() => {
+            if (rendererRef.current) {
+              // 그리드 생성 및 렌더러 업데이트
+              const initialGrid = createInitialGrid();
+              setGrid(initialGrid);
+              rendererRef.current.updateGrid(initialGrid);
 
-            rendererRef.current.startRenderLoop();
-            setIsInitializing(false);
+              rendererRef.current.startRenderLoop();
+              setIsInitializing(false);
 
-            // 게임 초기화 완료 후 튜토리얼 체크
-            setTimeout(() => {
-              if (!hasSeenTutorial) {
-                setShowTutorial(true);
-              }
-            }, 100);
-          }
-        }, 200);
+              // 게임 초기화 완료 후 튜토리얼 체크
+              setTimeout(() => {
+                if (!hasSeenTutorial) {
+                  setShowTutorial(true);
+                }
+              }, 100);
+            }
+          }, 200);
+        }
       }
-    }, 50); // 50ms마다 10%씩 증가 (500ms 동안 100%까지)
+    }, 50); // 50ms마다 체크
 
     return () => {
-      clearInterval(progressInterval);
+      clearInterval(checkLoadingProgress);
     };
   }, [createInitialGrid, setGrid, hasSeenTutorial, setShowTutorial]);
 
@@ -583,6 +587,9 @@ export const GameView = memo(() => {
   // 리워드 선택 핸들러
   const handleRewardSelect = useCallback(
     (reward: Reward) => {
+      // 보상 효과음 재생
+      playRewardSound(soundSettings);
+
       if (reward.type === 'moves') {
         setGameState((prev) => ({
           ...prev,
@@ -603,7 +610,7 @@ export const GameView = memo(() => {
         }
       }
     },
-    [addItem, selectReward, setGameState, pathProgress],
+    [addItem, selectReward, setGameState, pathProgress, soundSettings],
   );
 
   // 상점 구매 핸들러
@@ -789,7 +796,7 @@ export const GameView = memo(() => {
       }
 
       // Wait for match animation (업그레이드 애니메이션 중간 지점에서 전환)
-      await new Promise((resolve) => setTimeout(resolve, 350));
+      await new Promise((resolve) => setTimeout(resolve, 280));
 
       // Remove and refill - 최종 상태만 한 번에 업데이트
       const { newGrid: afterRemovalGrid, newTileIds, dropAnimations } = removeMatchedTiles(tempGrid);
@@ -817,7 +824,7 @@ export const GameView = memo(() => {
 
       // Wait for drop animation
       if (newTileIds.length > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        await new Promise((resolve) => setTimeout(resolve, 320));
       }
 
       // Check for cascading matches
@@ -848,6 +855,10 @@ export const GameView = memo(() => {
 
         if (isGameOver) {
           playGameOverSound(soundSettings);
+          // 게임 오버 시 배경음악 일시정지
+          if (soundSettings.musicEnabled) {
+            pauseBackgroundMusic();
+          }
         }
       }
     },
@@ -885,7 +896,7 @@ export const GameView = memo(() => {
           rendererRef.current.handleSwapAnimation(row1, col1, row2, col2, tile1Id, tile2Id);
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 250));
 
         // 애니메이션 완료 후 논리 그리드 업데이트
         [newGrid[row1][col1], newGrid[row2][col2]] = [newGrid[row2][col2], newGrid[row1][col1]];
@@ -920,6 +931,10 @@ export const GameView = memo(() => {
 
             if (gameState.moves - 1 <= 0) {
               playGameOverSound(soundSettings);
+              // 게임 오버 시 배경음악 일시정지
+              if (soundSettings.musicEnabled) {
+                pauseBackgroundMusic();
+              }
             }
           });
         }
@@ -1047,7 +1062,12 @@ export const GameView = memo(() => {
     setShowShuffleButton(false);
     resetItems();
     resetRewardState();
-  }, [createInitialGrid, setGrid, resetItems, resetRewardState]);
+
+    // 게임 재시작 시 배경음악 재개 (설정이 켜져있는 경우)
+    if (soundSettings.musicEnabled) {
+      resumeBackgroundMusic();
+    }
+  }, [createInitialGrid, setGrid, resetItems, resetRewardState, soundSettings]);
 
   // Initialize game sounds only - grid will be initialized after canvas renderer is ready
   useEffect(() => {
@@ -1224,6 +1244,10 @@ export const GameView = memo(() => {
       }, 1000);
     } else {
       playGameOverSound(soundSettings);
+      // 게임 오버 시 배경음악 일시정지
+      if (soundSettings.musicEnabled) {
+        pauseBackgroundMusic();
+      }
     }
   }, [soundSettings, gameState.moves, shuffleGrid, setGrid]);
 

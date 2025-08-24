@@ -37,9 +37,9 @@ export class CanvasGameRenderer {
   private static readonly TILE_GAP = 4; // 타일 간격
 
   // 애니메이션 타이밍 상수
-  private static readonly ANIMATION_DURATION_FAST = 200; // 빠른 애니메이션 (swap 시작)
-  private static readonly ANIMATION_DURATION_NORMAL = 300; // 일반 애니메이션 (swap 완료)
-  private static readonly ANIMATION_DURATION_SLOW = 400; // 느린 애니메이션 (match, drop, appear, upgrade)
+  private static readonly ANIMATION_DURATION_FAST = 150; // 빠른 애니메이션 (swap 시작)
+  private static readonly ANIMATION_DURATION_NORMAL = 250; // 일반 애니메이션 (swap 완료)
+  private static readonly ANIMATION_DURATION_SLOW = 350; // 느린 애니메이션 (match, drop, appear, upgrade)
 
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -104,9 +104,9 @@ export class CanvasGameRenderer {
     // 컨텍스트가 리셋되므로 다시 스케일 적용
     this.ctx.scale(dpr, dpr);
 
-    // 안티앨리어싱 설정 (성능을 위해 medium으로 변경)
+    // 안티앨리어싱 설정 (성능 최적화)
     this.ctx.imageSmoothingEnabled = true;
-    this.ctx.imageSmoothingQuality = 'medium';
+    this.ctx.imageSmoothingQuality = 'low'; // 성능 향상을 위해 low로 설정
 
     // 캔버스 스타일 설정
     this.canvas.style.width = rect.width + 'px';
@@ -129,49 +129,69 @@ export class CanvasGameRenderer {
     this.gridStartX = padding + CanvasGameRenderer.MAX_BORDER_WIDTH / 2;
     this.gridStartY = padding + CanvasGameRenderer.MAX_BORDER_WIDTH / 2;
 
-    // 안티앨리어싱 설정 (성능을 위해 medium으로 변경)
+    // 안티앨리어싱 설정 (성능 최적화)
     this.ctx.imageSmoothingEnabled = true;
-    this.ctx.imageSmoothingQuality = 'medium';
+    this.ctx.imageSmoothingQuality = 'low'; // 성능 향상을 위해 low로 설정
   }
 
-  private preloadAssets() {
+  private async preloadAssets() {
     this.isLoading = true;
     this.loadingProgress = 0;
 
     // GlobalPreloadProvider가 이미 기본 에셋을 로드했으므로
     // 여기서는 게임에 필요한 타일 이미지만 fallback으로 생성
     const tileTypes = [1, 2, 3, 4, 5] as TileType[];
+    const totalImages = tileTypes.length * 3; // 5 types * 3 tiers
+    let loadedImages = 0;
+
+    const imagePromises: Promise<void>[] = [];
 
     tileTypes.forEach((tileType) => {
       for (let tier = 1; tier <= 3; tier++) {
         const tierType = tier as TierType;
         const key = `${tileType}-${tierType}`;
 
-        // 먼저 실제 이미지 로드 시도
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          const imagePath = tileConfig[tileType].images[tierType] as string;
-          const img = new Image();
-          img.src = imagePath;
+        const imagePromise = new Promise<void>((resolve) => {
+          try {
+            const imagePath = tileConfig[tileType].images[tierType];
+            const img = new Image();
 
-          // 이미지 로드 성공시 캐시에 저장, 실패시 fallback 사용
-          img.onload = () => {
-            this.iconCache.set(key, img);
-          };
+            // 이미지 로드 성공시 캐시에 저장
+            img.onload = () => {
+              this.iconCache.set(key, img);
+              loadedImages++;
+              this.loadingProgress = (loadedImages / totalImages) * 100;
+              resolve();
+            };
 
-          img.onerror = () => {
+            // 실패시 fallback 사용
+            img.onerror = () => {
+              const fallbackImg = this.createFallbackImage(tileType);
+              this.iconCache.set(key, fallbackImg);
+              loadedImages++;
+              this.loadingProgress = (loadedImages / totalImages) * 100;
+              resolve();
+            };
+
+            img.src = imagePath;
+          } catch (error) {
+            console.error('Failed to load tile image:', error);
             const fallbackImg = this.createFallbackImage(tileType);
             this.iconCache.set(key, fallbackImg);
-          };
-        } catch (error) {
-          console.error('Failed to load tile image:', error);
-          const fallbackImg = this.createFallbackImage(tileType);
-          this.iconCache.set(key, fallbackImg);
-        }
+            loadedImages++;
+            this.loadingProgress = (loadedImages / totalImages) * 100;
+            resolve();
+          }
+        });
+
+        imagePromises.push(imagePromise);
       }
     });
 
-    // 로딩 완료 처리 - 즉시 완료로 설정
+    // 모든 이미지 로드 완료 대기
+    await Promise.all(imagePromises);
+
+    // 로딩 완료 처리
     this.isLoading = false;
     this.loadingProgress = 100;
   }
@@ -320,6 +340,8 @@ export class CanvasGameRenderer {
   }
 
   private updateAnimations(deltaTime: number) {
+    if (this.animations.size === 0) return; // 애니메이션이 없으면 스킵
+
     const now = performance.now();
     const completedAnimations: TileAnimation[] = [];
 
@@ -340,6 +362,9 @@ export class CanvasGameRenderer {
     });
 
     // 파티클 업데이트
+    // 파티클 업데이트 최적화
+    if (this.particles.length === 0) return; // 파티클이 없으면 스킵
+
     this.particles = this.particles.filter((particle) => {
       particle.x += particle.vx;
       particle.y += particle.vy;
@@ -541,6 +566,15 @@ export class CanvasGameRenderer {
     const ctx = this.ctx;
     const now = performance.now();
     const deltaTime = now - this.lastFrameTime;
+
+    // 변경사항이 없으면 렌더링 스킵
+    const hasChanges =
+      this.animations.size > 0 || this.particles.length > 0 || this.isLoading || this.lastFrameTime === 0;
+
+    if (!hasChanges && deltaTime < 50) {
+      return; // 변경사항이 없고 50ms 이내면 스킵
+    }
+
     this.lastFrameTime = now;
 
     // 배경 클리어 (투명하게)
@@ -686,16 +720,30 @@ export class CanvasGameRenderer {
   }
 
   public startRenderLoop() {
-    const targetFPS = 30; // 30fps로 제한 (60fps → 30fps)
+    const targetFPS = 60; // 60fps로 증가하여 더 부드러운 애니메이션
     const frameTime = 1000 / targetFPS;
     let lastTime = 0;
+    // let frameCount = 0;
+    // let fpsTime = 0;
 
     const loop = (currentTime: number) => {
       const deltaTime = currentTime - lastTime;
 
-      if (deltaTime >= frameTime) {
+      // FPS 계산 (개발용, 필요시 주석 해제)
+      // frameCount++;
+      // if (currentTime - fpsTime >= 1000) {
+      //   // console.log(`FPS: ${frameCount}`);
+      //   frameCount = 0;
+      //   fpsTime = currentTime;
+      // }
+
+      // 적응형 렌더링: 애니메이션이 있을 때는 60fps, 없을 때는 30fps
+      const hasAnimations = this.animations.size > 0 || this.particles.length > 0 || this.isLoading;
+      const currentFrameTime = hasAnimations ? frameTime : frameTime * 2;
+
+      if (deltaTime >= currentFrameTime) {
         this.render();
-        lastTime = currentTime;
+        lastTime = currentTime - (deltaTime % currentFrameTime);
       }
 
       this.animationFrameId = requestAnimationFrame(loop);
@@ -866,6 +914,9 @@ export class CanvasGameRenderer {
     const currentDraggedTile = this.draggedTile;
     const currentSelectedItemType = this.selectedItemType;
     const currentHoveredTile = this.hoveredTile;
+
+    // 그라디언트 캐시 클리어 (크기 변경시 재생성 필요)
+    this.gradientCache.clear();
 
     // 캔버스 재설정
     this.setupCanvas();

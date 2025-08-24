@@ -12,21 +12,21 @@ export const GRID_SIZE = 7;
 export const MIN_MATCH_COUNT = 3;
 // 게임 애니메이션 타이밍 상수
 export const ANIMATION_DURATION = {
-  TILE_APPEAR: 300, // 타일 나타남 효과
-  TILE_DROP: 300, // 타일 떨어짐 효과
-  TILE_MATCH: 200, // 타일 매칭 효과
-  TILE_SHUFFLE: 600, // 셔플 효과
-  MODAL_TRANSITION: 300, // 모달 전환
-  BUTTON_HOVER: 200, // 버튼 호버
-  PARTICLE_FADE: 800, // 파티클 소멸
-  COMBO_PULSE: 1000, // 콤보 펄스
+  TILE_APPEAR: 250, // 타일 나타남 효과
+  TILE_DROP: 250, // 타일 떨어짐 효과
+  TILE_MATCH: 180, // 타일 매칭 효과
+  TILE_SHUFFLE: 500, // 셔플 효과
+  MODAL_TRANSITION: 250, // 모달 전환
+  BUTTON_HOVER: 150, // 버튼 호버
+  PARTICLE_FADE: 700, // 파티클 소멸
+  COMBO_PULSE: 800, // 콤보 펄스
 } as const;
 
-export const CONFETTI_ANIMATION_DURATION = 500;
+export const CONFETTI_ANIMATION_DURATION = 400;
 
-export const SHOW_EFFECT_TIME_MS = 1500;
-export const SHOW_STREAK_MAINTAIN_TIME_MS = 2500;
-export const SHOW_HINT_TIME_MS = 5000;
+export const SHOW_EFFECT_TIME_MS = 1200;
+export const SHOW_STREAK_MAINTAIN_TIME_MS = 2000;
+export const SHOW_HINT_TIME_MS = 4000;
 
 export const HINT_MOVE_INTERVAL_MS = 5000;
 
