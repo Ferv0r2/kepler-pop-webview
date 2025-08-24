@@ -14,6 +14,7 @@ import { ConfettiManager } from '@/components/ui/LottieConfetti';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Toast } from '@/components/ui/toast';
 import { useSound } from '@/hooks/useSound';
+import { useWebViewBridge } from '@/hooks/useWebViewBridge';
 import { SUPPORTED_LOCALES } from '@/i18n/constants';
 import {
   CHALLENGE_MODE_MOVE_COUNT,
@@ -26,6 +27,7 @@ import {
   TUTORIAL_TOTAL_STEP,
 } from '@/screens/GameView/constants/game-config';
 import type { GridItem, GameState, GameItemType, TierType, Reward } from '@/types/game-types';
+import { WebToNativeMessageType } from '@/types/native-call';
 import { CanvasGameRenderer } from '@/utils/canvas-renderer';
 import { calculateComboBonus, batchUpdateTiles } from '@/utils/game-helper';
 import {
@@ -271,6 +273,7 @@ export const GameView = memo(() => {
     resetRewardState,
   } = useRewardSystem(gameItems);
   const { settings: soundSettings, toggleSound, toggleMusic } = useSound();
+  const { isInWebView, sendMessage } = useWebViewBridge();
   const t = useTranslations();
 
   // Canvas refs
@@ -297,6 +300,8 @@ export const GameView = memo(() => {
   const [showShuffleButton, setShowShuffleButton] = useState(false);
   const [showShuffleToast, setShowShuffleToast] = useState(false);
   const [showBonusMovesAnimation, setShowBonusMovesAnimation] = useState(0);
+  const [showExitToast, setShowExitToast] = useState(false);
+  const [lastBackPressTime, setLastBackPressTime] = useState(0);
 
   // 새로운 상태들
   const [showShopModal, setShowShopModal] = useState(false);
@@ -1283,6 +1288,53 @@ export const GameView = memo(() => {
     };
   }, [grid]);
 
+  // 백버튼 핸들러 (웹뷰 환경)
+  useEffect(() => {
+    const handleBackButton = (e: PopStateEvent) => {
+      // 브라우저 히스토리가 없는 경우 (첫 페이지인 경우)
+      if (window.history.length <= 1 || window.location.pathname === '/') {
+        e.preventDefault();
+
+        const currentTime = Date.now();
+
+        // 2초 이내에 다시 백버튼을 누른 경우
+        if (currentTime - lastBackPressTime < 2000) {
+          if (isInWebView) {
+            // 웹뷰 브릿지를 통해 앱 종료 요청
+            sendMessage({
+              type: WebToNativeMessageType.EXIT_ACTION,
+            });
+          } else {
+            // 웹뷰가 아닌 경우 브라우저 탭 닫기 시도
+            window.close();
+          }
+        } else {
+          // 첫 번째 백버튼 누름 - 토스트 표시
+          setShowExitToast(true);
+          setLastBackPressTime(currentTime);
+
+          // 2초 후 토스트 숨기기
+          setTimeout(() => {
+            setShowExitToast(false);
+          }, 2000);
+        }
+
+        // 히스토리에 더미 항목 추가하여 뒤로가기 방지
+        window.history.pushState(null, '', window.location.href);
+      }
+    };
+
+    // 페이지 로드 시 더미 히스토리 추가
+    window.history.pushState(null, '', window.location.href);
+
+    // popstate 이벤트 리스너 등록
+    window.addEventListener('popstate', handleBackButton);
+
+    return () => {
+      window.removeEventListener('popstate', handleBackButton);
+    };
+  }, [lastBackPressTime, isInWebView, sendMessage]);
+
   return (
     <ConfettiManager>
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
@@ -1951,6 +2003,9 @@ export const GameView = memo(() => {
             icon={Shuffle}
             message={t('game.shuffleMessage', { count: getShuffleCost() })}
           />
+
+          {/* Exit Toast */}
+          <Toast isOpen={showExitToast} icon={X} message="한번 더 누르면 게임이 종료됩니다" />
 
           {/* Shuffling Loading */}
           <AnimatePresence>
