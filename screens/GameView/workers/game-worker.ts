@@ -43,7 +43,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
         result = findMatches(payload.grid);
         break;
 
-      case 'FIND_POSSIBLE_MOVES':
+      case 'FIND_POSSIBLE_MOVES': {
         if (!payload.grid) throw new Error('Grid is required for FIND_POSSIBLE_MOVES');
         // 반환 형식을 맞추기 위해 변환
         const moves = findPossibleMoves(payload.grid);
@@ -54,6 +54,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
           col2: move.to.col,
         }));
         break;
+      }
 
       case 'CALCULATE_SCORE':
         if (payload.matchCount === undefined || payload.combo === undefined || payload.streak === undefined) {
@@ -68,7 +69,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
         break;
 
       default:
-        throw new Error(`Unknown worker message type: ${type}`);
+        throw new Error(`Unknown worker message type: ${String(type)}`);
     }
 
     const response: WorkerResponse = {

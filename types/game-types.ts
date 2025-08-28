@@ -61,7 +61,13 @@ export type ArtifactId =
   | 'primal_cleanser'
   | 'starlight_core'
   | 'twin_core'
-  | 'comet_blessing';
+  | 'comet_blessing'
+  // New artifacts
+  | 'time_warp'
+  | 'chaos_engine'
+  | 'crystal_converter'
+  | 'mystery_box'
+  | 'bomb_enhancer';
 
 export type Artifact = {
   id: ArtifactId;
@@ -71,12 +77,32 @@ export type Artifact = {
   isActive: boolean;
   icon: string;
   color: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  obtainedTurn?: number;
 };
 
 export type ArtifactEffect = {
-  type: 'cost_reduction' | 'combo_boost' | 'auto_remove' | 'score_boost' | 'special';
+  type:
+    | 'cost_reduction'
+    | 'combo_boost'
+    | 'auto_remove'
+    | 'score_boost'
+    | 'special'
+    | 'tile_conversion'
+    | 'probability_modifier'
+    | 'item_enhancement'
+    | 'turn_based'
+    | 'one_time'
+    | 'passive_bonus'
+    | 'movement_modifier'
+    | 'gravity_effect'
+    | 'vision_effect';
   value: number;
   condition?: string;
+  triggerTurn?: number;
+  probability?: number;
+  duration?: number;
+  usesRemaining?: number;
 };
 
 export type RewardState = {
