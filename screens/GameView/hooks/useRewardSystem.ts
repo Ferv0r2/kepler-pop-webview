@@ -24,11 +24,18 @@ export interface UseRewardSystemReturn {
     grid: GridItem[][],
     combo: number,
     baseScore: number,
+    turn?: number,
+    matchCount?: number,
   ) => {
     grid: GridItem[][];
     combo: number;
     score: number;
   };
+  // 새로운 유물 효과 함수들
+  getMovementModifier: (currentMoves: number) => number;
+  shouldTriggerTurnBasedEffect: (artifactId: ArtifactId, turn: number) => boolean;
+  getProbabilityModifier: (baseChance: number, effectType: string) => number;
+  getItemEnhancement: (itemType: string) => { enhanced: boolean; modifier: number };
   getShuffleCost: () => number;
   resetRewardState: () => void;
 }
@@ -248,9 +255,9 @@ export const useRewardSystem = (gameItems: GameItem[]): UseRewardSystemReturn =>
 
   // 유물 효과 적용
   const applyArtifactEffects = useCallback(
-    (grid: GridItem[][], combo: number, baseScore: number) => {
+    (grid: GridItem[][], combo: number, baseScore: number, turn?: number, matchCount?: number) => {
       const modifiedGrid = structuredClone(grid);
-      const modifiedCombo = combo;
+      let modifiedCombo = combo;
       let modifiedScore = baseScore;
 
       rewardState.activeArtifacts.forEach((artifact) => {
@@ -258,11 +265,47 @@ export const useRewardSystem = (gameItems: GameItem[]): UseRewardSystemReturn =>
 
         switch (artifact.effect.type) {
           case 'combo_boost':
-            // 콤보 보너스는 이미 calculateComboBonus에서 처리됨
+            // Future: chain_reactor artifact would be implemented here
+            modifiedCombo += artifact.effect.value;
             break;
 
-          case 'score_boost':
-            modifiedScore = Math.floor(modifiedScore * (1 + artifact.effect.value));
+          case 'score_boost': {
+            let scoreMultiplier = 1;
+            if (artifact.effect.condition === 'combo_5_plus' && combo >= 5) {
+              // 별똥별 가속기: 콤보 5 이상일 때 점수 2배
+              scoreMultiplier *= artifact.effect.value;
+            } else if (artifact.effect.condition === 'match_5_plus' && (matchCount || 0) >= 5) {
+              // 우주 공명기: 5개 이상 매치 시 점수 3배
+              scoreMultiplier *= artifact.effect.value;
+            } else if (!artifact.effect.condition) {
+              // 기본 점수 부스트 (별빛 축전기, 쌍성 축전기)
+              scoreMultiplier += artifact.effect.value;
+            }
+            modifiedScore = Math.floor(modifiedScore * scoreMultiplier);
+            break;
+          }
+
+          case 'passive_bonus':
+            if (artifact.effect.condition === 'combo_4' && combo === 4) {
+              // 황금 수확기: 4연속 콤보 시 보너스 500점
+              modifiedScore += artifact.effect.value;
+            }
+            break;
+
+          case 'probability_modifier':
+            if (artifact.effect.condition === 'gambling_score') {
+              // 도박사의 동전: 50% 확률로 점수 0 또는 3배
+              if (Math.random() < artifact.effect.value / 100) {
+                modifiedScore = Math.random() < 0.5 ? 0 : modifiedScore * 3;
+              }
+            }
+            break;
+
+          case 'turn_based':
+            if (turn && artifact.effect.condition === 'convert_max_tier' && turn % artifact.effect.triggerTurn! === 0) {
+              // 크리스탈 변환기: 매 7턴마다 랜덤 타일 3개를 최고 등급으로 변환
+              // 이 로직은 게임 로직에서 처리되어야 함
+            }
             break;
 
           case 'auto_remove':
@@ -330,6 +373,97 @@ export const useRewardSystem = (gameItems: GameItem[]): UseRewardSystemReturn =>
     }
   }, [showRewardModal, timeRemaining, availableRewards, selectReward]);
 
+  // 이동 횟수 수정자 계산
+  const getMovementModifier = useCallback(
+    (currentMoves: number) => {
+      let modifier = 0;
+
+      rewardState.activeArtifacts.forEach((artifact) => {
+        if (!artifact.isActive) return;
+
+        if (artifact.effect.type === 'movement_modifier') {
+          if (artifact.effect.condition === 'low_moves_5' && currentMoves <= 5) {
+            // 긴급 충전기: 이동 횟수 5 이하일 때 +2
+            modifier += artifact.effect.value;
+          }
+        }
+      });
+
+      return modifier;
+    },
+    [rewardState.activeArtifacts],
+  );
+
+  // 턴 기반 효과 발동 확인 - 유물을 얻은 턴 기준으로 계산
+  const shouldTriggerTurnBasedEffect = useCallback(
+    (artifactId: ArtifactId, turn: number) => {
+      const artifact = rewardState.activeArtifacts.find((a) => a.id === artifactId && a.isActive);
+      if (!artifact || artifact.effect.type !== 'turn_based') {
+        return false;
+      }
+
+      const triggerTurn = artifact.effect.triggerTurn!;
+
+      // 유물을 얻은 턴이 설정되어 있으면 해당 턴 기준으로 계산
+      if (artifact.obtainedTurn && artifact.obtainedTurn > 0) {
+        const turnsSinceObtained = turn - artifact.obtainedTurn;
+        return turnsSinceObtained > 0 && turnsSinceObtained % triggerTurn === 0;
+      } else {
+        // 기존 방식: 단순히 현재 턴이 triggerTurn의 배수인지 확인
+        return turn > 0 && turn % triggerTurn === 0;
+      }
+    },
+    [rewardState.activeArtifacts],
+  );
+
+  // 확률 수정자 계산
+  const getProbabilityModifier = useCallback(
+    (baseChance: number, _effectType: string) => {
+      let modifier = baseChance;
+
+      rewardState.activeArtifacts.forEach((artifact) => {
+        if (!artifact.isActive) return;
+
+        if (artifact.effect.type === 'probability_modifier') {
+          if (artifact.effect.condition === 'multiply_all_probabilities') {
+            // 행운의 주사위: 모든 확률 2배
+            modifier *= artifact.effect.value;
+          }
+        }
+      });
+
+      return Math.min(100, modifier); // 최대 100%로 제한
+    },
+    [rewardState.activeArtifacts],
+  );
+
+  // 아이템 강화 확인
+  const getItemEnhancement = useCallback(
+    (itemType: string) => {
+      let enhanced = false;
+      let modifier = 1;
+
+      rewardState.activeArtifacts.forEach((artifact) => {
+        if (!artifact.isActive) return;
+
+        if (artifact.effect.type === 'item_enhancement') {
+          if (artifact.effect.condition === 'enhance_all_items') {
+            // 만능 도구: 모든 아이템 25% 강화
+            enhanced = true;
+            modifier += artifact.effect.value / 100;
+          } else if (artifact.effect.condition === 'bomb_3x3' && itemType === 'bomb') {
+            // 폭탄 강화기: 폭탄을 3x3 범위로 변경
+            enhanced = true;
+            modifier = 2; // 특수 효과 표시용
+          }
+        }
+      });
+
+      return { enhanced, modifier };
+    },
+    [rewardState.activeArtifacts],
+  );
+
   return {
     rewardState,
     showRewardModal,
@@ -341,5 +475,10 @@ export const useRewardSystem = (gameItems: GameItem[]): UseRewardSystemReturn =>
     applyArtifactEffects,
     getShuffleCost,
     resetRewardState,
+    // 새로운 유물 효과 함수들
+    getMovementModifier,
+    shouldTriggerTurnBasedEffect,
+    getProbabilityModifier,
+    getItemEnhancement,
   };
 };
