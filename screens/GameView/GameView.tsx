@@ -26,7 +26,7 @@ import {
   TILE_MAX_TIER,
   TUTORIAL_TOTAL_STEP,
 } from '@/screens/GameView/constants/game-config';
-import type { GridItem, GameState, GameItemType, TierType, Reward } from '@/types/game-types';
+import type { GridItem, GameState, GameItemType, TierType, Reward, ArtifactId, Artifact } from '@/types/game-types';
 import { WebToNativeMessageType } from '@/types/native-call';
 import { CanvasGameRenderer } from '@/utils/canvas-renderer';
 import { calculateComboBonus, batchUpdateTiles } from '@/utils/game-helper';
@@ -271,6 +271,7 @@ export const GameView = memo(() => {
     applyArtifactEffects,
     getShuffleCost,
     resetRewardState,
+    shouldTriggerTurnBasedEffect,
   } = useRewardSystem(gameItems);
   const { settings: soundSettings, toggleSound, toggleMusic } = useSound();
   const { isInWebView, sendMessage } = useWebViewBridge();
@@ -279,6 +280,9 @@ export const GameView = memo(() => {
   // Canvas refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<CanvasGameRenderer | null>(null);
+
+  // Grid ref for latest state access
+  const gridRef = useRef<GridItem[][]>(grid);
 
   // Game state
   const [gameState, setGameState] = useState<GameState>({
@@ -319,15 +323,95 @@ export const GameView = memo(() => {
   // Game stats
   const [streakCount, setStreakCount] = useState(0);
   const [lastMatchTime, setLastMatchTime] = useState(Date.now());
+
+  // Artifact effects
+  const [scoreMultiplier, setScoreMultiplier] = useState(1);
+  const [multiplierEndTurn, setMultiplierEndTurn] = useState(0);
+  const [triggeredArtifacts, setTriggeredArtifacts] = useState<Set<string>>(new Set());
+  const [showTriggeredEffects, setShowTriggeredEffects] = useState(false);
   const [highScore, setHighScore] = useState(0);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isShuffling, setIsShuffling] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [isProcessingArtifacts, setIsProcessingArtifacts] = useState(false);
 
   // Interaction state
   const [draggedTile, setDraggedTile] = useState<{ row: number; col: number } | null>(null);
   const [longPressItem, setLongPressItem] = useState<GameItemType | null>(null);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const artifactAnimationTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const artifactAnimationStartTimeRef = useRef<number | null>(null);
+  const minimumDisplayTimeRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Helper function to clear artifact animations with minimum display time consideration
+  const clearArtifactAnimations = useCallback(() => {
+    const minimumDisplayTime = 2000; // 2초 최소 표시 시간
+    const currentTime = Date.now();
+    const startTime = artifactAnimationStartTimeRef.current;
+
+    if (startTime && currentTime - startTime < minimumDisplayTime) {
+      // 최소 시간이 지나지 않았다면 지연된 정리 예약
+      const remainingTime = minimumDisplayTime - (currentTime - startTime);
+
+      if (minimumDisplayTimeRef.current) {
+        clearTimeout(minimumDisplayTimeRef.current);
+      }
+
+      minimumDisplayTimeRef.current = setTimeout(() => {
+        if (artifactAnimationTimerRef.current) {
+          clearTimeout(artifactAnimationTimerRef.current);
+          artifactAnimationTimerRef.current = null;
+        }
+        setShowTriggeredEffects(false);
+        setTriggeredArtifacts(new Set());
+        artifactAnimationStartTimeRef.current = null;
+        minimumDisplayTimeRef.current = null;
+      }, remainingTime);
+    } else {
+      // 최소 시간이 지났다면 즉시 정리
+      if (artifactAnimationTimerRef.current) {
+        clearTimeout(artifactAnimationTimerRef.current);
+        artifactAnimationTimerRef.current = null;
+      }
+      if (minimumDisplayTimeRef.current) {
+        clearTimeout(minimumDisplayTimeRef.current);
+        minimumDisplayTimeRef.current = null;
+      }
+      setShowTriggeredEffects(false);
+      setTriggeredArtifacts(new Set());
+      artifactAnimationStartTimeRef.current = null;
+    }
+  }, []);
+
+  // Cleanup artifact animations when game state changes
+  useEffect(() => {
+    // Only clear if user is actively interacting and animation has been shown for minimum time
+    if (gameState.isSwapping || gameState.isProcessingMatches || gameState.isChecking) {
+      if (showTriggeredEffects) {
+        clearArtifactAnimations();
+      }
+    }
+  }, [
+    gameState.isSwapping,
+    gameState.isProcessingMatches,
+    gameState.isChecking,
+    showTriggeredEffects,
+    clearArtifactAnimations,
+  ]);
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      if (artifactAnimationTimerRef.current) {
+        clearTimeout(artifactAnimationTimerRef.current);
+        artifactAnimationTimerRef.current = null;
+      }
+      if (minimumDisplayTimeRef.current) {
+        clearTimeout(minimumDisplayTimeRef.current);
+        minimumDisplayTimeRef.current = null;
+      }
+    };
+  }, []);
 
   // Initialize Canvas renderer
   useEffect(() => {
@@ -342,6 +426,11 @@ export const GameView = memo(() => {
       }
     };
   }, []);
+
+  // Update gridRef whenever grid changes
+  useEffect(() => {
+    gridRef.current = grid;
+  }, [grid]);
 
   // 게임 초기화 함수
   const initializeGame = useCallback(() => {
@@ -363,10 +452,9 @@ export const GameView = memo(() => {
           // 로딩 완료 후 게임 시작
           setTimeout(() => {
             if (rendererRef.current) {
-              // 그리드 생성 및 렌더러 업데이트
+              // 그리드 생성 (렌더러 업데이트는 useEffect에서 처리)
               const initialGrid = createInitialGrid();
               setGrid(initialGrid);
-              rendererRef.current.updateGrid(initialGrid);
 
               rendererRef.current.startRenderLoop();
               setIsInitializing(false);
@@ -422,6 +510,15 @@ export const GameView = memo(() => {
       localStorage.setItem('keplerGameHighScore', gameState.score.toString());
     }
   }, [gameState.isGameOver, gameState.score, highScore]);
+
+  // Handle score multiplier expiration
+  useEffect(() => {
+    if (multiplierEndTurn > 0 && gameState.turn >= multiplierEndTurn) {
+      setScoreMultiplier(1);
+      setMultiplierEndTurn(0);
+      console.log('Time Warp effect expired');
+    }
+  }, [gameState.turn, multiplierEndTurn]);
 
   // Canvas interaction handlers
   const handleCanvasPointerDown = useCallback(
@@ -607,6 +704,19 @@ export const GameView = memo(() => {
       // gem 과 artifact 은 따로 처리 필요 (현재는 생략)
       selectReward(reward);
 
+      // 유물이라면 obtainedTurn 설정
+      if (reward.type === 'artifact' && reward.id.startsWith('artifact_')) {
+        const artifactIdParts = reward.id.split('_');
+        if (artifactIdParts.length >= 4) {
+          const artifactId = `${artifactIdParts[1]}_${artifactIdParts[2]}` as ArtifactId;
+          // 현재 활성화된 유물 목록에서 해당 유물을 찾아서 obtainedTurn 설정
+          const activeArtifact = rewardState.activeArtifacts.find((a) => a.id === artifactId);
+          if (activeArtifact && !activeArtifact.obtainedTurn) {
+            activeArtifact.obtainedTurn = gameState.turn;
+          }
+        }
+      }
+
       // 경로 완료 체크 및 다음 경로 진행
       if (pathProgress.canAdvance) {
         const nextPath = pathProgress.advanceToNextPath();
@@ -642,6 +752,120 @@ export const GameView = memo(() => {
     [pathProgress],
   );
 
+  // Helper function to calculate match score
+  const calculateMatchScore = useCallback(
+    (matchCount: number, combo: number, streak: number): number => {
+      const baseScore = matchCount * SCORE * combo * (streak > 1 ? streak : 1);
+      const artifactScore = applyArtifactEffects(grid, combo, baseScore).score;
+      return artifactScore * scoreMultiplier;
+    },
+    [applyArtifactEffects, grid, scoreMultiplier],
+  );
+
+  // Helper function to collect artifacts to trigger
+  const collectArtifactsToTrigger = useCallback(
+    (turn: number): Array<{ artifact: Artifact; type: 'turn_based' | 'auto_remove' }> => {
+      const artifactsToTrigger: Array<{ artifact: Artifact; type: 'turn_based' | 'auto_remove' }> = [];
+
+      if (turn > 0) {
+        rewardState.activeArtifacts.forEach((artifact) => {
+          if (!artifact.isActive) return;
+
+          if (artifact.effect.type === 'turn_based' && shouldTriggerTurnBasedEffect(artifact.id, turn)) {
+            artifactsToTrigger.push({ artifact, type: 'turn_based' });
+          } else if (artifact.effect.type === 'auto_remove' && artifact.effect.value) {
+            const triggerInterval = artifact.effect.value;
+            const obtainedTurn = artifact.obtainedTurn || 0;
+            const turnsSinceObtained = turn - obtainedTurn;
+
+            if (turnsSinceObtained > 0 && turnsSinceObtained % triggerInterval === 0) {
+              artifactsToTrigger.push({ artifact, type: 'auto_remove' });
+            }
+          }
+        });
+      }
+
+      return artifactsToTrigger;
+    },
+    [rewardState.activeArtifacts, shouldTriggerTurnBasedEffect],
+  );
+
+  // Helper function to process tile upgrades
+  const processTileUpgrades = useCallback(
+    (
+      matches: { row: number; col: number }[],
+      currentGrid: GridItem[][],
+      swappedTiles?: { row: number; col: number }[],
+    ): Array<{ row: number; col: number; changes: Partial<GridItem> }> => {
+      const countMatchGroupSize = (targetRow: number, targetCol: number): number => {
+        const visited = new Set<string>();
+        const targetTile = currentGrid[targetRow][targetCol];
+        let count = 0;
+
+        const dfs = (row: number, col: number) => {
+          const key = `${row}-${col}`;
+          if (visited.has(key) || row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) {
+            return;
+          }
+
+          const currentTile = currentGrid[row][col];
+          if (currentTile.type !== targetTile.type || currentTile.tier !== targetTile.tier) {
+            return;
+          }
+
+          const isInMatches = matches.some((match) => match.row === row && match.col === col);
+          if (!isInMatches) {
+            return;
+          }
+
+          visited.add(key);
+          count++;
+
+          dfs(row - 1, col);
+          dfs(row + 1, col);
+          dfs(row, col - 1);
+          dfs(row, col + 1);
+        };
+
+        dfs(targetRow, targetCol);
+        return count;
+      };
+
+      const tileUpdates: Array<{ row: number; col: number; changes: Partial<GridItem> }> = [];
+
+      matches.forEach(({ row, col }, index) => {
+        const shouldUpgrade =
+          (index === 0 && !swappedTiles) || swappedTiles?.some((tile) => tile.row === row && tile.col === col);
+
+        if (shouldUpgrade && currentGrid[row][col].tier < TILE_MAX_TIER) {
+          const currentTier = currentGrid[row][col].tier;
+          let newTier: TierType;
+          if (currentTier === 1) {
+            const matchGroupSize = countMatchGroupSize(row, col);
+            if (matchGroupSize >= 5) {
+              newTier = 3;
+            } else {
+              newTier = 2;
+            }
+          } else {
+            newTier = (currentTier + 1) as TierType;
+          }
+
+          tileUpdates.push({
+            row,
+            col,
+            changes: { tier: newTier, isMatched: false },
+          });
+        } else {
+          tileUpdates.push({ row, col, changes: { isMatched: true } });
+        }
+      });
+
+      return tileUpdates;
+    },
+    [],
+  );
+
   // Process matches
   const processMatches = useCallback(
     async (
@@ -649,28 +873,40 @@ export const GameView = memo(() => {
       currentGrid: GridItem[][],
       isFirstMatch = false,
       swappedTiles?: { row: number; col: number }[],
-    ) => {
+      artifactsToTrigger?: Array<{ artifact: Artifact; type: 'turn_based' | 'auto_remove' }>,
+    ): Promise<void> => {
       if (matches.length === 0) return;
 
-      const baseMatchScore = matches.length * SCORE * (gameState.combo + 1) * (streakCount > 1 ? streakCount : 1);
+      // Calculate score and moves
       const bonusMoves = calculateComboBonus(gameState.combo + 1);
       const shouldDecreaseMoves = isFirstMatch && !selectedGameItem;
       const newMoves = gameState.moves + (shouldDecreaseMoves ? -1 : 0) + bonusMoves;
 
-      // 유물 효과 적용
-      const { score: matchScore } = applyArtifactEffects(currentGrid, gameState.combo + 1, baseMatchScore);
+      // Calculate match score using helper
+      const matchScore = calculateMatchScore(matches.length, gameState.combo + 1, streakCount);
       const newScore = gameState.score + matchScore;
 
-      // Update state
+      // Calculate new turn - 첫 매치에서만 턴 증가
+      const newTurn = isFirstMatch ? gameState.turn + 1 : gameState.turn;
+
+      // Update state - 첫 번째 매치에서만 처리 상태 설정
       setGameState((prev) => ({
         ...prev,
-        isProcessingMatches: true,
-        isChecking: true,
+        isProcessingMatches: isFirstMatch ? true : prev.isProcessingMatches,
+        isChecking: isFirstMatch ? true : prev.isChecking,
         score: newScore,
         moves: newMoves,
-        turn: isFirstMatch ? prev.turn + 1 : prev.turn,
+        turn: newTurn,
         combo: prev.combo + 1,
       }));
+
+      // Collect artifacts to trigger using helper
+      let currentArtifactsToTrigger: Array<{ artifact: Artifact; type: 'turn_based' | 'auto_remove' }> = [];
+      if (!artifactsToTrigger && isFirstMatch && newTurn > 0) {
+        currentArtifactsToTrigger = collectArtifactsToTrigger(newTurn);
+      } else if (artifactsToTrigger) {
+        currentArtifactsToTrigger = artifactsToTrigger;
+      }
 
       // Play sounds
       if (gameState.combo > 0) {
@@ -723,73 +959,8 @@ export const GameView = memo(() => {
         }
       }
 
-      // Helper function to count connected tiles in a match group
-      const countMatchGroupSize = (targetRow: number, targetCol: number): number => {
-        const visited = new Set<string>();
-        const targetTile = currentGrid[targetRow][targetCol];
-        let count = 0;
-
-        const dfs = (row: number, col: number) => {
-          const key = `${row}-${col}`;
-          if (visited.has(key) || row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) {
-            return;
-          }
-
-          const currentTile = currentGrid[row][col];
-          if (currentTile.type !== targetTile.type || currentTile.tier !== targetTile.tier) {
-            return;
-          }
-
-          // Check if this tile is in the matches list
-          const isInMatches = matches.some((match) => match.row === row && match.col === col);
-          if (!isInMatches) {
-            return;
-          }
-
-          visited.add(key);
-          count++;
-
-          // Check 4 directions
-          dfs(row - 1, col); // up
-          dfs(row + 1, col); // down
-          dfs(row, col - 1); // left
-          dfs(row, col + 1); // right
-        };
-
-        dfs(targetRow, targetCol);
-        return count;
-      };
-
-      // Mark tiles as matched
-      const tileUpdates: Array<{ row: number; col: number; changes: Partial<GridItem> }> = [];
-      matches.forEach(({ row, col }, index) => {
-        const shouldUpgrade =
-          (index === 0 && !swappedTiles) || swappedTiles?.some((tile) => tile.row === row && tile.col === col);
-
-        if (shouldUpgrade && currentGrid[row][col].tier < TILE_MAX_TIER) {
-          const currentTier = currentGrid[row][col].tier;
-          // If tier 1 and this tile is part of a 5+ tile match group, jump to tier 3
-          let newTier: TierType;
-          if (currentTier === 1) {
-            const matchGroupSize = countMatchGroupSize(row, col);
-            if (matchGroupSize >= 5) {
-              newTier = 3;
-            } else {
-              newTier = 2;
-            }
-          } else {
-            newTier = (currentTier + 1) as TierType;
-          }
-
-          tileUpdates.push({
-            row,
-            col,
-            changes: { tier: newTier, isMatched: false },
-          });
-        } else {
-          tileUpdates.push({ row, col, changes: { isMatched: true } });
-        }
-      });
+      // Process tile upgrades using helper
+      const tileUpdates = processTileUpgrades(matches, currentGrid, swappedTiles);
 
       // 티어 업그레이드를 위한 임시 그리드 생성 (시각적 표시용)
       const tempGrid = structuredClone(currentGrid);
@@ -835,7 +1006,8 @@ export const GameView = memo(() => {
       // Check for cascading matches
       const newMatches = findMatches(afterRemovalGrid);
       if (newMatches.length > 0) {
-        await processMatches(newMatches, afterRemovalGrid, false);
+        // 연쇄 매칭에서는 유물을 재실행하지 않음 (첫 번째 매치에서만 실행)
+        await processMatches(newMatches, afterRemovalGrid, false, undefined, undefined);
       } else {
         const isGameOver = newMoves <= 0;
 
@@ -852,6 +1024,40 @@ export const GameView = memo(() => {
           combo: 1,
           isGameOver,
         }));
+
+        // 연쇄 매치 완료 후 그리드 상태 안정화 대기
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // 유물 효과 처리 전에 전역 그리드를 업데이트
+        setGrid(afterRemovalGrid);
+        gridRef.current = afterRemovalGrid; // 즉시 ref 업데이트
+
+        // 유물 효과 처리 (업데이트된 그리드 상태에서)
+        if (currentArtifactsToTrigger && currentArtifactsToTrigger.length > 0 && !isGameOver) {
+          // 상태 업데이트 대기 후 유물 효과 처리
+          await new Promise((resolve) => setTimeout(resolve, 10));
+          await processArtifactEffects(currentArtifactsToTrigger);
+
+          // 유물 효과 후 최신 그리드 상태로 매치 확인
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          const finalGrid = gridRef.current;
+          const artifactMatches = findMatches(finalGrid);
+          if (artifactMatches.length > 0) {
+            console.log('🔄 Artifact effects created new matches, processing cascade...');
+            await processMatches(artifactMatches, finalGrid, false);
+
+            // 유물 효과로 인한 연쇄 완료 후에도 리워드 체크
+            checkScoreReward(gameState.score);
+          }
+
+          // 유물 효과 후 추가 매치 처리 완료 후 게임 상태 리셋
+          setGameState((prev) => ({
+            ...prev,
+            isSwapping: false,
+            isChecking: false,
+            isProcessingMatches: false,
+          }));
+        }
 
         // 리워드 체크 (첫 번째 매치이고 게임이 끝나지 않았을 때만)
         if (isFirstMatch && !isGameOver) {
@@ -877,6 +1083,12 @@ export const GameView = memo(() => {
       soundSettings,
       applyArtifactEffects,
       checkScoreReward,
+      gridRef,
+      scoreMultiplier,
+      isProcessingArtifacts,
+      rewardState.activeArtifacts,
+      shouldTriggerTurnBasedEffect,
+      addItem,
     ],
   );
 
@@ -925,16 +1137,32 @@ export const GameView = memo(() => {
         if (rendererRef.current) {
           rendererRef.current.setHintTiles([]);
           rendererRef.current.handleFailedSwapAnimation(row1, col1, row2, col2, tile1Id, tile2Id, () => {
+            // 스왑 실패 시에도 턴은 증가시키고 이동 수 감소
+            const newTurn = gameState.turn + 1;
+            const newMoves = gameState.moves - 1;
+            const isGameOver = newMoves <= 0;
+
             // 애니메이션 완료 후 게임 상태 업데이트
             setGameState((prev) => ({
               ...prev,
-              moves: prev.moves - 1,
-              turn: prev.turn + 1,
+              moves: newMoves,
+              turn: newTurn,
               isSwapping: false,
-              isGameOver: prev.moves - 1 <= 0,
+              isGameOver,
             }));
 
-            if (gameState.moves - 1 <= 0) {
+            // 스왑 실패 시에도 턴 기반 유물 효과 처리
+            if (!isGameOver && newTurn > 0) {
+              const artifactsToTrigger = collectArtifactsToTrigger(newTurn);
+              if (artifactsToTrigger.length > 0) {
+                // 상태 업데이트 대기 후 유물 효과 처리
+                setTimeout(() => {
+                  void processArtifactEffects(artifactsToTrigger);
+                }, 200);
+              }
+            }
+
+            if (isGameOver) {
               playGameOverSound(soundSettings);
               // 게임 오버 시 배경음악 일시정지
               if (soundSettings.musicEnabled) {
@@ -945,7 +1173,7 @@ export const GameView = memo(() => {
         }
       }
     },
-    [grid, setGrid, findMatches, lastMatchTime, processMatches, gameState.moves, soundSettings],
+    [grid, setGrid, findMatches, lastMatchTime, processMatches, gameState.moves, gameState.turn, soundSettings],
   );
 
   // Active item effect
@@ -964,8 +1192,9 @@ export const GameView = memo(() => {
       }
 
       // Execute item effect directly
-      const updatedGrid = executeItemDirect(grid, selectedGameItem, row, col, direction);
-      if (updatedGrid) {
+      const result = executeItemDirect(grid, selectedGameItem, row, col, direction, rewardState.activeArtifacts);
+      if (result) {
+        const { grid: updatedGrid } = result;
         setGrid(updatedGrid);
 
         // 아이템으로 제거된 타일들의 점수 계산 및 반영
@@ -982,10 +1211,11 @@ export const GameView = memo(() => {
           // 아이템으로 제거된 타일들의 점수 계산
           const itemScore = removedTiles.length * SCORE * (gameState.combo + 1) * (streakCount > 1 ? streakCount : 1);
 
-          // 점수 업데이트
+          // 점수 업데이트 (Time Warp 점수 배수 적용)
+          const finalItemScore = itemScore * scoreMultiplier;
           setGameState((prev) => ({
             ...prev,
-            score: prev.score + itemScore,
+            score: prev.score + finalItemScore,
             combo: prev.combo + 1,
           }));
 
@@ -1334,6 +1564,322 @@ export const GameView = memo(() => {
       window.removeEventListener('popstate', handleBackButton);
     };
   }, [lastBackPressTime, isInWebView, sendMessage]);
+
+  // Artifact Effect Helper Functions
+  const applyChaosEngineEffect = useCallback(() => {
+    const currentGrid = structuredClone(gridRef.current);
+    const availablePositions: Array<{ row: number; col: number }> = [];
+
+    // Find all positions with tiles
+    for (let row = 0; row < GRID_SIZE; row++) {
+      for (let col = 0; col < GRID_SIZE; col++) {
+        if (currentGrid[row][col] && !currentGrid[row][col].isMatched) {
+          availablePositions.push({ row, col });
+        }
+      }
+    }
+
+    // Select 2 random positions to swap
+    if (availablePositions.length >= 2) {
+      const pos1 = availablePositions[Math.floor(Math.random() * availablePositions.length)];
+      const remaining = availablePositions.filter((p) => p.row !== pos1.row || p.col !== pos1.col);
+      const pos2 = remaining[Math.floor(Math.random() * remaining.length)];
+
+      // Swap the tiles
+      const temp = currentGrid[pos1.row][pos1.col];
+      currentGrid[pos1.row][pos1.col] = currentGrid[pos2.row][pos2.col];
+      currentGrid[pos2.row][pos2.col] = temp;
+
+      setGrid(currentGrid);
+      gridRef.current = currentGrid; // 즉시 ref 업데이트
+
+      // Update canvas renderer
+      if (rendererRef.current) {
+        // 스왑된 타일들에 시각적 효과 (매치 애니메이션으로 강조)
+        const swappedTiles = [
+          { row: pos1.row, col: pos1.col, id: currentGrid[pos1.row][pos1.col].id },
+          { row: pos2.row, col: pos2.col, id: currentGrid[pos2.row][pos2.col].id },
+        ];
+        rendererRef.current.handleMatchAnimation(swappedTiles);
+
+        // Update grid after animation
+        setTimeout(() => {
+          if (rendererRef.current) {
+            rendererRef.current.updateGrid(currentGrid);
+          }
+        }, 200);
+      }
+
+      console.log(`Chaos Engine: Swapped tiles at (${pos1.row},${pos1.col}) and (${pos2.row},${pos2.col})`);
+    }
+  }, [gridRef, setGrid]);
+
+  const applyCrystalConverterEffect = useCallback(() => {
+    const currentGrid = structuredClone(gridRef.current);
+    const availablePositions: Array<{ row: number; col: number }> = [];
+
+    // Find all positions with tiles that can be upgraded
+    for (let row = 0; row < GRID_SIZE; row++) {
+      for (let col = 0; col < GRID_SIZE; col++) {
+        if (currentGrid[row][col] && !currentGrid[row][col].isMatched && currentGrid[row][col].tier < TILE_MAX_TIER) {
+          availablePositions.push({ row, col });
+        }
+      }
+    }
+
+    // Convert up to 3 random tiles to max tier
+    const tilesToConvert = Math.min(3, availablePositions.length);
+    const selectedPositions = [];
+
+    for (let i = 0; i < tilesToConvert; i++) {
+      const randomIndex = Math.floor(Math.random() * availablePositions.length);
+      const pos = availablePositions.splice(randomIndex, 1)[0];
+      selectedPositions.push(pos);
+
+      // Upgrade to max tier
+      currentGrid[pos.row][pos.col].tier = TILE_MAX_TIER;
+    }
+
+    if (selectedPositions.length > 0) {
+      setGrid(currentGrid);
+      gridRef.current = currentGrid; // 즉시 ref 업데이트
+
+      // Update canvas renderer with tier upgrade animation
+      if (rendererRef.current) {
+        const upgradeTiles = selectedPositions.map((pos) => ({
+          id: currentGrid[pos.row][pos.col].id,
+          row: pos.row,
+          col: pos.col,
+        }));
+
+        // Show tier upgrade animation
+        rendererRef.current.handleTierUpgradeAnimation(upgradeTiles);
+
+        // Update grid after animation
+        setTimeout(() => {
+          if (rendererRef.current) {
+            rendererRef.current.updateGrid(currentGrid);
+          }
+        }, 280);
+      }
+
+      console.log(`Crystal Converter: Upgraded ${selectedPositions.length} tiles to max tier`);
+    }
+  }, [gridRef, setGrid]);
+
+  const applyStellarBroomEffect = useCallback(() => {
+    const currentGrid = structuredClone(gridRef.current);
+    let highestTier = 0;
+    const highestTierPositions: Array<{ row: number; col: number }> = [];
+
+    // Find the highest tier tiles on the grid
+    for (let row = 0; row < GRID_SIZE; row++) {
+      for (let col = 0; col < GRID_SIZE; col++) {
+        const tile = currentGrid[row][col];
+        if (tile && !tile.isMatched) {
+          if (tile.tier > highestTier) {
+            highestTier = tile.tier;
+            highestTierPositions.length = 0; // Clear previous positions
+            highestTierPositions.push({ row, col });
+          } else if (tile.tier === highestTier) {
+            highestTierPositions.push({ row, col });
+          }
+        }
+      }
+    }
+
+    // Remove one random highest tier tile
+    if (highestTierPositions.length > 0) {
+      const randomIndex = Math.floor(Math.random() * highestTierPositions.length);
+      const pos = highestTierPositions[randomIndex];
+
+      // Show match animation for the tile to be removed
+      if (rendererRef.current) {
+        const removeTile = [
+          {
+            row: pos.row,
+            col: pos.col,
+            id: currentGrid[pos.row][pos.col].id,
+          },
+        ];
+        rendererRef.current.handleMatchAnimation(removeTile);
+      }
+
+      // Mark tile as matched immediately
+      currentGrid[pos.row][pos.col].isMatched = true;
+
+      // Drop tiles and refill synchronously
+      const { newGrid: afterRemovalGrid, dropAnimations } = removeMatchedTiles(currentGrid);
+      setGrid(afterRemovalGrid);
+      gridRef.current = afterRemovalGrid; // 즉시 ref 업데이트
+
+      // Update canvas renderer with drop animation
+      if (rendererRef.current) {
+        if (dropAnimations.length > 0) {
+          rendererRef.current.handleDropAnimation(dropAnimations);
+        }
+
+        // Update grid after a short delay for visual effect
+        setTimeout(() => {
+          if (rendererRef.current) {
+            rendererRef.current.updateGrid(afterRemovalGrid);
+          }
+        }, 280);
+      }
+
+      console.log(`Stellar Broom: Removed highest tier (${highestTier}) tile at (${pos.row},${pos.col})`);
+    }
+  }, [gridRef, setGrid, removeMatchedTiles]);
+
+  const applyPrimalCleanserEffect = useCallback(() => {
+    // Same logic as Stellar Broom but with different logging
+    applyStellarBroomEffect();
+    console.log('Primal Cleanser: Effect applied (same as Stellar Broom)');
+  }, [applyStellarBroomEffect]);
+
+  const applyTimeWarpEffect = useCallback(() => {
+    // 시간 왜곡기: 다음 3턴 동안 점수 2배
+    const currentTurn = gameState.turn;
+    const endTurn = currentTurn + 3;
+
+    setScoreMultiplier(2);
+    setMultiplierEndTurn(endTurn);
+
+    console.log(`Time Warp: Score x2 active until turn ${endTurn}`);
+  }, [gameState.turn, setScoreMultiplier, setMultiplierEndTurn]);
+
+  // 연쇄 매치 완료 후 유물 효과 처리 함수
+  const processArtifactEffects = useCallback(
+    async (artifactsToTrigger: Array<{ artifact: Artifact; type: 'turn_based' | 'auto_remove' }>): Promise<void> => {
+      // 유물 처리가 이미 진행 중인 경우만 건너뛰기 (중복 방지)
+      if (isProcessingArtifacts) {
+        console.log('⏸️ Artifact processing skipped - already processing');
+        return;
+      }
+
+      // 게임이 종료된 경우 처리 건너뛰기
+      if (gameState.isGameOver) {
+        console.log('⏸️ Artifact processing skipped - game over');
+        return;
+      }
+
+      // 유물 처리 시작 표시
+      setIsProcessingArtifacts(true);
+
+      try {
+        // 유물을 획득 순서대로 정렬
+        const sortedArtifacts = artifactsToTrigger.sort((a, b) => {
+          const indexA = rewardState.activeArtifacts.findIndex((artifact) => artifact.id === a.artifact.id);
+          const indexB = rewardState.activeArtifacts.findIndex((artifact) => artifact.id === b.artifact.id);
+          return indexA - indexB;
+        });
+
+        // 이전 애니메이션 정리
+        if (artifactAnimationTimerRef.current) {
+          clearTimeout(artifactAnimationTimerRef.current);
+          artifactAnimationTimerRef.current = null;
+        }
+
+        // 모든 유물 ID를 한 번에 설정하여 리렌더링 최소화
+        const allArtifactIds = new Set(sortedArtifacts.map(({ artifact }) => artifact.id));
+        setTriggeredArtifacts(allArtifactIds);
+        setShowTriggeredEffects(true);
+
+        // 애니메이션 시작 시간 기록
+        artifactAnimationStartTimeRef.current = Date.now();
+
+        // 애니메이션 시작 대기
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // 각 유물 효과를 순차 실행 (하지만 화면 업데이트는 하지 않음)
+        for (const { artifact, type } of sortedArtifacts) {
+          // 게임이 종료된 경우만 중단
+          if (gameState.isGameOver) {
+            console.log('⏸️ Artifact processing interrupted - game over');
+            break;
+          }
+
+          console.log(`🎆 Artifact activated: ${artifact.id}`);
+
+          // 각 유물 효과 실행
+          if (type === 'turn_based') {
+            switch (artifact.id) {
+              case 'time_warp':
+                console.log('✨ Time Warp activated!');
+                applyTimeWarpEffect();
+                break;
+              case 'chaos_engine':
+                console.log('🌪️ Chaos Engine activated!');
+                applyChaosEngineEffect();
+                break;
+              case 'crystal_converter':
+                console.log('💎 Crystal Converter activated!');
+                applyCrystalConverterEffect();
+                break;
+              case 'mystery_box': {
+                console.log('📦 Mystery Box activated!');
+                const items: GameItemType[] = ['shovel', 'mole', 'bomb'];
+                const randomItem = items[Math.floor(Math.random() * items.length)];
+                addItem(randomItem, 1);
+                console.log(`Mystery Box gave ${randomItem}!`);
+                break;
+              }
+            }
+          } else if (type === 'auto_remove') {
+            switch (artifact.id) {
+              case 'stellar_broom':
+                console.log('🪐 Stellar Broom activated!');
+                applyStellarBroomEffect();
+                break;
+              case 'primal_cleanser':
+                console.log('🌌 Primal Cleanser activated!');
+                applyPrimalCleanserEffect();
+                break;
+            }
+          }
+
+          // 유물 효과 적용 후 안정화 대기 (더 짧게)
+          await new Promise((resolve) => setTimeout(resolve, 30));
+        }
+
+        // 유물 처리 완료 - 즉시 다음 처리 허용
+        setIsProcessingArtifacts(false);
+
+        // 최소 표시 시간과 애니메이션 시간 중 더 긴 시간 사용
+        const totalAnimationTime = sortedArtifacts.length * 200 + 1200; // 각 유물 당 200ms + 기본 1200ms
+        const minimumDisplayTime = 2000; // 2초 최소 표시 시간
+        const actualDisplayTime = Math.max(totalAnimationTime, minimumDisplayTime);
+
+        // 애니메이션 UI만 타이머로 관리
+        artifactAnimationTimerRef.current = setTimeout(() => {
+          setShowTriggeredEffects(false);
+          setTriggeredArtifacts(new Set());
+          artifactAnimationTimerRef.current = null;
+          artifactAnimationStartTimeRef.current = null;
+        }, actualDisplayTime);
+      } catch (error) {
+        console.error('❌ Artifact processing error:', error);
+        // 에러 발생 시에도 상태 리셋
+        setIsProcessingArtifacts(false);
+        setShowTriggeredEffects(false);
+        setTriggeredArtifacts(new Set());
+      }
+    },
+    [
+      gameState,
+      isProcessingArtifacts,
+      rewardState.activeArtifacts,
+      setIsProcessingArtifacts,
+      setTriggeredArtifacts,
+      setShowTriggeredEffects,
+      applyTimeWarpEffect,
+      applyChaosEngineEffect,
+      applyCrystalConverterEffect,
+      applyStellarBroomEffect,
+      applyPrimalCleanserEffect,
+      addItem,
+    ],
+  );
 
   return (
     <ConfettiManager>
@@ -2081,7 +2627,117 @@ export const GameView = memo(() => {
           />
 
           {/* Artifact Panel */}
-          <ArtifactPanel artifacts={rewardState.activeArtifacts} />
+          <ArtifactPanel
+            artifacts={rewardState.activeArtifacts}
+            currentTurn={gameState.turn}
+            gameState={{
+              moveCount: gameState.moves,
+              combo: gameState.combo,
+              score: gameState.score,
+            }}
+            triggeredArtifacts={triggeredArtifacts}
+            showTriggeredEffects={showTriggeredEffects}
+          />
+
+          {/* Enhanced Triggered Artifact Notification */}
+          <AnimatePresence mode="wait">
+            {showTriggeredEffects && triggeredArtifacts.size > 0 && (
+              <motion.div
+                key="artifact-notification-container"
+                className="fixed left-4 top-4 z-30 pointer-events-none"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex flex-col gap-2">
+                  {Array.from(triggeredArtifacts).map((artifactId, index) => {
+                    const artifact = rewardState.activeArtifacts.find((a) => a.id === artifactId);
+                    if (!artifact) return null;
+
+                    return (
+                      <motion.div
+                        key={artifactId}
+                        className="mb-2 relative"
+                        initial={{ x: -120, opacity: 0, scale: 0.3 }}
+                        animate={{
+                          x: 0,
+                          opacity: 1,
+                          scale: 1,
+                        }}
+                        exit={{ x: -120, opacity: 0, scale: 0.3 }}
+                        transition={{
+                          delay: index * 0.15,
+                          duration: 0.6,
+                          type: 'spring',
+                          stiffness: 300,
+                          damping: 25,
+                        }}
+                      >
+                        <div className="relative bg-gradient-to-r from-slate-900/95 to-slate-800/95 backdrop-blur-md rounded-xl p-3 border border-yellow-400/40 shadow-2xl">
+                          {/* Artifact Info Container */}
+                          <div className="flex items-center gap-3">
+                            <motion.div
+                              className={`text-3xl ${artifact.color} relative`}
+                              animate={{
+                                rotate: [0, 8, -8, 0],
+                                scale: [1, 1.15, 1],
+                              }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: 'easeInOut',
+                              }}
+                            >
+                              {artifact.icon}
+
+                              {/* Pulsing glow effect */}
+                              <motion.div
+                                className="absolute inset-0 rounded-full"
+                                style={{
+                                  background: `radial-gradient(circle, ${artifact.color}40 0%, transparent 60%)`,
+                                  filter: 'blur(8px)',
+                                }}
+                                animate={{
+                                  scale: [1, 1.5, 1],
+                                  opacity: [0.5, 0.8, 0.5],
+                                }}
+                                transition={{
+                                  duration: 1.5,
+                                  repeat: Infinity,
+                                  ease: 'easeInOut',
+                                }}
+                              />
+                            </motion.div>
+
+                            {/* Artifact Details */}
+                            <div className="flex-1 min-w-0">
+                              <div className="text-yellow-300 font-semibold text-sm truncate">{artifact.name}</div>
+                              <div className="text-gray-300 text-xs opacity-90">효과 발동됨</div>
+                            </div>
+                          </div>
+
+                          {/* Border glow animation */}
+                          <motion.div
+                            className="absolute inset-0 rounded-xl border-2 border-yellow-400/60"
+                            animate={{
+                              opacity: [0.3, 0.8, 0.3],
+                              scale: [1, 1.02, 1],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: 'easeInOut',
+                            }}
+                          />
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </ConfettiManager>
