@@ -197,6 +197,12 @@
       "mole": "Toupeira",
       "bomb": "Bomba"
     },
+    "rarity": {
+      "common": "Comum",
+      "rare": "Raro",
+      "epic": "Épico",
+      "legendary": "Lendário"
+    },
     "area": {
       "shovel": "Peça selecionada",
       "mole": "Linha ou coluna inteira da peça selecionada",
@@ -273,7 +279,8 @@
     "artifactPanel": {
       "title": "Artefatos ativos",
       "subtitle": "{count} ativos",
-      "description": "Aplica-se apenas à sessão de jogo atual"
+      "description": "Aplica-se apenas à sessão de jogo atual",
+      "rarity": "Raridade do Artefato"
     },
     "nextReward": "Próxima recompensa",
     "availableRewards": "Recompensas disponíveis",
@@ -374,7 +381,17 @@
     "twin_core": "Núcleo duplo",
     "twin_core_description": "Aumenta todas as pontuações de combinação em 20%",
     "comet_blessing": "Bendito de cometa",
-    "comet_blessing_description": "Combinação de peça de nível 1: 10% de chance de atualizar para nível 3"
+    "comet_blessing_description": "Combinação de peça de nível 1: 10% de chance de atualizar para nível 3",
+    "time_warp": "Distorcionador de tempo",
+    "time_warp_description": "Duplica todas as pontuações por 3 turnos a cada 10 turnos",
+    "chaos_engine": "Motor do caos",
+    "chaos_engine_description": "Troca aleatoriamente 2 peças a cada 3 turnos",
+    "crystal_converter": "Conversor de cristal",
+    "crystal_converter_description": "Converte 3 peças aleatórias para o nível máximo a cada 7 turnos",
+    "mystery_box": "Caixa misteriosa",
+    "mystery_box_description": "Ganha 1 item aleatório a cada 5 turnos",
+    "bomb_enhancer": "Potenciador de bomba",
+    "bomb_enhancer_description": "Bomba remove área expandida de 5x5"
   },
   "leaderboard": {
     "title": "Classificação",

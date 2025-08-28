@@ -196,6 +196,12 @@
       "mole": "モグラ",
       "bomb": "爆弾"
     },
+    "rarity": {
+      "common": "コモン",
+      "rare": "レア",
+      "epic": "エピック",
+      "legendary": "レジェンダリー"
+    },
     "area": {
       "shovel": "選択したタイル1個",
       "mole": "選択したタイルの行または列全体",
@@ -253,7 +259,8 @@
     "artifactPanel": {
       "title": "アクティブなアーティファクト",
       "subtitle": "{count}個アクティブ",
-      "description": "現在のゲームセッションにのみ適用されます"
+      "description": "現在のゲームセッションにのみ適用されます",
+      "rarity": "アーティファクトのレアリティ"
     },
     "nextReward": "次の報酬",
     "availableRewards": "利用可能な報酬",
@@ -354,7 +361,17 @@
     "twin_core": "双子のコア",
     "twin_core_description": "すべてのマッチスコアを20%増加",
     "comet_blessing": "彗星の祝福",
-    "comet_blessing_description": "1階級のタイルマッチ: 10%の確率で3階級にアップグレード"
+    "comet_blessing_description": "1階級のタイルマッチ: 10%の確率で3階級にアップグレード",
+    "time_warp": "時間歪曲装置",
+    "time_warp_description": "10ターンごとに3ターンの間すべてのスコアを2倍にする",
+    "chaos_engine": "カオスエンジン",
+    "chaos_engine_description": "3ターンごとにランダムに2つのタイルの位置を交換",
+    "crystal_converter": "クリスタル変換装置",
+    "crystal_converter_description": "7ターンごとにランダムなタイル3個を最高階級に変換",
+    "mystery_box": "ミステリーボックス",
+    "mystery_box_description": "5ターンごとにランダムなアイテムを1個獲得",
+    "bomb_enhancer": "爆弾強化装置",
+    "bomb_enhancer_description": "爆弾使用時に5x5範囲に拡張して除去"
   },
   "leaderboard": {
     "title": "リーダーボード",

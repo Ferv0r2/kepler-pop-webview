@@ -197,6 +197,12 @@
       "mole": "두더지",
       "bomb": "폭탄"
     },
+    "rarity": {
+      "common": "일반",
+      "rare": "레어",
+      "epic": "에픽",
+      "legendary": "전설"
+    },
     "area": {
       "shovel": "선택한 타일 1개",
       "mole": "선택한 타일의 행 또는 열 전체",
@@ -254,7 +260,8 @@
     "artifactPanel": {
       "title": "활성 유물",
       "subtitle": "{count}개 활성화",
-      "description": "현재 게임 세션에만 적용됩니다"
+      "description": "현재 게임 세션에만 적용됩니다",
+      "rarity": "유물 등급"
     },
     "nextReward": "다음 보상",
     "availableRewards": "사용 가능한 보상",
@@ -356,7 +363,17 @@
     "twin_core": "쌍성 축전기",
     "twin_core_description": "모든 매치 점수 20% 증가",
     "comet_blessing": "유성의 축복",
-    "comet_blessing_description": "1등급 타일 매치 시 10% 확률로 3등급으로 승급"
+    "comet_blessing_description": "1등급 타일 매치 시 10% 확률로 3등급으로 승급",
+    "time_warp": "시간 왜곡기",
+    "time_warp_description": "10턴마다 다음 3턴 동안 모든 점수 2배",
+    "chaos_engine": "카오스 엔진",
+    "chaos_engine_description": "매 3턴마다 랜덤하게 타일 2개 위치 교체",
+    "crystal_converter": "크리스탈 변환기",
+    "crystal_converter_description": "매 7턴마다 랜덤 타일 3개를 최고 등급으로 변환",
+    "mystery_box": "미스터리 박스",
+    "mystery_box_description": "매 5턴마다 랜덤 아이템 1개 획득",
+    "bomb_enhancer": "폭탄 강화기",
+    "bomb_enhancer_description": "폭탄 사용 시 5x5 범위로 확장하여 제거"
   },
   "leaderboard": {
     "title": "리더보드",

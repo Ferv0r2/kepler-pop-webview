@@ -197,6 +197,12 @@
       "mole": "Mole",
       "bomb": "Bomb"
     },
+    "rarity": {
+      "common": "Common",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary"
+    },
     "area": {
       "shovel": "Selected tile",
       "mole": "Entire row or column of selected tile",
@@ -254,7 +260,8 @@
     "artifactPanel": {
       "title": "Active Artifacts",
       "subtitle": "{count} active",
-      "description": "Only applies to the current game session"
+      "description": "Only applies to the current game session",
+      "rarity": "Artifact Rarity"
     },
     "nextReward": "Next Reward",
     "availableRewards": "Available Rewards",
@@ -356,7 +363,17 @@
     "twin_core": "Twin Core",
     "twin_core_description": "Increase all match scores by 20%",
     "comet_blessing": "Comet Blessing",
-    "comet_blessing_description": "10% chance to upgrade tier 1 tile matches to tier 3"
+    "comet_blessing_description": "10% chance to upgrade tier 1 tile matches to tier 3",
+    "time_warp": "Time Distortor",
+    "time_warp_description": "Double all scores for 3 turns every 10 turns",
+    "chaos_engine": "Chaos Engine",
+    "chaos_engine_description": "Randomly swap 2 tiles every 3 turns",
+    "crystal_converter": "Crystal Converter",
+    "crystal_converter_description": "Convert 3 random tiles to max tier every 7 turns",
+    "mystery_box": "Mystery Box",
+    "mystery_box_description": "Gain 1 random item every 5 turns",
+    "bomb_enhancer": "Bomb Enhancer",
+    "bomb_enhancer_description": "Bomb removes expanded 5x5 area"
   },
   "leaderboard": {
     "title": "Leaderboard",

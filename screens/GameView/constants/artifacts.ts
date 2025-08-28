@@ -9,6 +9,7 @@ export const ARTIFACTS: Record<ArtifactId, Artifact> = {
     isActive: false,
     icon: '🌱',
     color: 'text-green-400',
+    rarity: 'common' as const,
   },
   leaf_balance: {
     id: 'leaf_balance',
@@ -18,6 +19,7 @@ export const ARTIFACTS: Record<ArtifactId, Artifact> = {
     isActive: false,
     icon: '🍃',
     color: 'text-lime-400',
+    rarity: 'rare' as const,
   },
   vine_link: {
     id: 'vine_link',
@@ -27,6 +29,7 @@ export const ARTIFACTS: Record<ArtifactId, Artifact> = {
     isActive: false,
     icon: '🌿',
     color: 'text-yellow-400',
+    rarity: 'common' as const,
   },
   blossom_burst: {
     id: 'blossom_burst',
@@ -36,6 +39,7 @@ export const ARTIFACTS: Record<ArtifactId, Artifact> = {
     isActive: false,
     icon: '🌸',
     color: 'text-red-400',
+    rarity: 'rare' as const,
   },
   stellar_broom: {
     id: 'stellar_broom',
@@ -45,6 +49,7 @@ export const ARTIFACTS: Record<ArtifactId, Artifact> = {
     isActive: false,
     icon: '🪐',
     color: 'text-purple-400',
+    rarity: 'common' as const,
   },
   primal_cleanser: {
     id: 'primal_cleanser',
@@ -54,6 +59,7 @@ export const ARTIFACTS: Record<ArtifactId, Artifact> = {
     isActive: false,
     icon: '🌌',
     color: 'text-pink-400',
+    rarity: 'epic' as const,
   },
   starlight_core: {
     id: 'starlight_core',
@@ -63,6 +69,7 @@ export const ARTIFACTS: Record<ArtifactId, Artifact> = {
     isActive: false,
     icon: '🔋',
     color: 'text-orange-400',
+    rarity: 'common' as const,
   },
   twin_core: {
     id: 'twin_core',
@@ -72,6 +79,7 @@ export const ARTIFACTS: Record<ArtifactId, Artifact> = {
     isActive: false,
     icon: '✨',
     color: 'text-indigo-400',
+    rarity: 'rare' as const,
   },
   comet_blessing: {
     id: 'comet_blessing',
@@ -81,5 +89,57 @@ export const ARTIFACTS: Record<ArtifactId, Artifact> = {
     isActive: false,
     icon: '☄️',
     color: 'text-emerald-400',
+    rarity: 'epic' as const,
+  },
+  // 새로운 유물들 - 주요 효과만 선별
+  time_warp: {
+    id: 'time_warp',
+    name: '시간 왜곡기',
+    description: '10턴마다 다음 3턴 동안 모든 점수 2배',
+    effect: { type: 'turn_based', value: 2, triggerTurn: 10, duration: 3 },
+    isActive: false,
+    icon: '⏰',
+    color: 'text-cyan-400',
+    rarity: 'legendary' as const,
+  },
+  chaos_engine: {
+    id: 'chaos_engine',
+    name: '카오스 엔진',
+    description: '매 3턴마다 랜덤하게 타일 2개 위치 교체',
+    effect: { type: 'turn_based', value: 2, triggerTurn: 3, condition: 'random_swap' },
+    isActive: false,
+    icon: '🌪️',
+    color: 'text-purple-500',
+    rarity: 'epic' as const,
+  },
+  crystal_converter: {
+    id: 'crystal_converter',
+    name: '크리스탈 변환기',
+    description: '매 7턴마다 랜덤 타일 3개를 최고 등급으로 변환',
+    effect: { type: 'turn_based', value: 3, triggerTurn: 7, condition: 'convert_max_tier' },
+    isActive: false,
+    icon: '💎',
+    color: 'text-pink-400',
+    rarity: 'epic' as const,
+  },
+  mystery_box: {
+    id: 'mystery_box',
+    name: '미스터리 박스',
+    description: '매 5턴마다 랜덤 아이템 1개 획득',
+    effect: { type: 'turn_based', value: 1, triggerTurn: 5, condition: 'random_item' },
+    isActive: false,
+    icon: '📦',
+    color: 'text-yellow-600',
+    rarity: 'epic' as const,
+  },
+  bomb_enhancer: {
+    id: 'bomb_enhancer',
+    name: '폭탄 강화기',
+    description: '폭탄 사용 시 5x5 범위로 확장하여 제거',
+    effect: { type: 'item_enhancement', value: 1, condition: 'bomb_5x5' },
+    isActive: false,
+    icon: '💣',
+    color: 'text-red-500',
+    rarity: 'rare' as const,
   },
 };

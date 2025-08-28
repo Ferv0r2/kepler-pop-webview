@@ -196,6 +196,12 @@
       "mole": "鼹鼠",
       "bomb": "炸弹"
     },
+    "rarity": {
+      "common": "普通",
+      "rare": "稀有",
+      "epic": "史诗",
+      "legendary": "传说"
+    },
     "area": {
       "shovel": "选定的方块",
       "mole": "选定方块的整行或整列",
@@ -272,7 +278,8 @@
     "artifactPanel": {
       "title": "激活的奖励",
       "subtitle": "{count}个激活",
-      "description": "仅适用于当前游戏会话"
+      "description": "仅适用于当前游戏会话",
+      "rarity": "奖励稀有度"
     }
   },
   "loading": {
@@ -340,7 +347,17 @@
     "twin_core": "双子核心",
     "twin_core_description": "所有匹配分数增加20%",
     "comet_blessing": "彗星祝福",
-    "comet_blessing_description": "1级方块匹配: 10%概率升级到3级"
+    "comet_blessing_description": "1级方块匹配: 10%概率升级到3级",
+    "time_warp": "时间扭曲器",
+    "time_warp_description": "每10回合在接下来3回合内所有分数翻倍",
+    "chaos_engine": "混沌引擎",
+    "chaos_engine_description": "每3回合随机交换2个方块位置",
+    "crystal_converter": "水晶转换器",
+    "crystal_converter_description": "每7回合将3个随机方块转换为最高等级",
+    "mystery_box": "神秘盒子",
+    "mystery_box_description": "每5回合获得1个随机道具",
+    "bomb_enhancer": "炸弹增强器",
+    "bomb_enhancer_description": "炸弹使用时扩展至5x5区域清除"
   },
   "leaderboard": {
     "title": "排行榜",
