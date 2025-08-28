@@ -6,7 +6,18 @@ interface TileAnimation {
   tileId: string;
   startTime: number;
   duration: number;
-  type: 'swap' | 'match' | 'drop' | 'appear' | 'hint' | 'select' | 'upgrade';
+  type:
+    | 'swap'
+    | 'match'
+    | 'drop'
+    | 'appear'
+    | 'hint'
+    | 'select'
+    | 'upgrade'
+    | 'freeze'
+    | 'chaos'
+    | 'crystal_convert'
+    | 'time_distort';
   fromX?: number;
   fromY?: number;
   toX?: number;
@@ -16,6 +27,8 @@ interface TileAnimation {
   fromOpacity?: number;
   toOpacity?: number;
   rotation?: number;
+  color?: string;
+  glowIntensity?: number;
   onComplete?: () => void;
 }
 
@@ -60,6 +73,23 @@ export class CanvasGameRenderer {
   private hoveredTile: { row: number; col: number } | null = null;
   private isLoading: boolean = true;
   private loadingProgress: number = 0;
+
+  // 새로운 유물 시각 효과 상태
+  private frozenTiles: Set<string> = new Set();
+  private timeDistortActive: boolean = false;
+  private chaosEffectIntensity: number = 0;
+  private nextTilePreview: TileType[] = [];
+  private screenEffects: {
+    type: 'time_distort' | 'chaos' | 'freeze' | null;
+    intensity: number;
+    duration: number;
+    startTime: number;
+  } = {
+    type: null,
+    intensity: 0,
+    duration: 0,
+    startTime: 0,
+  };
 
   // Item effect overlays
   setSelectedItem(itemType: string | null): void {
@@ -659,6 +689,42 @@ export class CanvasGameRenderer {
               // 부드러운 회전
               rotation = Math.sin(progress * Math.PI * 2) * 5;
               break;
+
+            case 'freeze':
+              // 얼음 효과: 푸른빛 글로우와 약간의 투명도
+              if (animation.color) {
+                ctx.save();
+                ctx.shadowColor = animation.color;
+                ctx.shadowBlur = (animation.glowIntensity || 10) * Math.sin(progress * Math.PI * 4);
+                ctx.restore();
+              }
+              opacity = 0.8;
+              break;
+
+            case 'chaos':
+              // 카오스 효과: 랜덤한 떨림과 색상 변화
+              x += (Math.random() - 0.5) * 4;
+              y += (Math.random() - 0.5) * 4;
+              rotation = (Math.random() - 0.5) * 10;
+              break;
+
+            case 'crystal_convert':
+              // 크리스탈 변환 효과: 무지개 글로우
+              scale = 1 + Math.sin(progress * Math.PI * 6) * 0.1;
+              if (animation.color) {
+                ctx.save();
+                ctx.shadowColor = animation.color;
+                ctx.shadowBlur = 20;
+                ctx.restore();
+              }
+              break;
+
+            case 'time_distort':
+              // 시간 왜곡 효과: 파동같은 왜곡
+              const waveOffset = Math.sin(progress * Math.PI * 8) * 2;
+              x += waveOffset;
+              scale = 1 + Math.sin(progress * Math.PI * 4) * 0.05;
+              break;
           }
         }
 
@@ -667,6 +733,20 @@ export class CanvasGameRenderer {
 
         // 특수 효과
         const tileKey = `${row}-${col}`;
+
+        // 얼어있는 타일 효과
+        if (this.frozenTiles.has(tileKey)) {
+          ctx.save();
+          ctx.shadowColor = '#60a5fa';
+          ctx.shadowBlur = 15;
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.8;
+          ctx.beginPath();
+          ctx.roundRect(x - 1, y - 1, this.tileSize + 2, this.tileSize + 2, 12);
+          ctx.stroke();
+          ctx.restore();
+        }
         if (this.selectedTile?.row === row && this.selectedTile?.col === col) {
           scale = 1.1;
           // 선택 효과
@@ -706,6 +786,9 @@ export class CanvasGameRenderer {
     // 아이템 효과 오버레이 그리기
     this.drawItemEffectOverlay();
 
+    // 화면 효과 그리기
+    this.drawScreenEffects(ctx, now);
+
     // 파티클 그리기
     ctx.save();
     for (const particle of this.particles) {
@@ -719,7 +802,7 @@ export class CanvasGameRenderer {
   }
 
   public startRenderLoop() {
-    const targetFPS = 60; // 60fps로 증가하여 더 부드러운 애니메이션
+    const targetFPS = 144; // 144fps로 증가하여 더 부드러운 애니메이션
     const frameTime = 1000 / targetFPS;
     let lastTime = 0;
     // let frameCount = 0;
@@ -736,9 +819,9 @@ export class CanvasGameRenderer {
       //   fpsTime = currentTime;
       // }
 
-      // 적응형 렌더링: 애니메이션이 있을 때는 60fps, 없을 때는 30fps
+      // 적응형 렌더링: 애니메이션이 있을 때는 144fps, 없을 때는 60fps
       const hasAnimations = this.animations.size > 0 || this.particles.length > 0 || this.isLoading;
-      const currentFrameTime = hasAnimations ? frameTime : frameTime * 2;
+      const currentFrameTime = hasAnimations ? frameTime : frameTime * 2.4;
 
       if (deltaTime >= currentFrameTime) {
         this.render();
@@ -1054,11 +1137,150 @@ export class CanvasGameRenderer {
     ctx.restore();
   }
 
+  private drawScreenEffects(ctx: CanvasRenderingContext2D, now: number) {
+    if (this.screenEffects.type === null) return;
+
+    const elapsed = now - this.screenEffects.startTime;
+    const progress = Math.min(elapsed / this.screenEffects.duration, 1);
+    const intensity = this.screenEffects.intensity * (1 - progress);
+
+    ctx.save();
+
+    switch (this.screenEffects.type) {
+      case 'time_distort':
+        // 시간 왜곡 화면 효과: 파란색 파동
+        const wavePattern = ctx.createRadialGradient(
+          this.canvas.width / 2,
+          this.canvas.height / 2,
+          0,
+          this.canvas.width / 2,
+          this.canvas.height / 2,
+          Math.max(this.canvas.width, this.canvas.height),
+        );
+        wavePattern.addColorStop(0, `rgba(59, 130, 246, ${intensity * 0.3})`);
+        wavePattern.addColorStop(0.5, `rgba(147, 197, 253, ${intensity * 0.1})`);
+        wavePattern.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+        ctx.fillStyle = wavePattern;
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        break;
+
+      case 'chaos':
+        // 카오스 화면 효과: 붉은색 번개
+        ctx.globalAlpha = intensity * 0.4;
+        ctx.fillStyle = '#ef4444';
+
+        // 랜덤한 번개 효과
+        for (let i = 0; i < 5; i++) {
+          const x = Math.random() * this.canvas.width;
+          const y = Math.random() * this.canvas.height;
+          const size = Math.random() * 100 + 50;
+
+          const lightning = ctx.createRadialGradient(x, y, 0, x, y, size);
+          lightning.addColorStop(0, '#fca5a5');
+          lightning.addColorStop(1, 'transparent');
+
+          ctx.fillStyle = lightning;
+          ctx.fillRect(x - size, y - size, size * 2, size * 2);
+        }
+        break;
+
+      case 'freeze':
+        // 동결 화면 효과: 얼음 오버레이
+        ctx.globalAlpha = intensity * 0.2;
+        ctx.fillStyle = '#bfdbfe';
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // 얼음 결정 효과
+        ctx.globalAlpha = intensity * 0.5;
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 1;
+
+        for (let i = 0; i < 20; i++) {
+          const x = Math.random() * this.canvas.width;
+          const y = Math.random() * this.canvas.height;
+          const size = Math.random() * 20 + 5;
+
+          // 눈송이 모양
+          ctx.beginPath();
+          ctx.moveTo(x - size, y);
+          ctx.lineTo(x + size, y);
+          ctx.moveTo(x, y - size);
+          ctx.lineTo(x, y + size);
+          ctx.moveTo(x - size * 0.7, y - size * 0.7);
+          ctx.lineTo(x + size * 0.7, y + size * 0.7);
+          ctx.moveTo(x + size * 0.7, y - size * 0.7);
+          ctx.lineTo(x - size * 0.7, y + size * 0.7);
+          ctx.stroke();
+        }
+        break;
+    }
+
+    ctx.restore();
+  }
+
+  // 새로운 유물 시각 효과 제어 메서드들
+  public setFrozenTiles(tiles: { row: number; col: number }[]) {
+    this.frozenTiles.clear();
+    tiles.forEach((tile) => {
+      this.frozenTiles.add(`${tile.row}-${tile.col}`);
+    });
+  }
+
+  public activateTimeDistortion(duration: number = 3000) {
+    this.timeDistortActive = true;
+    this.screenEffects = {
+      type: 'time_distort',
+      intensity: 1,
+      duration,
+      startTime: performance.now(),
+    };
+
+    setTimeout(() => {
+      this.timeDistortActive = false;
+      this.screenEffects.type = null;
+    }, duration);
+  }
+
+  public showChaosEffect(intensity: number = 0.5, duration: number = 2000) {
+    this.chaosEffectIntensity = intensity;
+    this.screenEffects = {
+      type: 'chaos',
+      intensity,
+      duration,
+      startTime: performance.now(),
+    };
+
+    setTimeout(() => {
+      this.chaosEffectIntensity = 0;
+      this.screenEffects.type = null;
+    }, duration);
+  }
+
+  public setNextTilePreview(tiles: TileType[]) {
+    this.nextTilePreview = tiles;
+  }
+
+  public activateFreezeEffect(duration: number = 1500) {
+    this.screenEffects = {
+      type: 'freeze',
+      intensity: 0.8,
+      duration,
+      startTime: performance.now(),
+    };
+
+    setTimeout(() => {
+      this.screenEffects.type = null;
+    }, duration);
+  }
+
   public destroy() {
     this.stopRenderLoop();
     this.animations.clear();
     this.particles = [];
     this.iconCache.clear();
     this.gradientCache.clear();
+    this.frozenTiles.clear();
+    this.nextTilePreview = [];
   }
 }

@@ -78,7 +78,7 @@ export const useGlobalPreloader = () => {
     };
 
     // 컴포넌트 마운트 후 즉시 시작
-    startPreloading();
+    void startPreloading();
   }, []);
 
   return state;
