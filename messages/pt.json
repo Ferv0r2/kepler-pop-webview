@@ -185,7 +185,14 @@
     "tileSwapMode": "Modo de Troca de Peças",
     "selectMode": "Modo de Seleção",
     "dragMode": "Modo de Arrastar",
-    "tutorial": "Tutorial"
+    "tutorial": "Tutorial",
+    "performance": {
+      "label": "Desempenho",
+      "auto": "Automático (Recomendado)",
+      "high": "Alta Qualidade",
+      "balanced": "Balanceado",
+      "performance": "Prioridade Desempenho"
+    }
   },
   "game": {
     "modes": {

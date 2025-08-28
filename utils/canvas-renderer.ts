@@ -2,6 +2,9 @@ import { GRID_SIZE } from '@/screens/GameView/constants/game-config';
 import { tileConfig } from '@/screens/GameView/constants/tile-config';
 import type { GridItem, TileType, TierType } from '@/types/game-types';
 
+import { PerformanceDetector, type PerformanceSettings } from './performance-detector';
+import { WebViewMemoryManager, type MemoryStats } from './webview-memory-manager';
+
 interface TileAnimation {
   tileId: string;
   startTime: number;
@@ -17,7 +20,8 @@ interface TileAnimation {
     | 'freeze'
     | 'chaos'
     | 'crystal_convert'
-    | 'time_distort';
+    | 'time_distort'
+    | 'floating_text';
   fromX?: number;
   fromY?: number;
   toX?: number;
@@ -30,6 +34,7 @@ interface TileAnimation {
   color?: string;
   glowIntensity?: number;
   onComplete?: () => void;
+  text?: string;
 }
 
 interface ParticleEffect {
@@ -45,14 +50,17 @@ interface ParticleEffect {
 
 export class CanvasGameRenderer {
   // 상수 정의
-  private static readonly MAX_BORDER_WIDTH = 4; // tier 3의 최대 border 두께
-  private static readonly BORDER_BUFFER = CanvasGameRenderer.MAX_BORDER_WIDTH * 2; // 양쪽 border 고려
-  private static readonly TILE_GAP = 4; // 타일 간격
+  private static readonly MAX_BORDER_WIDTH = 4;
+  private static readonly BORDER_BUFFER = CanvasGameRenderer.MAX_BORDER_WIDTH * 2;
+  private static readonly TILE_GAP = 4;
 
-  // 애니메이션 타이밍 상수
-  private static readonly ANIMATION_DURATION_FAST = 150; // 빠른 애니메이션 (swap 시작)
-  private static readonly ANIMATION_DURATION_NORMAL = 250; // 일반 애니메이션 (swap 완료)
-  private static readonly ANIMATION_DURATION_SLOW = 350; // 느린 애니메이션 (match, drop, appear, upgrade)
+  private static readonly ANIMATION_DURATION_NORMAL = 250;
+  private static readonly ANIMATION_DURATION_SLOW = 350;
+
+  // 성능 설정
+  private performanceSettings: PerformanceSettings;
+  private performanceDetector: PerformanceDetector;
+  private memoryManager: WebViewMemoryManager;
 
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -74,11 +82,7 @@ export class CanvasGameRenderer {
   private isLoading: boolean = true;
   private loadingProgress: number = 0;
 
-  // 새로운 유물 시각 효과 상태
   private frozenTiles: Set<string> = new Set();
-  private timeDistortActive: boolean = false;
-  private chaosEffectIntensity: number = 0;
-  private nextTilePreview: TileType[] = [];
   private screenEffects: {
     type: 'time_distort' | 'chaos' | 'freeze' | null;
     intensity: number;
@@ -118,13 +122,45 @@ export class CanvasGameRenderer {
       willReadFrequently: false,
     })!;
 
+    this.performanceDetector = PerformanceDetector.getInstance();
+    this.memoryManager = WebViewMemoryManager.getInstance();
+
+    // 기본 중급 설정으로 초기화
+    this.performanceSettings = {
+      targetFPS: 60,
+      maxDPR: 1.5,
+      enableAntiAliasing: false,
+      particleCount: 5,
+      renderThreshold: 100,
+      enableComplexAnimations: false,
+      enableScreenEffects: true,
+    };
+
+    // 메모리 관리자 시작
+    this.memoryManager.start();
+    this.memoryManager.onMemoryWarning(this.handleMemoryWarning.bind(this));
+
     this.setupCanvas();
+    void this.initializePerformanceSettings();
     void this.preloadAssets();
   }
 
+  private initializePerformanceSettings() {
+    try {
+      const capability = this.performanceDetector.detectCapability();
+      this.performanceSettings = this.performanceDetector.getOptimalSettings(capability);
+
+      console.log('🎮 Performance Settings Applied:', this.performanceSettings);
+
+      // 설정 적용을 위해 캔버스 재설정
+      this.setupCanvas();
+    } catch (error) {
+      console.warn('⚠️ Failed to detect performance, using default settings:', error);
+    }
+  }
+
   private setupCanvas() {
-    // 고해상도 디스플레이 대응 (성능을 위해 DPR 제한)
-    const dpr = Math.min(window.devicePixelRatio || 1, 2); // 최대 2배로 제한
+    const dpr = Math.min(window.devicePixelRatio || 1, this.performanceSettings.maxDPR);
     const rect = this.canvas.getBoundingClientRect();
 
     // 캔버스 크기 설정 전에 컨텍스트 리셋
@@ -134,9 +170,10 @@ export class CanvasGameRenderer {
     // 컨텍스트가 리셋되므로 다시 스케일 적용
     this.ctx.scale(dpr, dpr);
 
-    // 안티앨리어싱 설정 (성능 최적화)
-    this.ctx.imageSmoothingEnabled = true;
-    this.ctx.imageSmoothingQuality = 'low'; // 성능 향상을 위해 low로 설정
+    this.ctx.imageSmoothingEnabled = this.performanceSettings.enableAntiAliasing;
+    if (this.performanceSettings.enableAntiAliasing) {
+      this.ctx.imageSmoothingQuality = 'high';
+    }
 
     // 캔버스 스타일 설정
     this.canvas.style.width = rect.width + 'px';
@@ -159,9 +196,7 @@ export class CanvasGameRenderer {
     this.gridStartX = padding + CanvasGameRenderer.MAX_BORDER_WIDTH / 2;
     this.gridStartY = padding + CanvasGameRenderer.MAX_BORDER_WIDTH / 2;
 
-    // 안티앨리어싱 설정 (성능 최적화)
-    this.ctx.imageSmoothingEnabled = true;
-    this.ctx.imageSmoothingQuality = 'low'; // 성능 향상을 위해 low로 설정
+    this.ctx.imageSmoothingEnabled = this.performanceSettings.enableAntiAliasing;
   }
 
   private async preloadAssets() {
@@ -352,8 +387,8 @@ export class CanvasGameRenderer {
   public addParticle(x: number, y: number, color: string) {
     const tileWithGap = this.tileSize + CanvasGameRenderer.TILE_GAP;
 
-    for (let i = 0; i < 10; i++) {
-      const angle = (Math.PI * 2 * i) / 10;
+    for (let i = 0; i < this.performanceSettings.particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / this.performanceSettings.particleCount;
       const speed = 2 + Math.random() * 3;
 
       this.particles.push({
@@ -596,12 +631,11 @@ export class CanvasGameRenderer {
     const now = performance.now();
     const deltaTime = now - this.lastFrameTime;
 
-    // 변경사항이 없으면 렌더링 스킵
     const hasChanges =
       this.animations.size > 0 || this.particles.length > 0 || this.isLoading || this.lastFrameTime === 0;
 
-    if (!hasChanges && deltaTime < 50) {
-      return; // 변경사항이 없고 50ms 이내면 스킵
+    if (!hasChanges && deltaTime < this.performanceSettings.renderThreshold) {
+      return;
     }
 
     this.lastFrameTime = now;
@@ -719,12 +753,25 @@ export class CanvasGameRenderer {
               }
               break;
 
-            case 'time_distort':
-              // 시간 왜곡 효과: 파동같은 왜곡
+            case 'time_distort': {
               const waveOffset = Math.sin(progress * Math.PI * 8) * 2;
               x += waveOffset;
               scale = 1 + Math.sin(progress * Math.PI * 4) * 0.05;
               break;
+            }
+
+            case 'floating_text': {
+              if (animation.fromX !== undefined && animation.toX !== undefined) {
+                x = animation.fromX + (animation.toX - animation.fromX) * eased;
+              }
+              if (animation.fromY !== undefined && animation.toY !== undefined) {
+                y = animation.fromY + (animation.toY - animation.fromY) * eased;
+              }
+              if (animation.fromOpacity !== undefined && animation.toOpacity !== undefined) {
+                opacity = animation.fromOpacity + (animation.toOpacity - animation.fromOpacity) * eased;
+              }
+              break;
+            }
           }
         }
 
@@ -773,8 +820,10 @@ export class CanvasGameRenderer {
           ctx.restore();
         }
 
-        // 타일 그리기
-        this.drawTile(tile, x, y, scale, opacity, rotation);
+        // 타일 그리기 (floating text가 아닌 경우만)
+        if (animation?.type !== 'floating_text') {
+          this.drawTile(tile, x, y, scale, opacity, rotation);
+        }
 
         // 힌트 효과 - 타일 위에 그리기
         if (this.hintTiles.has(tileKey)) {
@@ -789,6 +838,9 @@ export class CanvasGameRenderer {
     // 화면 효과 그리기
     this.drawScreenEffects(ctx, now);
 
+    // floating text 렌더링
+    this.renderFloatingTexts(ctx, now);
+
     // 파티클 그리기
     ctx.save();
     for (const particle of this.particles) {
@@ -802,7 +854,7 @@ export class CanvasGameRenderer {
   }
 
   public startRenderLoop() {
-    const targetFPS = 144; // 144fps로 증가하여 더 부드러운 애니메이션
+    const targetFPS = this.performanceSettings.targetFPS;
     const frameTime = 1000 / targetFPS;
     let lastTime = 0;
     // let frameCount = 0;
@@ -819,9 +871,7 @@ export class CanvasGameRenderer {
       //   fpsTime = currentTime;
       // }
 
-      // 적응형 렌더링: 애니메이션이 있을 때는 144fps, 없을 때는 60fps
-      const hasAnimations = this.animations.size > 0 || this.particles.length > 0 || this.isLoading;
-      const currentFrameTime = hasAnimations ? frameTime : frameTime * 2.4;
+      const currentFrameTime = frameTime;
 
       if (deltaTime >= currentFrameTime) {
         this.render();
@@ -948,8 +998,11 @@ export class CanvasGameRenderer {
         duration: CanvasGameRenderer.ANIMATION_DURATION_SLOW,
       });
 
-      // 파티클 효과 추가
-      this.addParticle(tile.col, tile.row, '#ffd700');
+      // 성능 설정에 따른 파티클 효과
+      if (this.performanceSettings.enableComplexAnimations || tiles.length > 3) {
+        // 3개 이상 매치 시에는 항상 파티클 표시 (중요한 피드백)
+        this.addParticle(tile.col, tile.row, '#ffd700');
+      }
     });
   }
 
@@ -979,11 +1032,13 @@ export class CanvasGameRenderer {
   public handleTierUpgradeAnimation(tiles: { id: string; row: number; col: number }[]) {
     tiles.forEach((tile) => {
       this.addAnimation(tile.id, 'upgrade', {
-        duration: CanvasGameRenderer.ANIMATION_DURATION_SLOW, // 400ms로 부드러운 전환
+        duration: CanvasGameRenderer.ANIMATION_DURATION_SLOW,
       });
 
-      // 파티클 효과 추가 (황금색 반짝임)
-      this.addParticle(tile.col, tile.row, '#ffd700');
+      // 성능 설정에 따른 파티클 효과
+      if (this.performanceSettings.enableComplexAnimations) {
+        this.addParticle(tile.col, tile.row, '#ffd700');
+      }
     });
   }
 
@@ -1054,6 +1109,48 @@ export class CanvasGameRenderer {
     }
 
     ctx.restore();
+  }
+
+  private renderFloatingTexts(ctx: CanvasRenderingContext2D, now: number) {
+    for (const [, animation] of this.animations) {
+      if (animation.type !== 'floating_text') continue;
+
+      const elapsed = now - animation.startTime;
+      const progress = Math.min(elapsed / animation.duration, 1);
+      const eased = this.easeInOut(progress);
+
+      if (
+        animation.fromX !== undefined &&
+        animation.toX !== undefined &&
+        animation.fromY !== undefined &&
+        animation.toY !== undefined &&
+        animation.text &&
+        animation.color
+      ) {
+        const x = animation.fromX + (animation.toX - animation.fromX) * eased;
+        const y = animation.fromY + (animation.toY - animation.fromY) * eased;
+
+        let opacity = 1;
+        if (animation.fromOpacity !== undefined && animation.toOpacity !== undefined) {
+          opacity = animation.fromOpacity + (animation.toOpacity - animation.fromOpacity) * eased;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        ctx.fillStyle = animation.color;
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // 텍스트 외곽선으로 가독성 향상
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.lineWidth = 3;
+        ctx.strokeText(animation.text, x, y);
+        ctx.fillText(animation.text, x, y);
+
+        ctx.restore();
+      }
+    }
   }
 
   private drawItemEffectOverlay() {
@@ -1138,7 +1235,7 @@ export class CanvasGameRenderer {
   }
 
   private drawScreenEffects(ctx: CanvasRenderingContext2D, now: number) {
-    if (this.screenEffects.type === null) return;
+    if (this.screenEffects.type === null || !this.performanceSettings.enableScreenEffects) return;
 
     const elapsed = now - this.screenEffects.startTime;
     const progress = Math.min(elapsed / this.screenEffects.duration, 1);
@@ -1147,8 +1244,7 @@ export class CanvasGameRenderer {
     ctx.save();
 
     switch (this.screenEffects.type) {
-      case 'time_distort':
-        // 시간 왜곡 화면 효과: 파란색 파동
+      case 'time_distort': {
         const wavePattern = ctx.createRadialGradient(
           this.canvas.width / 2,
           this.canvas.height / 2,
@@ -1164,9 +1260,9 @@ export class CanvasGameRenderer {
         ctx.fillStyle = wavePattern;
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         break;
+      }
 
-      case 'chaos':
-        // 카오스 화면 효과: 붉은색 번개
+      case 'chaos': {
         ctx.globalAlpha = intensity * 0.4;
         ctx.fillStyle = '#ef4444';
 
@@ -1184,9 +1280,9 @@ export class CanvasGameRenderer {
           ctx.fillRect(x - size, y - size, size * 2, size * 2);
         }
         break;
+      }
 
-      case 'freeze':
-        // 동결 화면 효과: 얼음 오버레이
+      case 'freeze': {
         ctx.globalAlpha = intensity * 0.2;
         ctx.fillStyle = '#bfdbfe';
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -1214,6 +1310,7 @@ export class CanvasGameRenderer {
           ctx.stroke();
         }
         break;
+      }
     }
 
     ctx.restore();
@@ -1228,7 +1325,6 @@ export class CanvasGameRenderer {
   }
 
   public activateTimeDistortion(duration: number = 3000) {
-    this.timeDistortActive = true;
     this.screenEffects = {
       type: 'time_distort',
       intensity: 1,
@@ -1237,13 +1333,11 @@ export class CanvasGameRenderer {
     };
 
     setTimeout(() => {
-      this.timeDistortActive = false;
       this.screenEffects.type = null;
     }, duration);
   }
 
   public showChaosEffect(intensity: number = 0.5, duration: number = 2000) {
-    this.chaosEffectIntensity = intensity;
     this.screenEffects = {
       type: 'chaos',
       intensity,
@@ -1252,13 +1346,8 @@ export class CanvasGameRenderer {
     };
 
     setTimeout(() => {
-      this.chaosEffectIntensity = 0;
       this.screenEffects.type = null;
     }, duration);
-  }
-
-  public setNextTilePreview(tiles: TileType[]) {
-    this.nextTilePreview = tiles;
   }
 
   public activateFreezeEffect(duration: number = 1500) {
@@ -1274,13 +1363,166 @@ export class CanvasGameRenderer {
     }, duration);
   }
 
+  // 필수 사용자 피드백 애니메이션 트리거
+  public triggerMatchFeedback(tiles: { row: number; col: number; id: string }[]) {
+    // 매치 피드백은 성능과 관계없이 항상 표시 (사용자 경험에 필수)
+    tiles.forEach((tile) => {
+      // 간단한 시각적 피드백을 Canvas에 직접 그리기
+      this.addAnimation(tile.id, 'match', {
+        duration: 200, // 빠른 피드백
+      });
+
+      // 중요한 매치(4개 이상)에만 파티클 효과
+      if (tiles.length >= 4) {
+        this.addParticle(tile.col, tile.row, '#ffd700');
+      }
+    });
+  }
+
+  public triggerScoreFeedback(row: number, col: number, score: number) {
+    // Canvas에 직접 점수 텍스트 그리기 (DOM 애니메이션 대신)
+    this.drawFloatingText(col, row, `+${score}`, '#4ade80', 800);
+  }
+
+  private drawFloatingText(col: number, row: number, text: string, color: string, duration: number) {
+    const tileWithGap = this.tileSize + CanvasGameRenderer.TILE_GAP;
+    const x = col * tileWithGap + this.gridStartX + this.tileSize / 2;
+    const y = row * tileWithGap + this.gridStartY + this.tileSize / 2;
+
+    const animation = {
+      tileId: `text-${col}-${row}-${Date.now()}`,
+      type: 'floating_text' as const,
+      startTime: performance.now(),
+      duration,
+      fromX: x,
+      fromY: y,
+      toX: x,
+      toY: y - 40,
+      text,
+      color,
+      fromOpacity: 1,
+      toOpacity: 0,
+    };
+
+    this.animations.set(animation.tileId, animation);
+  }
+
+  // 성능 설정 업데이트 메서드
+  public updatePerformanceSettings(settings: Partial<PerformanceSettings>) {
+    this.performanceSettings = { ...this.performanceSettings, ...settings };
+    console.log('🎮 Performance Settings Updated:', this.performanceSettings);
+
+    // 캔버스 재설정 (DPR, 안티앨리어싱 변경 시 필요)
+    if (settings.maxDPR !== undefined || settings.enableAntiAliasing !== undefined) {
+      this.setupCanvas();
+    }
+  }
+
+  public getPerformanceSettings(): PerformanceSettings {
+    return { ...this.performanceSettings };
+  }
+
+  private handleMemoryWarning(stats: MemoryStats) {
+    console.warn('⚠️ Memory warning in Canvas Renderer:', stats);
+
+    // 메모리 사용량에 따른 적응형 대응
+    if (stats.usagePercentage >= 85) {
+      // 위험 수준: 즉시 대응
+      this.emergencyMemoryCleanup();
+    } else if (stats.usagePercentage >= 70) {
+      // 경고 수준: 점진적 대응
+      this.performMemoryOptimization();
+    }
+  }
+
+  private emergencyMemoryCleanup() {
+    console.log('🚨 Emergency memory cleanup');
+
+    // 1. 모든 애니메이션 즉시 정지
+    this.animations.clear();
+    this.particles = [];
+
+    // 2. 아이콘 캐시 절반 정리
+    let cacheCount = 0;
+    const maxCacheSize = Math.floor(this.iconCache.size / 2);
+    for (const [key] of this.iconCache) {
+      if (cacheCount >= maxCacheSize) break;
+      this.iconCache.delete(key);
+      cacheCount++;
+    }
+
+    // 3. 그라디언트 캐시 완전 정리
+    this.gradientCache.clear();
+
+    // 4. 성능 설정 하향 조정
+    this.updatePerformanceSettings({
+      targetFPS: Math.max(30, this.performanceSettings.targetFPS - 15),
+      particleCount: Math.max(1, Math.floor(this.performanceSettings.particleCount / 2)),
+      enableComplexAnimations: false,
+      enableScreenEffects: false,
+      renderThreshold: Math.max(150, this.performanceSettings.renderThreshold + 50),
+    });
+  }
+
+  private performMemoryOptimization() {
+    console.log('⚡ Memory optimization');
+
+    // 1. 오래된 애니메이션 정리
+    const now = performance.now();
+    for (const [id, animation] of this.animations) {
+      if (now - animation.startTime > animation.duration * 2) {
+        this.animations.delete(id);
+      }
+    }
+
+    // 2. 파티클 수 제한
+    if (this.particles.length > 20) {
+      this.particles = this.particles.slice(0, 20);
+    }
+
+    // 3. 성능 설정 미세 조정
+    if (this.performanceSettings.targetFPS > 45) {
+      this.updatePerformanceSettings({
+        targetFPS: this.performanceSettings.targetFPS - 10,
+        particleCount: Math.max(3, this.performanceSettings.particleCount - 1),
+        renderThreshold: this.performanceSettings.renderThreshold + 25,
+      });
+    }
+  }
+
+  public cleanupUnusedAssets() {
+    // 수동으로 호출 가능한 에셋 정리
+    const unusedKeys: string[] = [];
+
+    // 현재 그리드에서 사용되지 않는 아이콘 찾기
+    const usedTileTypes = new Set<string>();
+    for (const row of this.grid) {
+      for (const tile of row) {
+        usedTileTypes.add(`${tile.type}-${tile.tier}`);
+      }
+    }
+
+    // 사용되지 않는 아이콘 캐시 제거
+    for (const [key] of this.iconCache) {
+      if (!usedTileTypes.has(key)) {
+        unusedKeys.push(key);
+      }
+    }
+
+    unusedKeys.forEach((key) => this.iconCache.delete(key));
+
+    if (unusedKeys.length > 0) {
+      console.log(`🧹 Cleaned up ${unusedKeys.length} unused assets`);
+    }
+  }
+
   public destroy() {
     this.stopRenderLoop();
+    this.memoryManager.stop();
     this.animations.clear();
     this.particles = [];
     this.iconCache.clear();
     this.gradientCache.clear();
     this.frozenTiles.clear();
-    this.nextTilePreview = [];
   }
 }

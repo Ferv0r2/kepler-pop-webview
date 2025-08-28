@@ -184,7 +184,14 @@
     "tileSwapMode": "Modo de Intercambio de Fichas",
     "selectMode": "Modo de Selección",
     "dragMode": "Modo de Arrastrar",
-    "tutorial": "Tutorial"
+    "tutorial": "Tutorial",
+    "performance": {
+      "label": "Rendimiento",
+      "auto": "Auto",
+      "high": "Alta Calidad",
+      "balanced": "Balanceado",
+      "performance": "Rendimiento"
+    }
   },
   "game": {
     "modes": {

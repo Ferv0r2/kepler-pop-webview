@@ -185,7 +185,14 @@
     "tileSwapMode": "Tile Swap Mode",
     "selectMode": "Select Mode",
     "dragMode": "Drag Mode",
-    "tutorial": "Tutorial"
+    "tutorial": "Tutorial",
+    "performance": {
+      "label": "Performance",
+      "auto": "Auto",
+      "high": "High Quality",
+      "balanced": "Balanced",
+      "performance": "Performance"
+    }
   },
   "game": {
     "modes": {

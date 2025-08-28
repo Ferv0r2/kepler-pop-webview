@@ -184,7 +184,14 @@
     "tutorial": "チュートリアル",
     "saveFailed": "保存に失敗しました。再度試してください。",
     "logout": "ログアウト",
-    "logoutDescription": "ログアウトして認証画面に移動します。"
+    "logoutDescription": "ログアウトして認証画面に移動します。",
+    "performance": {
+      "label": "パフォーマンス",
+      "auto": "自動",
+      "high": "高品質",
+      "balanced": "バランス",
+      "performance": "パフォーマンス優先"
+    }
   },
   "game": {
     "modes": {

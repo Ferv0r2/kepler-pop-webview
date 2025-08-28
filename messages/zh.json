@@ -184,7 +184,14 @@
     "tutorial": "教程",
     "saveFailed": "保存失败。请重试。",
     "logout": "登出",
-    "logoutDescription": "登出并前往认证屏幕。"
+    "logoutDescription": "登出并前往认证屏幕。",
+    "performance": {
+      "label": "性能设置",
+      "auto": "自动",
+      "high": "高品质",
+      "balanced": "平衡",
+      "performance": "高性能"
+    }
   },
   "game": {
     "modes": {

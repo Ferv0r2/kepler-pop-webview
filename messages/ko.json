@@ -185,7 +185,14 @@
     "tileSwapMode": "타일 교체 모드",
     "selectMode": "선택 모드",
     "dragMode": "드래그 모드",
-    "tutorial": "튜토리얼"
+    "tutorial": "튜토리얼",
+    "performance": {
+      "label": "성능 설정",
+      "auto": "자동",
+      "high": "높음 (고품질)",
+      "balanced": "보통 (균형)",
+      "performance": "낮음 (고성능)"
+    }
   },
   "game": {
     "modes": {

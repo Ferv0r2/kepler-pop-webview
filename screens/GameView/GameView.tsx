@@ -71,6 +71,7 @@ const SettingsModal = memo(
     soundSettings,
     toggleSound,
     toggleMusic,
+    rendererRef,
   }: {
     isOpen: boolean;
     onClose: () => void;
@@ -79,9 +80,11 @@ const SettingsModal = memo(
     soundSettings: SoundSettings;
     toggleSound: () => void;
     toggleMusic: () => void;
+    rendererRef: React.RefObject<CanvasGameRenderer | null>;
   }) => {
     const t = useTranslations();
     const { locale, setLocale } = useLocale();
+    const [performanceMode, setPerformanceMode] = useState('auto');
 
     if (!isOpen) return null;
 
@@ -219,6 +222,92 @@ const SettingsModal = memo(
                             {LOCALE_NAMES[language] || language}
                           </SelectItem>
                         ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </motion.div>
+
+                {/* 성능/품질 설정 */}
+                <motion.div
+                  className="space-y-3"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.25 }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-semibold text-lg">{t('settings.performance.label')}</span>
+                    <Select
+                      value={performanceMode}
+                      onValueChange={(value) => {
+                        setPerformanceMode(value);
+                        // 성능 설정 변경 로직
+                        if (rendererRef.current) {
+                          switch (value) {
+                            case 'high':
+                              rendererRef.current.updatePerformanceSettings({
+                                targetFPS: 60,
+                                maxDPR: 2.0,
+                                enableAntiAliasing: true,
+                                particleCount: 10,
+                                renderThreshold: 50,
+                                enableComplexAnimations: true,
+                                enableScreenEffects: true,
+                              });
+                              break;
+                            case 'balanced':
+                              rendererRef.current.updatePerformanceSettings({
+                                targetFPS: 45,
+                                maxDPR: 1.5,
+                                enableAntiAliasing: false,
+                                particleCount: 5,
+                                renderThreshold: 100,
+                                enableComplexAnimations: false,
+                                enableScreenEffects: true,
+                              });
+                              break;
+                            case 'performance':
+                              rendererRef.current.updatePerformanceSettings({
+                                targetFPS: 30,
+                                maxDPR: 1.0,
+                                enableAntiAliasing: false,
+                                particleCount: 3,
+                                renderThreshold: 150,
+                                enableComplexAnimations: false,
+                                enableScreenEffects: false,
+                              });
+                              break;
+                          }
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="text-base bg-gray-600/50 border-gray-500 text-gray-300 focus:border-blue-400 focus:ring-blue-400/20 hover:bg-gray-500/50 transition-all duration-200">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-600/50 border-gray-500 text-gray-300 backdrop-blur-xl hover:bg-gray-500/50">
+                        <SelectItem
+                          value="auto"
+                          className="text-white text-base hover:bg-gray-700 focus:bg-gray-700 cursor-pointer"
+                        >
+                          {t('settings.performance.auto')}
+                        </SelectItem>
+                        <SelectItem
+                          value="high"
+                          className="text-white text-base hover:bg-gray-700 focus:bg-gray-700 cursor-pointer"
+                        >
+                          {t('settings.performance.high')}
+                        </SelectItem>
+                        <SelectItem
+                          value="balanced"
+                          className="text-white text-base hover:bg-gray-700 focus:bg-gray-700 cursor-pointer"
+                        >
+                          {t('settings.performance.balanced')}
+                        </SelectItem>
+                        <SelectItem
+                          value="performance"
+                          className="text-white text-base hover:bg-gray-700 focus:bg-gray-700 cursor-pointer"
+                        >
+                          {t('settings.performance.performance')}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -2514,6 +2603,7 @@ export const GameView = memo(() => {
                 soundSettings={soundSettings}
                 toggleSound={toggleSound}
                 toggleMusic={toggleMusic}
+                rendererRef={rendererRef}
               />
             )}
           </AnimatePresence>
