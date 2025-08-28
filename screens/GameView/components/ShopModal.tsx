@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import type { GameItem, GameItemType } from '@/types/game-types';
+import type { GameItemType } from '@/types/game-types';
 
 interface ShopItem {
   id: string;

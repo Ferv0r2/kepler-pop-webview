@@ -141,7 +141,7 @@ export const RewardModal = ({ isOpen, rewards, timeRemaining, onSelectReward }: 
                 {/* 파티클 효과 */}
                 {selectedIndex === index && (
                   <div className="absolute inset-0 pointer-events-none">
-                    {[...Array(8)].map((_, i) => (
+                    {Array.from({ length: 8 }, (_, i) => (
                       <motion.div
                         key={i}
                         className="absolute w-0.5 h-0.5 bg-yellow-400 rounded-full"
