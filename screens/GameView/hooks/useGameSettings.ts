@@ -16,7 +16,7 @@ const getHasSeenTutorial = () => {
   const savedSettings = localStorage.getItem('game-settings');
   if (savedSettings) {
     try {
-      const parsedSettings = JSON.parse(savedSettings);
+      const parsedSettings = JSON.parse(savedSettings) as { hasSeenTutorial?: boolean };
       return parsedSettings?.hasSeenTutorial || false;
     } catch (error) {
       console.error('Error parsing game settings:', error);
@@ -33,7 +33,7 @@ export const useGameSettings = (): GameSettings => {
     const savedSettings = localStorage.getItem('game-settings');
     if (savedSettings) {
       try {
-        const parsedSettings = JSON.parse(savedSettings);
+        const parsedSettings = JSON.parse(savedSettings) as { tileSwapMode?: TileSwapMode };
         if (parsedSettings?.tileSwapMode) {
           setTileSwapMode(parsedSettings.tileSwapMode);
         }

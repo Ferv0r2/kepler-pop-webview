@@ -128,7 +128,7 @@ export const REWARD_THRESHOLDS: RewardThreshold[] = Array.from({ length: 9 }, (_
 export const REWARD_PROBABILITIES = {
   moves: 0.4,
   items: 0.3,
-  gem: 0.2,
-  artifact: 0.1,
+  gem: 0,
+  artifact: 0.3,
 };
 export const REWARD_SELECTION_TIMEOUT = 30000; // 30초

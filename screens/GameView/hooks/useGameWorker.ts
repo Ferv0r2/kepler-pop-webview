@@ -90,7 +90,6 @@ export const useGameWorker = (options: UseGameWorkerOptions = {}) => {
         clearTimeout(task.timeout);
         task.reject(new Error('Worker terminated'));
       });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       tasksRef.current.clear();
 
       setIsWorkerAvailable(false);
